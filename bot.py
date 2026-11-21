@@ -173,9 +173,10 @@ def get_usd_rates():
 # --- DO'KONLARDAN TO'G'RIDAN-TO'G'RI QIDIRISH ---
 def fetch_olcha(query):
     try:
-        url = f"https://olcha.uz/api/v2/products?search={quote_plus(query)}&per_page=10"
-        r = requests.get(url, headers=HEADERS, timeout=7)
+        url = f"https://api.olcha.uz/api/v2/products?search={quote_plus(query)}&per_page=10"
+        r = requests.get(url, headers={**HEADERS, "Accept": "application/json"}, timeout=7)
         if r.status_code != 200:
+            print(f"[Olcha] status={r.status_code}")
             return None
         products = r.json().get("data", {}).get("products", [])
         best = None
@@ -203,6 +204,7 @@ def fetch_texnomart(query):
         url = f"https://gw.texnomart.uz/api/common/v1/search/result?q={quote_plus(query)}"
         r = requests.get(url, headers={**HEADERS, "Accept": "application/json"}, timeout=7)
         if r.status_code != 200:
+            print(f"[Texnomart] status={r.status_code}")
             return None
         products = r.json().get("data", {}).get("products", [])
         best = None
@@ -230,9 +232,11 @@ def fetch_asaxiy(query):
         url = f"https://asaxiy.uz/product?key={quote_plus(query)}"
         r = requests.get(url, headers=HEADERS, timeout=8)
         if r.status_code != 200:
+            print(f"[Asaxiy] status={r.status_code}")
             return None
         soup = BeautifulSoup(r.text, "html.parser")
         cards = soup.select(".product__item")
+        print(f"[Asaxiy] topilgan kartalar={len(cards)}")
         best = None
         for card in cards[:12]:
             title_el = card.select_one(".product__item__info-title")
@@ -299,6 +303,7 @@ def fetch_uzum(query):
         }
         r = requests.post(gql_url, json=payload, headers=headers, timeout=7)
         if r.status_code != 200:
+            print(f"[Uzum] status={r.status_code}")
             return None
         items = r.json().get("data", {}).get("makeSearch", {}).get("items", [])
         best = None
@@ -380,8 +385,12 @@ def search_prices(query):
 
     print(f"[SEARCH] '{query}' -> to'g'ridan-to'g'ri {len(results)} ta do'kon topildi")
 
-    if not results:
-        results = search_ddg_fallback(query)
+    if len(results) < 3:
+        existing = {r["store"] for r in results}
+        for item in search_ddg_fallback(query):
+            if item["store"] not in existing:
+                results.append(item)
+                existing.add(item["store"])
 
     results.sort(key=lambda x: x["price"])
     results = results[:8]
@@ -432,13 +441,13 @@ def start_cmd(message):
     )
     bot.send_message(message.chat.id, text, reply_markup=main_menu())
 
-@bot.message_handler(func=lambda m: m.text == "🔍 Mahsulot qidirish")
+@bot.message_handler(func=lambda m: m.text and "Mahsulot qidirish" in m.text)
 def ask_product(message):
     if not require_sub(message):
         return
     bot.send_message(message.chat.id, "Qaysi mahsulot narxini bilmoqchisiz? Nomini yozing 👇")
 
-@bot.message_handler(func=lambda m: m.text == "🔥 Mashhur tovarlar")
+@bot.message_handler(func=lambda m: m.text and "Mashhur tovarlar" in m.text)
 def popular_products(message):
     if not require_sub(message):
         return
@@ -447,7 +456,7 @@ def popular_products(message):
     markup.add(*[types.InlineKeyboardButton(i, callback_data=safe_callback("search:", i)) for i in items])
     bot.send_message(message.chat.id, "🔥 Eng ko'p qidirilayotgan mahsulotlar:", reply_markup=markup)
 
-@bot.message_handler(func=lambda m: m.text == "📁 Kategoriyalar")
+@bot.message_handler(func=lambda m: m.text and "Kategoriyalar" in m.text)
 def categories(message):
     if not require_sub(message):
         return
@@ -489,14 +498,14 @@ def categories(message):
     )
     bot.send_message(message.chat.id, text, reply_markup=markup)
 
-@bot.message_handler(func=lambda m: m.text == "💵 Dollar kursi")
+@bot.message_handler(func=lambda m: m.text and "Dollar kursi" in m.text)
 def dollar_cmd(message):
     if not require_sub(message):
         return
     text, markup = get_usd_rates()
     bot.send_message(message.chat.id, text, reply_markup=markup, disable_web_page_preview=True)
 
-@bot.message_handler(func=lambda m: m.text == "❤️ Sevimlilar")
+@bot.message_handler(func=lambda m: m.text and "Sevimlilar" in m.text)
 def show_favorites(message):
     if not require_sub(message):
         return
@@ -518,7 +527,7 @@ def show_favorites(message):
         )
     bot.send_message(message.chat.id, "❤️ Saqlangan mahsulotlaringiz:", reply_markup=markup)
 
-@bot.message_handler(func=lambda m: m.text == "ℹ️ Yordam / Aloqa")
+@bot.message_handler(func=lambda m: m.text and ("Yordam / Aloqa" in m.text or "Bot haqida" in m.text))
 def help_cmd(message):
     text = (
         "ℹ️ <b>Yordam va Aloqa</b>\n\n"
@@ -632,5 +641,5 @@ def handle_text(message):
 
 if __name__ == "__main__":
     threading.Thread(target=run_web_server, daemon=True).start()
-    print("Arzoni Bor (Jonli do'konlar + Kategoriyalar) ishga tushdi!")
+    print("Arzoni Bor (To'liq versiya) ishga tushdi!")
     bot.infinity_polling(skip_pending=True)
