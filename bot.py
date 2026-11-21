@@ -20,7 +20,7 @@ if not TOKEN:
 bot = telebot.TeleBot(TOKEN, parse_mode="HTML")
 
 # --- SOZLAMALAR ---
-ADMIN_USERNAME = "mrtexno_ai"
+ADMIN_USERNAME = "Mrtexno_ai"
 CHANNELS = [
     {"name": "🤖 Mr Texno AI", "username": "@mrtexnoai", "url": "https://t.me/mrtexnoai"},
     {"name": "🛍 Arzoni Bor", "username": "@arzoniboragent", "url": "https://t.me/arzoniboragent"},
