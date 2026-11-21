@@ -18,10 +18,10 @@ if not TOKEN:
 bot = telebot.TeleBot(TOKEN, parse_mode="HTML")
 
 # --- SOZLAMALAR ---
-ADMIN_USERNAME = "mr_texno_ai"
+ADMIN_USERNAME = "@Mr_texnoai"
 CHANNELS = [
-    {"name": "⚽️ UZ SPORT ARENA", "username": "@uzsportarena", "url": "https://t.me/uzsportarena"},
-    {"name": "🤖 Mr Texno AI", "username": "@mr_texno_ai", "url": "https://t.me/mr_texno_ai"},
+    {"name": "🤖 Mr Texno AI", "username": "@mrtexnoai", "url": "https://t.me/mrtexnoai"},
+    {"name": "🛍 Arzoni Bor", "username": "@arzoniboragent", "url": "https://t.me/arzoniboragent"},
 ]
 
 # --- RENDER UCHUN WEB SERVER ---
@@ -158,7 +158,7 @@ def extract_price(text):
                 found.append(clean_num)
 
     # Agar bir nechta narx chiqsa, eng kichik oylik to'lov emas, asosiy narxni olish uchun
-    return max(found) if found else None
+    return min(found) if found else None
 
 def format_price(price):
     return f"{price:,}".replace(",", " ") + " so'm"
