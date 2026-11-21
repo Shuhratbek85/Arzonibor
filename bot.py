@@ -4,9 +4,11 @@ import time
 import html
 import sqlite3
 import threading
-import requests
+from concurrent.futures import ThreadPoolExecutor
 from urllib.parse import quote_plus, urlparse
 from http.server import HTTPServer, BaseHTTPRequestHandler
+import requests
+from bs4 import BeautifulSoup
 import telebot
 from telebot import types
 from ddgs import DDGS
@@ -18,11 +20,22 @@ if not TOKEN:
 bot = telebot.TeleBot(TOKEN, parse_mode="HTML")
 
 # --- SOZLAMALAR ---
-ADMIN_USERNAME = "@Mr_texnoai"
+ADMIN_USERNAME = "mr_texno_ai"
 CHANNELS = [
     {"name": "🤖 Mr Texno AI", "username": "@mrtexnoai", "url": "https://t.me/mrtexnoai"},
     {"name": "🛍 Arzoni Bor", "username": "@arzoniboragent", "url": "https://t.me/arzoniboragent"},
 ]
+
+HEADERS = {
+    "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36",
+    "Accept-Language": "uz-UZ,uz;q=0.9,ru;q=0.8,en;q=0.7",
+}
+
+ACCESSORY_WORDS = (
+    "chexol", "чехол", "case", "g'ilof", "gilof", "oyna", "стекло", "glass",
+    "plenka", "пленка", "himoya", "защит", "kabel", "кабель", "shnur", "шнур",
+    "zaryad", "заряд", "adapter", "адаптер", "remeshok", "ремешок", "kovrik"
+)
 
 # --- RENDER UCHUN WEB SERVER ---
 class HealthHandler(BaseHTTPRequestHandler):
@@ -52,9 +65,16 @@ with db_lock:
         UNIQUE(user_id, query)
     )
     """)
+    conn.execute("""
+    CREATE TABLE IF NOT EXISTS notify_requests (
+        user_id INTEGER,
+        category TEXT,
+        UNIQUE(user_id, category)
+    )
+    """)
     conn.commit()
 
-# --- 6 SOATLIK KESH (XOTIRA LIMITI BILAN) ---
+# --- 6 SOATLIK KESH ---
 CACHE = {}
 CACHE_TTL = 6 * 3600
 MAX_CACHE_ITEMS = 300
@@ -70,11 +90,30 @@ STORES = {
 
 # --- YORDAMCHI FUNKSIYALAR ---
 def safe_callback(prefix, text):
-    """Telegram 64 bayt limitidan oshmasligi uchun xavfsiz qisqartirish"""
     max_bytes = 60 - len(prefix.encode("utf-8"))
     encoded = text.encode("utf-8")[:max_bytes]
     return prefix + encoded.decode("utf-8", errors="ignore")
 
+def format_price(price):
+    return f"{int(price):,}".replace(",", " ") + " so'm"
+
+def is_relevant_product(query, title):
+    q_low = query.lower()
+    t_low = (title or "").lower()
+    if not t_low:
+        return False
+
+    if not any(w in q_low for w in ACCESSORY_WORDS):
+        if any(w in t_low for w in ACCESSORY_WORDS):
+            return False
+
+    words = [w for w in re.findall(r"[a-zA-Zа-яА-Я0-9]+", q_low) if len(w) > 1]
+    if not words:
+        return True
+    matched = sum(1 for w in words if w in t_low)
+    return matched >= max(1, (len(words) + 1) // 2)
+
+# --- MAJBURIY OBUNA ---
 def check_subscription(user_id):
     not_joined = []
     for ch in CHANNELS:
@@ -131,96 +170,222 @@ def get_usd_rates():
     )
     return "\n".join(lines), markup
 
-# --- NARXNI MATNDAN SUG'URIB OLISH (RASSROCHKA FILTRI BILAN) ---
-def extract_price(text):
-    if not text:
+# --- DO'KONLARDAN TO'G'RIDAN-TO'G'RI QIDIRISH ---
+def fetch_olcha(query):
+    try:
+        url = f"https://olcha.uz/api/v2/products?search={quote_plus(query)}&per_page=10"
+        r = requests.get(url, headers=HEADERS, timeout=7)
+        if r.status_code != 200:
+            return None
+        products = r.json().get("data", {}).get("products", [])
+        best = None
+        for p in products:
+            title = p.get("name_uz") or p.get("name_ru") or p.get("name", "")
+            price = p.get("total_price") or p.get("price") or 0
+            alias = p.get("alias", "")
+            if not price or not is_relevant_product(query, title):
+                continue
+            price = int(price)
+            if best is None or price < best["price"]:
+                best = {
+                    "store": "Olcha",
+                    "price": price,
+                    "title": title,
+                    "url": f"https://olcha.uz/uz/product/view/{alias}" if alias else STORES["Olcha"]["search_url"].format(q=quote_plus(query))
+                }
+        return best
+    except Exception as e:
+        print(f"[Olcha] xato: {e}")
         return None
 
-    # Muddatli to'lov (oyiga / в месяц) yozuvlarini olib tashlash
+def fetch_texnomart(query):
+    try:
+        url = f"https://gw.texnomart.uz/api/common/v1/search/result?q={quote_plus(query)}"
+        r = requests.get(url, headers={**HEADERS, "Accept": "application/json"}, timeout=7)
+        if r.status_code != 200:
+            return None
+        products = r.json().get("data", {}).get("products", [])
+        best = None
+        for p in products:
+            title = p.get("name", "")
+            price = p.get("sale_price") or p.get("price") or 0
+            pid = p.get("id", "")
+            if not price or not is_relevant_product(query, title):
+                continue
+            price = int(price)
+            if best is None or price < best["price"]:
+                best = {
+                    "store": "Texnomart",
+                    "price": price,
+                    "title": title,
+                    "url": f"https://texnomart.uz/uz/product/detail/{pid}" if pid else STORES["Texnomart"]["search_url"].format(q=quote_plus(query))
+                }
+        return best
+    except Exception as e:
+        print(f"[Texnomart] xato: {e}")
+        return None
+
+def fetch_asaxiy(query):
+    try:
+        url = f"https://asaxiy.uz/product?key={quote_plus(query)}"
+        r = requests.get(url, headers=HEADERS, timeout=8)
+        if r.status_code != 200:
+            return None
+        soup = BeautifulSoup(r.text, "html.parser")
+        cards = soup.select(".product__item")
+        best = None
+        for card in cards[:12]:
+            title_el = card.select_one(".product__item__info-title")
+            price_el = card.select_one(".product__item-price")
+            link_el = card.select_one("a[href*='/product/']")
+            if not title_el or not price_el:
+                continue
+            title = title_el.get_text(strip=True)
+            digits = re.sub(r"\D", "", price_el.get_text())
+            if not digits or not is_relevant_product(query, title):
+                continue
+            price = int(digits)
+            if price < 10000:
+                continue
+            href = link_el["href"] if link_el and link_el.get("href") else ""
+            full_url = href if href.startswith("http") else f"https://asaxiy.uz{href}"
+            if best is None or price < best["price"]:
+                best = {
+                    "store": "Asaxiy",
+                    "price": price,
+                    "title": title,
+                    "url": full_url
+                }
+        return best
+    except Exception as e:
+        print(f"[Asaxiy] xato: {e}")
+        return None
+
+def fetch_uzum(query):
+    try:
+        gql_url = "https://graphql.uzum.uz/"
+        payload = {
+            "operationName": "getMakeSearch",
+            "variables": {
+                "queryInput": {
+                    "text": query,
+                    "showAdultContent": "NONE",
+                    "filters": [],
+                    "sort": "BY_RELEVANCE_DESC",
+                    "pagination": {"offset": 0, "limit": 12}
+                }
+            },
+            "query": """
+            query getMakeSearch($queryInput: MakeSearchQueryInput!) {
+              makeSearch(query: $queryInput) {
+                items {
+                  catalogCard {
+                    productId
+                    title
+                    minSellPrice
+                  }
+                }
+              }
+            }
+            """
+        }
+        headers = {
+            **HEADERS,
+            "Content-Type": "application/json",
+            "Origin": "https://uzum.uz",
+            "Referer": "https://uzum.uz/",
+            "apollographql-client-name": "web-customers",
+            "apollographql-client-version": "1.0.0",
+        }
+        r = requests.post(gql_url, json=payload, headers=headers, timeout=7)
+        if r.status_code != 200:
+            return None
+        items = r.json().get("data", {}).get("makeSearch", {}).get("items", [])
+        best = None
+        for item in items:
+            card = item.get("catalogCard") or {}
+            title = card.get("title", "")
+            price = card.get("minSellPrice") or 0
+            pid = card.get("productId", "")
+            if not price or not is_relevant_product(query, title):
+                continue
+            price = int(price)
+            if best is None or price < best["price"]:
+                best = {
+                    "store": "Uzum Market",
+                    "price": price,
+                    "title": title,
+                    "url": f"https://uzum.uz/uz/product/{pid}" if pid else STORES["Uzum Market"]["search_url"].format(q=quote_plus(query))
+                }
+        return best
+    except Exception as e:
+        print(f"[Uzum] xato: {e}")
+        return None
+
+# --- ZAXIRA (DDGS) ---
+def extract_price_fallback(text):
+    if not text:
+        return None
     cleaned = re.sub(
-        r'(\d{1,3}(?:[\s\u00a0.,]\d{3})+)\s*(?:so[\'‘’`]?m|сум|uzs|сўм)?\s*(?:/|dan)?\s*(?:oyiga|oy|в\s*месяц|мес)',
+        r'(?:oyiga|в\s*месяц)?\s*(\d{1,3}(?:[\s\u00a0.,]\d{3})+)\s*(?:so[\'‘’`]?m|сум|uzs|сўм)?\s*(?:/|dan)?\s*(?:oyiga|oy|в\s*месяц|мес)',
         '',
         text,
         flags=re.IGNORECASE
     )
-
-    patterns = [
-        r'(\d{1,3}(?:[\s\u00a0.,]\d{3})+)\s*(?:so[\'‘’`]?m|сум|uzs|сўм)',
-        r'(?:uzs|сум|so[\'‘’`]?m)\s*(\d{1,3}(?:[\s\u00a0.,]\d{3})+)',
-        r'(\d{6,9})\s*(?:so[\'‘’`]?m|сум|uzs|сўм)'
-    ]
-    found = []
-    for pattern in patterns:
-        matches = re.findall(pattern, cleaned, re.IGNORECASE)
-        for m in matches:
-            clean_num = int(re.sub(r'\D', '', m))
-            if 50000 <= clean_num <= 200000000:
-                found.append(clean_num)
-
-    # Agar bir nechta narx chiqsa, eng kichik oylik to'lov emas, asosiy narxni olish uchun
+    matches = re.findall(r'(\d{1,3}(?:[\s\u00a0.,]\d{3})+)\s*(?:so[\'‘’`]?m|сум|uzs|сўм)', cleaned, re.IGNORECASE)
+    found = [int(re.sub(r'\D', '', m)) for m in matches if 100000 <= int(re.sub(r'\D', '', m)) <= 200000000]
     return min(found) if found else None
 
-def format_price(price):
-    return f"{price:,}".replace(",", " ") + " so'm"
+def search_ddg_fallback(query):
+    results = []
+    seen = set()
+    try:
+        with DDGS() as ddgs:
+            res = list(ddgs.text(f"{query} narxi so'm uz", region="wt-wt", max_results=10))
+            for item in res:
+                url = item.get("href", "")
+                domain = urlparse(url).netloc.lower().replace("www.", "")
+                if not domain.endswith(".uz"):
+                    continue
+                store = next((n for n, i in STORES.items() if i["domain"] in domain), domain.split(".")[0].capitalize() + " (.uz)")
+                if store in seen:
+                    continue
+                title = item.get("title", "")
+                body = item.get("body", "")
+                if not is_relevant_product(query, title):
+                    continue
+                price = extract_price_fallback(f"{title} {body}")
+                if price:
+                    seen.add(store)
+                    results.append({"store": store, "price": price, "title": title, "url": url})
+    except Exception as e:
+        print(f"[DDGS fallback] xato: {e}")
+    return results
 
-def get_store_name(url):
-    domain = urlparse(url).netloc.lower().replace("www.", "")
-    for name, info in STORES.items():
-        if info["domain"] in domain:
-            return name
-    if domain.endswith(".uz"):
-        return domain.split(".")[0].capitalize() + " (.uz)"
-    return None
-
-# --- DDGS ORQALI QIDIRUV ---
-def search_prices_ddg(query):
+# --- ASOSIY QIDIRUV ---
+def search_prices(query):
     key = query.lower().strip()
     now = time.time()
     if key in CACHE and (now - CACHE[key]["time"] < CACHE_TTL):
         return CACHE[key]["data"]
 
-    raw_results = []
-    queries = [
-        f"{query} narxi so'm uz",
-        f"{query} цена сум ташкент"
-    ]
-
-    for q in queries:
-        try:
-            with DDGS() as ddgs:
-                res = list(ddgs.text(q, region="wt-wt", max_results=12))
-                print(f"[DDGS] '{q}' -> {len(res)} ta natija")
-                raw_results.extend(res)
-        except Exception as e:
-            print(f"[DDGS] xato ({q}): {e}")
-        time.sleep(0.5)
-
+    fetchers = [fetch_olcha, fetch_texnomart, fetch_asaxiy, fetch_uzum]
     results = []
-    seen_stores = set()
+    with ThreadPoolExecutor(max_workers=4) as executor:
+        futures = [executor.submit(fn, query) for fn in fetchers]
+        for f in futures:
+            res = f.result()
+            if res:
+                results.append(res)
 
-    for item in raw_results:
-        url = item.get("href", "")
-        title = item.get("title", "")
-        body = item.get("body", "")
-        full_text = f"{title} {body}"
+    print(f"[SEARCH] '{query}' -> to'g'ridan-to'g'ri {len(results)} ta do'kon topildi")
 
-        store_name = get_store_name(url)
-        if not store_name or store_name in seen_stores:
-            continue
-
-        price = extract_price(full_text)
-        if price:
-            seen_stores.add(store_name)
-            results.append({
-                "store": store_name,
-                "price": price,
-                "url": url
-            })
+    if not results:
+        results = search_ddg_fallback(query)
 
     results.sort(key=lambda x: x["price"])
     results = results[:8]
 
-    # Faqat natija topilgandagina keshlaymiz!
     if results:
         if len(CACHE) >= MAX_CACHE_ITEMS:
             CACHE.clear()
@@ -263,8 +428,7 @@ def start_cmd(message):
     text = (
         "🤖 <b>Arzoni Bor</b>: O'zbekiston onlayn do'konlarida mahsulot narxlarini solishtirish boti.\n\n"
         "🔍 Shunchaki mahsulot nomini yozing (masalan: <i>Redmi Note 13</i> yoki <i>iPhone 16</i>).\n\n"
-        "⚠️ <i>Narxlar avtomatik qidiruv orqali olinadi va do'konda o'zgargan bo'lishi mumkin. "
-        "Xarid qilishdan oldin saytda tekshiring.</i>"
+        "⚠️ <i>Narxlar do'konlardan jonli olinadi. Xarid qilishdan oldin saytda tekshiring.</i>"
     )
     bot.send_message(message.chat.id, text, reply_markup=main_menu())
 
@@ -288,10 +452,42 @@ def categories(message):
     if not require_sub(message):
         return
     markup = types.InlineKeyboardMarkup(row_width=2)
-    cats = ["Smartfon", "Noutbuk", "Televizor", "Konditsioner", "Kir yuvish mashinasi", "Muzlatkich"]
-    markup.add(*[types.InlineKeyboardButton(c, callback_data=safe_callback("search:", c)) for c in cats])
-    markup.add(types.InlineKeyboardButton("💵 Dollar kursi (Banklar)", callback_data="usd_rates"))
-    bot.send_message(message.chat.id, "📁 Kategoriyani tanlang:", reply_markup=markup)
+
+    active_cats = [
+        ("📱 Smartfonlar", "Smartfon"),
+        ("🏠 Maishiy texnika", "Maishiy texnika"),
+        ("💻 Noutbuklar", "Noutbuk"),
+        ("📺 Televizorlar", "Televizor"),
+        ("🎧 Aksessuarlar", "Aksessuarlar"),
+    ]
+    markup.add(*[
+        types.InlineKeyboardButton(label, callback_data=safe_callback("search:", query))
+        for label, query in active_cats
+    ])
+    markup.add(types.InlineKeyboardButton("💵 Dollar kursi (Jonli)", callback_data="usd_rates"))
+
+    soon_cats = [
+        "🏦 Bank va Valyuta",
+        "🏢 Uy-joy",
+        "🛒 Oziq-ovqat",
+        "💊 Dorixona",
+        "✈️ Aviachipta",
+        "🚗 Avto va Sug'urta",
+        "📡 Aloqa va Internet",
+        "🧱 Qurilish mollari",
+        "🏥 Klinikalar",
+    ]
+    markup.add(*[
+        types.InlineKeyboardButton(f"{c} (⏳)", callback_data=safe_callback("soon:", c))
+        for c in soon_cats
+    ])
+
+    text = (
+        "📁 <b>Kategoriyani tanlang:</b>\n\n"
+        "✅ Yuqoridagi bo‘limlar hozir jonli ishlaydi.\n"
+        "⏳ Belgili bo‘limlar esa <b>tez kunda</b> ishga tushadi."
+    )
+    bot.send_message(message.chat.id, text, reply_markup=markup)
 
 @bot.message_handler(func=lambda m: m.text == "💵 Dollar kursi")
 def dollar_cmd(message):
@@ -326,7 +522,7 @@ def show_favorites(message):
 def help_cmd(message):
     text = (
         "ℹ️ <b>Yordam va Aloqa</b>\n\n"
-        "• <b>Qanday ishlaydi?</b> Istalgan mahsulot nomini yozing — bot O'zbekistonning yirik do'konlaridagi narxlarni qidirib beradi.\n"
+        "• <b>Qanday ishlaydi?</b> Istalgan mahsulot nomini yozing — bot O'zbekistonning yirik do'konlaridagi jonli narxlarni solishtirib beradi.\n"
         "• <b>Dollar kursi:</b> «💵 Dollar kursi» tugmasi orqali kunlik kurslarni kuzatib boring.\n"
         "• <b>Savol yoki taklif bormi?</b> Quyidagi tugma orqali adminga yozing 👇"
     )
@@ -336,11 +532,11 @@ def help_cmd(message):
 
 def process_search(chat_id, query):
     safe_q = html.escape(query)
-    wait_msg = bot.send_message(chat_id, f"🔍 <b>{safe_q}</b> narxlari qidirilmoqda...")
-    results = search_prices_ddg(query)
+    wait_msg = bot.send_message(chat_id, f"🔍 <b>{safe_q}</b> narxlari do'konlardan qidirilmoqda...")
+    results = search_prices(query)
 
     if results:
-        lines = [f"🔎 <b>{safe_q}</b> bo'yicha topilgan narxlar:\n"]
+        lines = [f"🔎 <b>{safe_q}</b> bo'yicha jonli narxlar:\n"]
         for idx, r in enumerate(results, 1):
             medal = "🏆 " if idx == 1 else f"{idx}. "
             safe_store = html.escape(r["store"])
@@ -395,6 +591,33 @@ def handle_callbacks(call):
             bot.delete_message(call.message.chat.id, call.message.message_id)
         except Exception:
             pass
+    elif call.data.startswith("soon:"):
+        cat = call.data.split("soon:", 1)[1]
+        bot.answer_callback_query(call.id)
+        markup = types.InlineKeyboardMarkup()
+        markup.add(types.InlineKeyboardButton(
+            "🔔 Ochilganda xabar berish",
+            callback_data=safe_callback("notify:", cat)
+        ))
+        text = (
+            f"⏳ <b>{html.escape(cat)}</b>\n\n"
+            "Bu bo‘lim ustida ish olib boryapmiz va tez kunda ishga tushadi.\n"
+            "Ochilishi bilan birinchilardan bo‘lib bilish uchun pastdagi tugmani bosing 👇"
+        )
+        bot.send_message(call.message.chat.id, text, reply_markup=markup)
+    elif call.data.startswith("notify:"):
+        cat = call.data.split("notify:", 1)[1]
+        with db_lock:
+            conn.execute(
+                "INSERT OR IGNORE INTO notify_requests (user_id, category) VALUES (?, ?)",
+                (call.from_user.id, cat)
+            )
+            conn.commit()
+        bot.answer_callback_query(
+            call.id,
+            f"✅ Saqlandi! «{cat}» ochilganda sizga xabar beramiz.",
+            show_alert=True
+        )
 
 @bot.message_handler(func=lambda m: True)
 def handle_text(message):
@@ -409,5 +632,5 @@ def handle_text(message):
 
 if __name__ == "__main__":
     threading.Thread(target=run_web_server, daemon=True).start()
-    print("Arzoni Bor ishga tushdi!")
+    print("Arzoni Bor (Jonli do'konlar + Kategoriyalar) ishga tushdi!")
     bot.infinity_polling(skip_pending=True)
