@@ -20,7 +20,7 @@ if not TOKEN:
 bot = telebot.TeleBot(TOKEN, parse_mode="HTML")
 
 # --- SOZLAMALAR ---
-ADMIN_USERNAME = "@Mrtexno_ai"
+ADMIN_ID = 565834132
 CHANNELS = [
     {"name": "🤖 Mr Texno AI", "username": "@mrtexnoai", "url": "https://t.me/mrtexnoai"},
     {"name": "🛍 Arzoni Bor", "username": "@arzoniboragent", "url": "https://t.me/arzoniboragent"},
@@ -72,7 +72,28 @@ with db_lock:
         UNIQUE(user_id, category)
     )
     """)
+    conn.execute("""
+    CREATE TABLE IF NOT EXISTS support_messages (
+        admin_msg_id INTEGER PRIMARY KEY,
+        user_id INTEGER
+    )
+    """)
     conn.commit()
+
+# --- FOYDALANUVCHI HOLATLARI (MUROJAAT YUBORISH) ---
+waiting_admin_msg = set()
+waiting_lock = threading.Lock()
+
+def set_waiting_admin(user_id, state=True):
+    with waiting_lock:
+        if state:
+            waiting_admin_msg.add(user_id)
+        else:
+            waiting_admin_msg.discard(user_id)
+
+def is_waiting_admin(user_id):
+    with waiting_lock:
+        return user_id in waiting_admin_msg
 
 # --- 6 SOATLIK KESH ---
 CACHE = {}
@@ -385,7 +406,7 @@ def search_prices(query):
 
     print(f"[SEARCH] '{query}' -> to'g'ridan-to'g'ri {len(results)} ta do'kon topildi")
 
-    if len(results) < 3:
+    if len(results) < 2:
         existing = {r["store"] for r in results}
         for item in search_ddg_fallback(query):
             if item["store"] not in existing:
@@ -428,9 +449,38 @@ def store_buttons(query):
     ))
     return markup
 
+# --- ADMIN JAVOBINI FOYDALANUVCHIGA YUBORISH ---
+@bot.message_handler(func=lambda m: m.from_user and m.from_user.id == ADMIN_ID and m.reply_to_message)
+def admin_reply_handler(message):
+    replied_id = message.reply_to_message.message_id
+    with db_lock:
+        row = conn.execute(
+            "SELECT user_id FROM support_messages WHERE admin_msg_id = ?",
+            (replied_id,)
+        ).fetchone()
+
+    if not row:
+        return
+
+    target_user_id = row[0]
+    reply_text = (message.text or "").strip()
+    if not reply_text:
+        bot.reply_to(message, "Faqat matnli javob yuboring.")
+        return
+
+    try:
+        bot.send_message(
+            target_user_id,
+            f"📩 <b>Admin javobi:</b>\n\n{html.escape(reply_text)}"
+        )
+        bot.reply_to(message, "✅ Javob foydalanuvchiga yuborildi.")
+    except Exception as e:
+        bot.reply_to(message, f"❌ Yuborishda xato: {html.escape(str(e))}")
+
 # --- HANDLERLAR ---
 @bot.message_handler(commands=["start"])
 def start_cmd(message):
+    set_waiting_admin(message.from_user.id, False)
     if not require_sub(message):
         return
 
@@ -441,14 +491,24 @@ def start_cmd(message):
     )
     bot.send_message(message.chat.id, text, reply_markup=main_menu())
 
+@bot.message_handler(commands=["cancel"])
+def cancel_cmd(message):
+    if is_waiting_admin(message.from_user.id):
+        set_waiting_admin(message.from_user.id, False)
+        bot.send_message(message.chat.id, "❌ Murojaat yuborish bekor qilindi.", reply_markup=main_menu())
+    else:
+        bot.send_message(message.chat.id, "Asosiy menyu:", reply_markup=main_menu())
+
 @bot.message_handler(func=lambda m: m.text and "Mahsulot qidirish" in m.text)
 def ask_product(message):
+    set_waiting_admin(message.from_user.id, False)
     if not require_sub(message):
         return
     bot.send_message(message.chat.id, "Qaysi mahsulot narxini bilmoqchisiz? Nomini yozing 👇")
 
 @bot.message_handler(func=lambda m: m.text and "Mashhur tovarlar" in m.text)
 def popular_products(message):
+    set_waiting_admin(message.from_user.id, False)
     if not require_sub(message):
         return
     markup = types.InlineKeyboardMarkup(row_width=2)
@@ -458,6 +518,7 @@ def popular_products(message):
 
 @bot.message_handler(func=lambda m: m.text and "Kategoriyalar" in m.text)
 def categories(message):
+    set_waiting_admin(message.from_user.id, False)
     if not require_sub(message):
         return
     markup = types.InlineKeyboardMarkup(row_width=2)
@@ -500,6 +561,7 @@ def categories(message):
 
 @bot.message_handler(func=lambda m: m.text and "Dollar kursi" in m.text)
 def dollar_cmd(message):
+    set_waiting_admin(message.from_user.id, False)
     if not require_sub(message):
         return
     text, markup = get_usd_rates()
@@ -507,6 +569,7 @@ def dollar_cmd(message):
 
 @bot.message_handler(func=lambda m: m.text and "Sevimlilar" in m.text)
 def show_favorites(message):
+    set_waiting_admin(message.from_user.id, False)
     if not require_sub(message):
         return
     with db_lock:
@@ -529,14 +592,15 @@ def show_favorites(message):
 
 @bot.message_handler(func=lambda m: m.text and ("Yordam / Aloqa" in m.text or "Bot haqida" in m.text))
 def help_cmd(message):
+    set_waiting_admin(message.from_user.id, False)
     text = (
         "ℹ️ <b>Yordam va Aloqa</b>\n\n"
         "• <b>Qanday ishlaydi?</b> Istalgan mahsulot nomini yozing — bot O'zbekistonning yirik do'konlaridagi jonli narxlarni solishtirib beradi.\n"
         "• <b>Dollar kursi:</b> «💵 Dollar kursi» tugmasi orqali kunlik kurslarni kuzatib boring.\n"
-        "• <b>Savol yoki taklif bormi?</b> Quyidagi tugma orqali adminga yozing 👇"
+        "• <b>Savol yoki taklif bormi?</b> Quyidagi tugma orqali adminga to'g'ridan-to'g'ri xabar yuboring 👇"
     )
     markup = types.InlineKeyboardMarkup()
-    markup.add(types.InlineKeyboardButton("✍️ Adminga yozish", url=f"https://t.me/{ADMIN_USERNAME}"))
+    markup.add(types.InlineKeyboardButton("✍️ Adminga yozish", callback_data="contact_admin"))
     bot.send_message(message.chat.id, text, reply_markup=markup)
 
 def process_search(chat_id, query):
@@ -576,6 +640,15 @@ def handle_callbacks(call):
             except Exception:
                 pass
             bot.send_message(call.message.chat.id, "Xush kelibsiz! Mahsulot nomini yozing 👇", reply_markup=main_menu())
+    elif call.data == "contact_admin":
+        bot.answer_callback_query(call.id)
+        set_waiting_admin(call.from_user.id, True)
+        bot.send_message(
+            call.message.chat.id,
+            "✍️ <b>Adminga xabar yuborish</b>\n\n"
+            "Savol, taklif yoki murojaatingizni yozib yuboring — uni adminga yetkazaman.\n"
+            "Bekor qilish uchun <code>/cancel</code> deb yozing."
+        )
     elif call.data == "usd_rates":
         bot.answer_callback_query(call.id)
         text, markup = get_usd_rates()
@@ -630,14 +703,53 @@ def handle_callbacks(call):
 
 @bot.message_handler(func=lambda m: True)
 def handle_text(message):
+    user = message.from_user
+    text = (message.text or "").strip()
+
+    if is_waiting_admin(user.id):
+        set_waiting_admin(user.id, False)
+        if not text:
+            bot.send_message(message.chat.id, "Bo'sh xabar yuborib bo'lmaydi. Qaytadan urinib ko'ring.")
+            return
+
+        uname = f"@{user.username}" if user.username else "yo'q"
+        admin_text = (
+            "📩 <b>Yangi murojaat (Arzoni Bor)</b>\n\n"
+            f"👤 <b>Foydalanuvchi:</b> {html.escape(user.full_name or 'Noma’lum')}\n"
+            f"🔗 <b>Username:</b> {html.escape(uname)}\n"
+            f"🆔 <b>ID:</b> <code>{user.id}</code>\n\n"
+            f"💬 <b>Xabar:</b>\n{html.escape(text)}\n\n"
+            "<i>Javob berish uchun ushbu xabarga Reply qilib yozing.</i>"
+        )
+        try:
+            sent = bot.send_message(ADMIN_ID, admin_text)
+            with db_lock:
+                conn.execute(
+                    "INSERT OR REPLACE INTO support_messages (admin_msg_id, user_id) VALUES (?, ?)",
+                    (sent.message_id, user.id)
+                )
+                conn.commit()
+            bot.send_message(
+                message.chat.id,
+                "✅ Xabaringiz adminga yuborildi! Tez orada javob beramiz.",
+                reply_markup=main_menu()
+            )
+        except Exception as e:
+            print(f"[ADMIN MSG] xato: {e}")
+            bot.send_message(
+                message.chat.id,
+                "❌ Hozircha xabar yuborishda texnik uzilish bo'ldi. Keyinroq urinib ko'ring.",
+                reply_markup=main_menu()
+            )
+        return
+
     if not require_sub(message):
         return
 
-    query = (message.text or "").strip()
-    if len(query) < 2:
+    if len(text) < 2:
         bot.send_message(message.chat.id, "Iltimos, mahsulot nomini to'liqroq yozing.")
         return
-    process_search(message.chat.id, query)
+    process_search(message.chat.id, text)
 
 if __name__ == "__main__":
     threading.Thread(target=run_web_server, daemon=True).start()
