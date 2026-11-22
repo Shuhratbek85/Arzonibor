@@ -8,15 +8,14 @@
   <style>
     :root {
       --navy: #0A3761;
-      --navy-dark: #072847;
+      --bg: #12161A;
+      --card: #1E242B;
+      --card-hover: #252C35;
       --orange: #FF6600;
-      --orange-hover: #E65C00;
-      --green: #0E8A44;
-      --bg: #F3F5F8;
-      --card: #FFFFFF;
-      --text: #1A222D;
-      --muted: #5F6B7A;
-      --border: #E2E7EE;
+      --green: #22C55E;
+      --text: #F1F5F9;
+      --muted: #94A3B8;
+      --border: #2B333E;
       --radius: 12px;
     }
 
@@ -26,95 +25,138 @@
       font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
       background: var(--bg);
       color: var(--text);
-      padding-bottom: 78px;
+      padding-bottom: 72px;
       overflow-x: hidden;
+      font-weight: 400;
+      -webkit-font-smoothing: antialiased;
     }
 
-    /* HEADER (Idealo uslubida) */
+    /* HEADER (Idealo Dark Mode) */
     .header {
-      background: var(--navy);
-      color: #fff;
-      padding: 14px 16px 16px;
+      background: linear-gradient(180deg, var(--navy) 0%, #0D2640 75%, var(--bg) 100%);
+      padding: 12px 14px 14px;
       position: sticky;
       top: 0;
       z-index: 20;
-      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.12);
     }
 
     .brand-row {
       display: flex;
       align-items: center;
       justify-content: space-between;
-      margin-bottom: 12px;
+      margin-bottom: 10px;
     }
 
     .brand {
-      font-size: 20px;
-      font-weight: 800;
-      letter-spacing: -0.3px;
+      font-size: 18px;
+      font-weight: 600;
+      letter-spacing: -0.2px;
+      color: #fff;
     }
-
     .brand span { color: var(--orange); }
 
-    .badge-live {
+    .live-dot {
       font-size: 11px;
-      background: rgba(255,255,255,0.14);
-      padding: 4px 8px;
-      border-radius: 20px;
-      font-weight: 600;
+      color: #CBD5E1;
+      display: flex;
+      align-items: center;
+      gap: 5px;
+    }
+    .live-dot::before {
+      content: "";
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: var(--green);
+      display: inline-block;
     }
 
-    .search-box {
+    /* SLEEK SEARCH BAR */
+    .search-wrap {
+      position: relative;
       display: flex;
-      gap: 8px;
+      align-items: center;
     }
 
     .search-input {
-      flex: 1;
-      height: 44px;
-      border: none;
+      width: 100%;
+      height: 42px;
+      border: 1px solid rgba(255,255,255,0.12);
       border-radius: 10px;
-      padding: 0 14px;
-      font-size: 15px;
+      padding: 0 42px 0 14px;
+      font-size: 14px;
+      font-weight: 400;
       outline: none;
       color: var(--text);
-      background: #fff;
+      background: #1B222C;
     }
+    .search-input::placeholder { color: var(--muted); }
+    .search-input:focus { border-color: var(--orange); }
 
-    .search-btn {
-      height: 44px;
-      min-width: 48px;
-      padding: 0 16px;
+    .search-icon-btn {
+      position: absolute;
+      right: 4px;
+      width: 36px;
+      height: 36px;
       border: none;
-      border-radius: 10px;
-      background: var(--orange);
-      color: #fff;
-      font-size: 15px;
-      font-weight: 700;
+      background: transparent;
+      color: var(--muted);
+      display: flex;
+      align-items: center;
+      justify-content: center;
       cursor: pointer;
     }
 
-    .search-btn:active { background: var(--orange-hover); }
+    /* LIVE RATES TICKER (Home screen) */
+    .ticker-bar {
+      display: flex;
+      gap: 8px;
+      overflow-x: auto;
+      padding: 4px 14px 10px;
+      scrollbar-width: none;
+    }
+    .ticker-bar::-webkit-scrollbar { display: none; }
 
-    /* CONTENT */
-    .container { padding: 14px 14px 20px; }
+    .ticker-pill {
+      white-space: nowrap;
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 6px 10px;
+      font-size: 12px;
+      color: var(--muted);
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      cursor: pointer;
+    }
+    .ticker-pill b {
+      color: var(--text);
+      font-weight: 500;
+    }
+    .ticker-pill.btc b { color: var(--orange); }
+
+    /* CONTAINER */
+    .container { padding: 8px 14px 20px; }
 
     .section-title {
-      font-size: 15px;
-      font-weight: 700;
-      color: var(--navy);
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--muted);
       margin-bottom: 10px;
       display: flex;
       align-items: center;
       justify-content: space-between;
+      text-transform: uppercase;
+      letter-spacing: 0.4px;
     }
 
     /* CHIPS */
     .chips {
       display: flex;
-      gap: 8px;
+      gap: 7px;
       overflow-x: auto;
-      padding-bottom: 6px;
+      padding-bottom: 4px;
       margin-bottom: 14px;
       scrollbar-width: none;
     }
@@ -125,148 +167,177 @@
       background: var(--card);
       border: 1px solid var(--border);
       color: var(--text);
-      padding: 9px 14px;
-      border-radius: 20px;
-      font-size: 13px;
-      font-weight: 600;
+      padding: 7px 12px;
+      border-radius: 18px;
+      font-size: 12.5px;
+      font-weight: 400;
       cursor: pointer;
-      min-height: 38px;
     }
-    .chip:active { background: #E9EFF6; }
+    .chip:active { background: var(--card-hover); }
 
     /* CARDS */
     .card {
       background: var(--card);
       border: 1px solid var(--border);
       border-radius: var(--radius);
-      padding: 14px;
+      padding: 12px;
       margin-bottom: 10px;
-      box-shadow: 0 1px 3px rgba(10, 55, 97, 0.04);
-    }
-
-    .offer-card {
-      display: flex;
-      flex-direction: column;
-      gap: 10px;
     }
 
     .offer-top {
       display: flex;
+      align-items: center;
       justify-content: space-between;
-      align-items: flex-start;
-      gap: 10px;
+      margin-bottom: 5px;
     }
 
     .store-name {
-      font-size: 15px;
-      font-weight: 700;
-      color: var(--navy);
+      font-size: 13px;
+      font-weight: 500;
+      color: #CBD5E1;
     }
 
     .best-badge {
-      display: inline-block;
-      background: #E6F6EC;
-      color: var(--green);
-      font-size: 11px;
-      font-weight: 700;
-      padding: 3px 8px;
-      border-radius: 6px;
-      margin-left: 6px;
+      background: rgba(255, 102, 0, 0.16);
+      color: var(--orange);
+      font-size: 10.5px;
+      font-weight: 500;
+      padding: 2px 7px;
+      border-radius: 5px;
     }
 
     .offer-title {
       font-size: 13px;
+      font-weight: 400;
       color: var(--muted);
-      line-height: 1.35;
+      line-height: 1.38;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+      margin-bottom: 10px;
     }
 
     .offer-bottom {
       display: flex;
       align-items: center;
       justify-content: space-between;
-      gap: 10px;
-      padding-top: 8px;
+      padding-top: 9px;
       border-top: 1px solid var(--border);
     }
 
     .price {
-      font-size: 18px;
-      font-weight: 800;
+      font-size: 16px;
+      font-weight: 600;
       color: var(--text);
     }
-
-    .price.cheapest { color: var(--green); }
+    .price.cheapest { color: var(--orange); }
 
     .go-btn {
-      background: var(--orange);
-      color: #fff;
-      text-decoration: none;
-      padding: 10px 16px;
-      border-radius: 9px;
-      font-size: 14px;
-      font-weight: 700;
-      min-height: 44px;
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      border: none;
+      background: transparent;
+      color: var(--text);
+      border: 1px solid var(--border);
+      padding: 6px 12px;
+      border-radius: 8px;
+      font-size: 12.5px;
+      font-weight: 500;
       cursor: pointer;
     }
-    .go-btn:active { background: var(--orange-hover); }
+    .go-btn.primary {
+      background: var(--orange);
+      border-color: var(--orange);
+      color: #fff;
+    }
+    .go-btn:active { opacity: 0.85; }
 
     .fav-btn {
-      background: #F3F5F8;
-      color: var(--navy);
+      background: transparent;
+      color: var(--muted);
       border: 1px solid var(--border);
-      padding: 8px 12px;
+      padding: 5px 10px;
       border-radius: 8px;
-      font-size: 13px;
-      font-weight: 600;
+      font-size: 12px;
+      font-weight: 400;
       cursor: pointer;
     }
 
-    /* GRID */
-    .grid-2 {
+    /* ROUND CATEGORIES (Idealo style) */
+    .cat-grid {
       display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 10px;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 12px;
     }
 
-    .cat-card {
-      background: var(--card);
-      border: 1px solid var(--border);
-      border-radius: var(--radius);
-      padding: 16px 12px;
-      text-align: center;
-      font-weight: 700;
-      font-size: 14px;
-      color: var(--navy);
+    .cat-item {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 7px;
       cursor: pointer;
-      min-height: 64px;
+      padding: 6px 4px;
+    }
+
+    .cat-circle {
+      width: 54px;
+      height: 54px;
+      border-radius: 50%;
+      background: #232B35;
+      border: 1px solid var(--border);
       display: flex;
       align-items: center;
       justify-content: center;
+      color: var(--text);
     }
-    .cat-card:active { background: #EBF1F8; }
+    .cat-item:active .cat-circle { border-color: var(--orange); }
+
+    .cat-label {
+      font-size: 12px;
+      color: var(--text);
+      font-weight: 400;
+      text-align: center;
+    }
+
+    /* STORE GRID */
+    .grid-2 {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+    }
 
     .store-grid-btn {
       background: var(--card);
       border: 1px solid var(--border);
-      border-radius: 10px;
-      padding: 12px;
+      border-radius: 9px;
+      padding: 10px;
       text-align: center;
-      font-size: 13px;
-      font-weight: 700;
-      color: var(--navy);
+      font-size: 12.5px;
+      font-weight: 500;
+      color: var(--text);
       cursor: pointer;
-      min-height: 44px;
     }
 
-    /* SKELETON & STATES */
-    .skeleton {
-      height: 92px;
+    /* RATES CARDS */
+    .rate-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 12px;
+      background: var(--card);
+      border: 1px solid var(--border);
       border-radius: var(--radius);
-      background: linear-gradient(90deg, #E7ECF2 25%, #F2F5F9 50%, #E7ECF2 75%);
+      margin-bottom: 8px;
+    }
+    .rate-left { display: flex; flex-direction: column; gap: 2px; }
+    .rate-code { font-size: 14px; font-weight: 500; color: var(--text); }
+    .rate-sub { font-size: 11.5px; color: var(--muted); }
+    .rate-val { font-size: 15px; font-weight: 600; color: var(--text); text-align: right; }
+    .rate-diff { font-size: 11.5px; color: var(--muted); text-align: right; }
+
+    /* SKELETON & EMPTY */
+    .skeleton {
+      height: 84px;
+      border-radius: var(--radius);
+      background: linear-gradient(90deg, #1E242B 25%, #272F38 50%, #1E242B 75%);
       background-size: 200% 100%;
       animation: shimmer 1.2s infinite;
       margin-bottom: 10px;
@@ -278,20 +349,20 @@
 
     .empty-box {
       text-align: center;
-      padding: 28px 16px;
+      padding: 24px 14px;
       color: var(--muted);
-      font-size: 14px;
+      font-size: 13px;
       line-height: 1.5;
     }
 
-    /* BOTTOM TAB BAR */
+    /* BOTTOM TAB BAR (SVG Icons) */
     .tabbar {
       position: fixed;
       bottom: 0;
       left: 0;
       right: 0;
-      height: 64px;
-      background: #fff;
+      height: 60px;
+      background: #161B22;
       border-top: 1px solid var(--border);
       display: grid;
       grid-template-columns: repeat(4, 1fr);
@@ -305,17 +376,14 @@
       flex-direction: column;
       align-items: center;
       justify-content: center;
-      gap: 3px;
-      font-size: 11px;
-      font-weight: 600;
+      gap: 4px;
+      font-size: 10.5px;
+      font-weight: 400;
       color: var(--muted);
       cursor: pointer;
-      min-height: 44px;
     }
-
-    .tab .icon { font-size: 19px; }
-    .tab.active { color: var(--navy); }
-    .tab.active .icon { transform: scale(1.08); }
+    .tab svg { width: 20px; height: 20px; stroke: currentColor; fill: none; stroke-width: 1.8; }
+    .tab.active { color: var(--orange); font-weight: 500; }
 
     .hidden { display: none !important; }
   </style>
@@ -325,18 +393,30 @@
   <header class="header">
     <div class="brand-row">
       <div class="brand">Arzoni<span>Bor</span></div>
-      <div class="badge-live">Jonli narxlar</div>
+      <div class="live-dot">Jonli narxlar</div>
     </div>
-    <form class="search-box" id="searchForm">
-      <input id="searchInput" class="search-input" type="search" placeholder="Masalan: iPhone 16 Pro, Redmi..." autocomplete="off" />
-      <button class="search-btn" type="submit">Izlash</button>
+    <form class="search-wrap" id="searchForm">
+      <input id="searchInput" class="search-input" type="search" placeholder="Mahsulot nomini yozing (iPhone, Redmi...)" autocomplete="off" />
+      <button class="search-icon-btn" type="submit" aria-label="Qidirish">
+        <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" fill="none" stroke-width="2">
+          <circle cx="11" cy="11" r="7"></circle><line x1="20" y1="20" x2="16.65" y2="16.65"></line>
+        </svg>
+      </button>
     </form>
   </header>
+
+  <!-- LIVE TICKER (Visible immediately on launch) -->
+  <div class="ticker-bar" id="tickerBar" onclick="switchTab('rates')">
+    <div class="ticker-pill">USD <b id="t-usd">...</b></div>
+    <div class="ticker-pill">EUR <b id="t-eur">...</b></div>
+    <div class="ticker-pill">RUB <b id="t-rub">...</b></div>
+    <div class="ticker-pill btc">BTC <b id="t-btc">...</b></div>
+  </div>
 
   <main class="container">
     <!-- TAB 1: QIDIRUV -->
     <section id="tab-search">
-      <div class="chips" id="popularChips">
+      <div class="chips">
         <button class="chip" data-q="iPhone 16 Pro">iPhone 16 Pro</button>
         <button class="chip" data-q="Redmi Note 13">Redmi Note 13</button>
         <button class="chip" data-q="Samsung A55">Samsung A55</button>
@@ -347,32 +427,49 @@
 
       <div id="resultsHeader" class="section-title hidden">
         <span id="resultsTitle">Natijalar</span>
-        <button id="saveFavBtn" class="fav-btn">❤️ Saqlash</button>
+        <button id="saveFavBtn" class="fav-btn">Saqlash</button>
       </div>
 
       <div id="resultsArea">
         <div class="card empty-box">
-          🔍 <b>Mahsulot nomini yozing</b><br />
-          O'zbekistonning yirik do'konlaridagi eng arzon narxlarni bir joyda solishtiramiz.
+          Mahsulot nomini yozing — O'zbekistonning yirik do'konlaridagi eng arzon narxlarni bir joyda solishtiramiz.
         </div>
       </div>
 
-      <div id="directStoresWrap" class="hidden" style="margin-top: 16px;">
-        <div class="section-title">Do'konlarda to'g'ridan-to'g'ri ko'rish</div>
+      <div id="directStoresWrap" class="hidden" style="margin-top: 14px;">
+        <div class="section-title">Do'konlarda ko'rish</div>
         <div id="directStoresGrid" class="grid-2"></div>
       </div>
     </section>
 
-    <!-- TAB 2: KATEGORIYALAR -->
+    <!-- TAB 2: BO'LIMLAR -->
     <section id="tab-categories" class="hidden">
-      <div class="section-title">Mashhur kategoriyalar</div>
-      <div class="grid-2">
-        <div class="cat-card" data-q="Smartfon">📱 Smartfonlar</div>
-        <div class="cat-card" data-q="Noutbuk">💻 Noutbuklar</div>
-        <div class="cat-card" data-q="Televizor">📺 Televizorlar</div>
-        <div class="cat-card" data-q="Maishiy texnika">🏠 Maishiy texnika</div>
-        <div class="cat-card" data-q="Konditsioner">❄️ Konditsionerlar</div>
-        <div class="cat-card" data-q="Aksessuarlar">🎧 Aksessuarlar</div>
+      <div class="section-title">Kategoriyalar</div>
+      <div class="cat-grid">
+        <div class="cat-item" data-q="Smartfon">
+          <div class="cat-circle"><svg viewBox="0 0 24 24" width="22" height="22" stroke="currentColor" fill="none" stroke-width="1.7"><rect x="6" y="2" width="12" height="20" rx="2"/><line x1="12" y1="18" x2="12" y2="18.01"/></svg></div>
+          <span class="cat-label">Smartfonlar</span>
+        </div>
+        <div class="cat-item" data-q="Noutbuk">
+          <div class="cat-circle"><svg viewBox="0 0 24 24" width="22" height="22" stroke="currentColor" fill="none" stroke-width="1.7"><rect x="3" y="4" width="18" height="12" rx="2"/><line x1="2" y1="20" x2="22" y2="20"/></svg></div>
+          <span class="cat-label">Noutbuklar</span>
+        </div>
+        <div class="cat-item" data-q="Televizor">
+          <div class="cat-circle"><svg viewBox="0 0 24 24" width="22" height="22" stroke="currentColor" fill="none" stroke-width="1.7"><rect x="2" y="5" width="20" height="13" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/></svg></div>
+          <span class="cat-label">Televizorlar</span>
+        </div>
+        <div class="cat-item" data-q="Maishiy texnika">
+          <div class="cat-circle"><svg viewBox="0 0 24 24" width="22" height="22" stroke="currentColor" fill="none" stroke-width="1.7"><path d="M3 10l9-7 9 7v11H3z"/></svg></div>
+          <span class="cat-label">Uy texnikasi</span>
+        </div>
+        <div class="cat-item" data-q="Konditsioner">
+          <div class="cat-circle"><svg viewBox="0 0 24 24" width="22" height="22" stroke="currentColor" fill="none" stroke-width="1.7"><rect x="2" y="5" width="20" height="8" rx="2"/><path d="M6 17v2M12 17v3M18 17v2"/></svg></div>
+          <span class="cat-label">Konditsioner</span>
+        </div>
+        <div class="cat-item" data-q="Aksessuarlar">
+          <div class="cat-circle"><svg viewBox="0 0 24 24" width="22" height="22" stroke="currentColor" fill="none" stroke-width="1.7"><path d="M3 18v-6a9 9 0 0 1 18 0v6"/><path d="M21 19a2 2 0 0 1-2 2h-1v-6h3zM3 19a2 2 0 0 0 2 2h1v-6H3z"/></svg></div>
+          <span class="cat-label">Aksessuarlar</span>
+        </div>
       </div>
     </section>
 
@@ -382,18 +479,30 @@
       <div id="favoritesList"></div>
     </section>
 
-    <!-- TAB 4: DOLLAR KURSI -->
-    <section id="tab-usd" class="hidden">
-      <div class="section-title">Bugungi Dollar ($) kursi</div>
-      <div id="usdArea" class="card empty-box">Yuklanmoqda...</div>
+    <!-- TAB 4: KURSLAR (USD, EUR, RUB, BTC) -->
+    <section id="tab-rates" class="hidden">
+      <div class="section-title">Valyuta va Bitcoin kurslari</div>
+      <div id="ratesArea"><div class="skeleton"></div><div class="skeleton"></div></div>
     </section>
   </main>
 
   <nav class="tabbar">
-    <button class="tab active" data-tab="search"><span class="icon">🔍</span><span>Qidiruv</span></button>
-    <button class="tab" data-tab="categories"><span class="icon">📁</span><span>Bo'limlar</span></button>
-    <button class="tab" data-tab="favorites"><span class="icon">❤️</span><span>Sevimli</span></button>
-    <button class="tab" data-tab="usd"><span class="icon">💵</span><span>Kurs</span></button>
+    <button class="tab active" data-tab="search">
+      <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><line x1="20" y1="20" x2="16.65" y2="16.65"/></svg>
+      <span>Qidiruv</span>
+    </button>
+    <button class="tab" data-tab="categories">
+      <svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg>
+      <span>Bo'limlar</span>
+    </button>
+    <button class="tab" data-tab="favorites">
+      <svg viewBox="0 0 24 24"><path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.7l-1-1.1a5.5 5.5 0 0 0-7.8 7.8l1 1.1L12 21l7.8-7.5 1-1.1a5.5 5.5 0 0 0 0-7.8z"/></svg>
+      <span>Sevimli</span>
+    </button>
+    <button class="tab" data-tab="rates">
+      <svg viewBox="0 0 24 24"><polyline points="22 7 13.5 15.5 8.5 10.5 2 17"/><polyline points="16 7 22 7 22 13"/></svg>
+      <span>Kurslar</span>
+    </button>
   </nav>
 
   <script>
@@ -401,9 +510,12 @@
     if (tg) {
       tg.ready();
       tg.expand();
+      if (tg.setHeaderColor) tg.setHeaderColor("#0A3761");
+      if (tg.setBackgroundColor) tg.setBackgroundColor("#12161A");
     }
 
     let currentQuery = "";
+    let ratesData = null;
 
     function escapeHtml(str) {
       return String(str || "").replace(/[&<>"']/g, s => ({
@@ -416,37 +528,72 @@
     }
 
     function openExternal(url) {
-      if (tg && tg.openLink) {
-        tg.openLink(url);
-      } else {
-        window.open(url, "_blank");
-      }
+      if (tg && tg.openLink) tg.openLink(url);
+      else window.open(url, "_blank");
     }
 
-    // TAB SWITCHING
+    // TABS
     const tabs = document.querySelectorAll(".tab");
     const sections = {
       search: document.getElementById("tab-search"),
       categories: document.getElementById("tab-categories"),
       favorites: document.getElementById("tab-favorites"),
-      usd: document.getElementById("tab-usd"),
+      rates: document.getElementById("tab-rates"),
     };
 
     function switchTab(name) {
       tabs.forEach(t => t.classList.toggle("active", t.dataset.tab === name));
       Object.entries(sections).forEach(([k, el]) => el.classList.toggle("hidden", k !== name));
       if (name === "favorites") renderFavorites();
-      if (name === "usd") loadUsd();
+      if (name === "rates") renderRatesTab();
     }
-
     tabs.forEach(t => t.addEventListener("click", () => switchTab(t.dataset.tab)));
 
-    // FAVORITES (localStorage)
+    // RATES (USD, EUR, RUB, BTC)
+    async function fetchRates() {
+      try {
+        const res = await fetch("/api/rates");
+        ratesData = await res.json();
+        if (ratesData.usd) document.getElementById("t-usd").textContent = Math.round(ratesData.usd.rate).toLocaleString("ru-RU");
+        if (ratesData.eur) document.getElementById("t-eur").textContent = Math.round(ratesData.eur.rate).toLocaleString("ru-RU");
+        if (ratesData.rub) document.getElementById("t-rub").textContent = Number(ratesData.rub.rate).toFixed(1);
+        if (ratesData.btc) document.getElementById("t-btc").textContent = "$" + Math.round(ratesData.btc.usd).toLocaleString("ru-RU");
+        renderRatesTab();
+      } catch (e) {}
+    }
+
+    function renderRatesTab() {
+      const box = document.getElementById("ratesArea");
+      if (!ratesData) return;
+      const items = [
+        { code: "Bitcoin (BTC)", sub: "Jonli kripto kursi", val: ratesData.btc ? "$" + Math.round(ratesData.btc.usd).toLocaleString("ru-RU") : "—", diff: "USD" },
+        { code: "AQSh dollari (USD)", sub: "Markaziy bank", val: ratesData.usd ? Number(ratesData.usd.rate).toLocaleString("ru-RU") + " so'm" : "—", diff: ratesData.usd ? ratesData.usd.diff : "" },
+        { code: "Yevro (EUR)", sub: "Markaziy bank", val: ratesData.eur ? Number(ratesData.eur.rate).toLocaleString("ru-RU") + " so'm" : "—", diff: ratesData.eur ? ratesData.eur.diff : "" },
+        { code: "Rossiya rubli (RUB)", sub: "Markaziy bank", val: ratesData.rub ? Number(ratesData.rub.rate).toLocaleString("ru-RU") + " so'm" : "—", diff: ratesData.rub ? ratesData.rub.diff : "" },
+      ];
+      box.innerHTML = items.map(i => `
+        <div class="rate-row">
+          <div class="rate-left">
+            <span class="rate-code">${escapeHtml(i.code)}</span>
+            <span class="rate-sub">${escapeHtml(i.sub)}</span>
+          </div>
+          <div>
+            <div class="rate-val">${escapeHtml(i.val)}</div>
+            <div class="rate-diff">${escapeHtml(i.diff)}</div>
+          </div>
+        </div>
+      `).join("") + `
+        <button class="go-btn primary" style="width:100%;margin-top:6px;padding:10px;" onclick="openExternal('https://bank.uz/uz/currency')">
+          Banklar kursini ko'rish ↗
+        </button>
+      `;
+    }
+
+    // FAVORITES
     function getFavs() {
       try { return JSON.parse(localStorage.getItem("arzonibor_favs") || "[]"); }
       catch { return []; }
     }
-
     function saveFav(q) {
       if (!q) return;
       const favs = getFavs();
@@ -454,15 +601,12 @@
         favs.unshift(q);
         localStorage.setItem("arzonibor_favs", JSON.stringify(favs.slice(0, 30)));
       }
-      document.getElementById("saveFavBtn").textContent = "✅ Saqlandi";
+      document.getElementById("saveFavBtn").textContent = "Saqlandi ✓";
     }
-
     function removeFav(q) {
-      const favs = getFavs().filter(x => x !== q);
-      localStorage.setItem("arzonibor_favs", JSON.stringify(favs));
+      localStorage.setItem("arzonibor_favs", JSON.stringify(getFavs().filter(x => x !== q)));
       renderFavorites();
     }
-
     function renderFavorites() {
       const list = document.getElementById("favoritesList");
       const favs = getFavs();
@@ -472,8 +616,8 @@
       }
       list.innerHTML = favs.map(q => `
         <div class="card" style="display:flex;align-items:center;justify-content:space-between;gap:10px;">
-          <span style="font-weight:700;cursor:pointer;flex:1;" onclick="runSearch('${escapeHtml(q)}')">🔍 ${escapeHtml(q)}</span>
-          <button class="fav-btn" onclick="removeFav('${escapeHtml(q)}')">❌</button>
+          <span style="font-size:13.5px;cursor:pointer;flex:1;" onclick="runSearch('${escapeHtml(q)}')">${escapeHtml(q)}</span>
+          <button class="fav-btn" onclick="removeFav('${escapeHtml(q)}')">O'chirish</button>
         </div>
       `).join("");
     }
@@ -487,8 +631,8 @@
       currentQuery = query;
       document.getElementById("searchInput").value = query;
       document.getElementById("resultsHeader").classList.remove("hidden");
-      document.getElementById("resultsTitle").textContent = `«${query}» natijalari`;
-      document.getElementById("saveFavBtn").textContent = "❤️ Saqlash";
+      document.getElementById("resultsTitle").textContent = `«${query}»`;
+      document.getElementById("saveFavBtn").textContent = "Saqlash";
       document.getElementById("directStoresWrap").classList.add("hidden");
 
       const area = document.getElementById("resultsArea");
@@ -500,81 +644,43 @@
 
         if (data.results && data.results.length) {
           area.innerHTML = data.results.map((item, idx) => `
-            <div class="card offer-card">
+            <div class="card">
               <div class="offer-top">
-                <div>
-                  <span class="store-name">${escapeHtml(item.store)}</span>
-                  ${idx === 0 ? '<span class="best-badge">Eng arzon</span>' : ''}
-                  <div class="offer-title">${escapeHtml(item.title || query)}</div>
-                </div>
+                <span class="store-name">${escapeHtml(item.store)}</span>
+                ${idx === 0 ? '<span class="best-badge">Eng arzon</span>' : ''}
               </div>
+              <div class="offer-title">${escapeHtml(item.title || query)}</div>
               <div class="offer-bottom">
                 <div class="price ${idx === 0 ? 'cheapest' : ''}">${formatPrice(item.price)}</div>
-                <button class="go-btn" onclick="openExternal('${escapeHtml(item.url)}')">O'tish →</button>
+                <button class="go-btn ${idx === 0 ? 'primary' : ''}" onclick="openExternal('${escapeHtml(item.url)}')">O'tish ↗</button>
               </div>
             </div>
           `).join("");
         } else {
-          area.innerHTML = `
-            <div class="card empty-box">
-              Avtomatik narx topilmadi.<br/>Pastdagi do'kon tugmalari orqali to'g'ridan-to'g'ri ko'ring 👇
-            </div>
-          `;
+          area.innerHTML = `<div class="card empty-box">Avtomatik narx topilmadi. Pastdagi do'konlarda ko'ring.</div>`;
         }
 
         if (data.stores && data.stores.length) {
           document.getElementById("directStoresWrap").classList.remove("hidden");
           document.getElementById("directStoresGrid").innerHTML = data.stores.map(s => `
-            <button class="store-grid-btn" onclick="openExternal('${escapeHtml(s.url)}')">🛍 ${escapeHtml(s.name)}</button>
+            <button class="store-grid-btn" onclick="openExternal('${escapeHtml(s.url)}')">${escapeHtml(s.name)} ↗</button>
           `).join("");
         }
       } catch (e) {
-        area.innerHTML = `
-          <div class="card empty-box">
-            ❌ Tarmoqda xatolik yuz berdi.<br/><br/>
-            <button class="go-btn" onclick="runSearch('${escapeHtml(query)}')">Qayta urinish</button>
-          </div>
-        `;
+        area.innerHTML = `<div class="card empty-box">Tarmoqda xatolik.<br/><br/><button class="go-btn primary" onclick="runSearch('${escapeHtml(query)}')">Qayta urinish</button></div>`;
       }
     }
 
-    // USD
-    let usdLoaded = false;
-    async function loadUsd() {
-      if (usdLoaded) return;
-      const box = document.getElementById("usdArea");
-      try {
-        const res = await fetch("/api/usd");
-        const d = await res.json();
-        if (d.rate) {
-          usdLoaded = true;
-          const sign = String(d.diff).startsWith("-") ? "📉" : "📈";
-          box.className = "card";
-          box.innerHTML = `
-            <div style="font-size:13px;color:var(--muted);margin-bottom:6px;">Markaziy bank (${escapeHtml(d.date)})</div>
-            <div style="font-size:24px;font-weight:800;color:var(--navy);margin-bottom:6px;">1 USD = ${Number(d.rate).toLocaleString("ru-RU")} so'm</div>
-            <div style="font-size:14px;margin-bottom:14px;">O'zgarish: ${sign} <b>${escapeHtml(d.diff)}</b></div>
-            <button class="go-btn" style="width:100%;" onclick="openExternal('https://bank.uz/uz/currency')">🏦 Banklar kursini ko'rish</button>
-          `;
-        } else {
-          box.innerHTML = "Kursni yuklab bo'lmadi.";
-        }
-      } catch {
-        box.innerHTML = "Tarmoq xatoligi.";
-      }
-    }
-
-    // EVENTS
     document.getElementById("searchForm").addEventListener("submit", e => {
       e.preventDefault();
       runSearch(document.getElementById("searchInput").value);
     });
-
     document.getElementById("saveFavBtn").addEventListener("click", () => saveFav(currentQuery));
-
     document.querySelectorAll("[data-q]").forEach(el => {
       el.addEventListener("click", () => runSearch(el.dataset.q));
     });
+
+    fetchRates();
   </script>
 </body>
 </html>
