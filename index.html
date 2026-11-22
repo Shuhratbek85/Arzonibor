@@ -1,0 +1,580 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>Arzoni Bor — Narxlarni solishtirish</title>
+  <script src="https://telegram.org/js/telegram-web-app.js"></script>
+  <style>
+    :root {
+      --navy: #0A3761;
+      --navy-dark: #072847;
+      --orange: #FF6600;
+      --orange-hover: #E65C00;
+      --green: #0E8A44;
+      --bg: #F3F5F8;
+      --card: #FFFFFF;
+      --text: #1A222D;
+      --muted: #5F6B7A;
+      --border: #E2E7EE;
+      --radius: 12px;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      padding-bottom: 78px;
+      overflow-x: hidden;
+    }
+
+    /* HEADER (Idealo uslubida) */
+    .header {
+      background: var(--navy);
+      color: #fff;
+      padding: 14px 16px 16px;
+      position: sticky;
+      top: 0;
+      z-index: 20;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.12);
+    }
+
+    .brand-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 12px;
+    }
+
+    .brand {
+      font-size: 20px;
+      font-weight: 800;
+      letter-spacing: -0.3px;
+    }
+
+    .brand span { color: var(--orange); }
+
+    .badge-live {
+      font-size: 11px;
+      background: rgba(255,255,255,0.14);
+      padding: 4px 8px;
+      border-radius: 20px;
+      font-weight: 600;
+    }
+
+    .search-box {
+      display: flex;
+      gap: 8px;
+    }
+
+    .search-input {
+      flex: 1;
+      height: 44px;
+      border: none;
+      border-radius: 10px;
+      padding: 0 14px;
+      font-size: 15px;
+      outline: none;
+      color: var(--text);
+      background: #fff;
+    }
+
+    .search-btn {
+      height: 44px;
+      min-width: 48px;
+      padding: 0 16px;
+      border: none;
+      border-radius: 10px;
+      background: var(--orange);
+      color: #fff;
+      font-size: 15px;
+      font-weight: 700;
+      cursor: pointer;
+    }
+
+    .search-btn:active { background: var(--orange-hover); }
+
+    /* CONTENT */
+    .container { padding: 14px 14px 20px; }
+
+    .section-title {
+      font-size: 15px;
+      font-weight: 700;
+      color: var(--navy);
+      margin-bottom: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    /* CHIPS */
+    .chips {
+      display: flex;
+      gap: 8px;
+      overflow-x: auto;
+      padding-bottom: 6px;
+      margin-bottom: 14px;
+      scrollbar-width: none;
+    }
+    .chips::-webkit-scrollbar { display: none; }
+
+    .chip {
+      white-space: nowrap;
+      background: var(--card);
+      border: 1px solid var(--border);
+      color: var(--text);
+      padding: 9px 14px;
+      border-radius: 20px;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      min-height: 38px;
+    }
+    .chip:active { background: #E9EFF6; }
+
+    /* CARDS */
+    .card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 14px;
+      margin-bottom: 10px;
+      box-shadow: 0 1px 3px rgba(10, 55, 97, 0.04);
+    }
+
+    .offer-card {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .offer-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 10px;
+    }
+
+    .store-name {
+      font-size: 15px;
+      font-weight: 700;
+      color: var(--navy);
+    }
+
+    .best-badge {
+      display: inline-block;
+      background: #E6F6EC;
+      color: var(--green);
+      font-size: 11px;
+      font-weight: 700;
+      padding: 3px 8px;
+      border-radius: 6px;
+      margin-left: 6px;
+    }
+
+    .offer-title {
+      font-size: 13px;
+      color: var(--muted);
+      line-height: 1.35;
+    }
+
+    .offer-bottom {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      padding-top: 8px;
+      border-top: 1px solid var(--border);
+    }
+
+    .price {
+      font-size: 18px;
+      font-weight: 800;
+      color: var(--text);
+    }
+
+    .price.cheapest { color: var(--green); }
+
+    .go-btn {
+      background: var(--orange);
+      color: #fff;
+      text-decoration: none;
+      padding: 10px 16px;
+      border-radius: 9px;
+      font-size: 14px;
+      font-weight: 700;
+      min-height: 44px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      border: none;
+      cursor: pointer;
+    }
+    .go-btn:active { background: var(--orange-hover); }
+
+    .fav-btn {
+      background: #F3F5F8;
+      color: var(--navy);
+      border: 1px solid var(--border);
+      padding: 8px 12px;
+      border-radius: 8px;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+    }
+
+    /* GRID */
+    .grid-2 {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+    }
+
+    .cat-card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 16px 12px;
+      text-align: center;
+      font-weight: 700;
+      font-size: 14px;
+      color: var(--navy);
+      cursor: pointer;
+      min-height: 64px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .cat-card:active { background: #EBF1F8; }
+
+    .store-grid-btn {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 12px;
+      text-align: center;
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--navy);
+      cursor: pointer;
+      min-height: 44px;
+    }
+
+    /* SKELETON & STATES */
+    .skeleton {
+      height: 92px;
+      border-radius: var(--radius);
+      background: linear-gradient(90deg, #E7ECF2 25%, #F2F5F9 50%, #E7ECF2 75%);
+      background-size: 200% 100%;
+      animation: shimmer 1.2s infinite;
+      margin-bottom: 10px;
+    }
+    @keyframes shimmer {
+      0% { background-position: 200% 0; }
+      100% { background-position: -200% 0; }
+    }
+
+    .empty-box {
+      text-align: center;
+      padding: 28px 16px;
+      color: var(--muted);
+      font-size: 14px;
+      line-height: 1.5;
+    }
+
+    /* BOTTOM TAB BAR */
+    .tabbar {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      height: 64px;
+      background: #fff;
+      border-top: 1px solid var(--border);
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      z-index: 30;
+    }
+
+    .tab {
+      background: none;
+      border: none;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 3px;
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--muted);
+      cursor: pointer;
+      min-height: 44px;
+    }
+
+    .tab .icon { font-size: 19px; }
+    .tab.active { color: var(--navy); }
+    .tab.active .icon { transform: scale(1.08); }
+
+    .hidden { display: none !important; }
+  </style>
+</head>
+<body>
+
+  <header class="header">
+    <div class="brand-row">
+      <div class="brand">Arzoni<span>Bor</span></div>
+      <div class="badge-live">Jonli narxlar</div>
+    </div>
+    <form class="search-box" id="searchForm">
+      <input id="searchInput" class="search-input" type="search" placeholder="Masalan: iPhone 16 Pro, Redmi..." autocomplete="off" />
+      <button class="search-btn" type="submit">Izlash</button>
+    </form>
+  </header>
+
+  <main class="container">
+    <!-- TAB 1: QIDIRUV -->
+    <section id="tab-search">
+      <div class="chips" id="popularChips">
+        <button class="chip" data-q="iPhone 16 Pro">iPhone 16 Pro</button>
+        <button class="chip" data-q="Redmi Note 13">Redmi Note 13</button>
+        <button class="chip" data-q="Samsung A55">Samsung A55</button>
+        <button class="chip" data-q="AirPods Pro 2">AirPods Pro 2</button>
+        <button class="chip" data-q="PlayStation 5">PlayStation 5</button>
+        <button class="chip" data-q="MacBook Air M2">MacBook Air M2</button>
+      </div>
+
+      <div id="resultsHeader" class="section-title hidden">
+        <span id="resultsTitle">Natijalar</span>
+        <button id="saveFavBtn" class="fav-btn">❤️ Saqlash</button>
+      </div>
+
+      <div id="resultsArea">
+        <div class="card empty-box">
+          🔍 <b>Mahsulot nomini yozing</b><br />
+          O'zbekistonning yirik do'konlaridagi eng arzon narxlarni bir joyda solishtiramiz.
+        </div>
+      </div>
+
+      <div id="directStoresWrap" class="hidden" style="margin-top: 16px;">
+        <div class="section-title">Do'konlarda to'g'ridan-to'g'ri ko'rish</div>
+        <div id="directStoresGrid" class="grid-2"></div>
+      </div>
+    </section>
+
+    <!-- TAB 2: KATEGORIYALAR -->
+    <section id="tab-categories" class="hidden">
+      <div class="section-title">Mashhur kategoriyalar</div>
+      <div class="grid-2">
+        <div class="cat-card" data-q="Smartfon">📱 Smartfonlar</div>
+        <div class="cat-card" data-q="Noutbuk">💻 Noutbuklar</div>
+        <div class="cat-card" data-q="Televizor">📺 Televizorlar</div>
+        <div class="cat-card" data-q="Maishiy texnika">🏠 Maishiy texnika</div>
+        <div class="cat-card" data-q="Konditsioner">❄️ Konditsionerlar</div>
+        <div class="cat-card" data-q="Aksessuarlar">🎧 Aksessuarlar</div>
+      </div>
+    </section>
+
+    <!-- TAB 3: SEVIMLILAR -->
+    <section id="tab-favorites" class="hidden">
+      <div class="section-title">Saqlangan mahsulotlar</div>
+      <div id="favoritesList"></div>
+    </section>
+
+    <!-- TAB 4: DOLLAR KURSI -->
+    <section id="tab-usd" class="hidden">
+      <div class="section-title">Bugungi Dollar ($) kursi</div>
+      <div id="usdArea" class="card empty-box">Yuklanmoqda...</div>
+    </section>
+  </main>
+
+  <nav class="tabbar">
+    <button class="tab active" data-tab="search"><span class="icon">🔍</span><span>Qidiruv</span></button>
+    <button class="tab" data-tab="categories"><span class="icon">📁</span><span>Bo'limlar</span></button>
+    <button class="tab" data-tab="favorites"><span class="icon">❤️</span><span>Sevimli</span></button>
+    <button class="tab" data-tab="usd"><span class="icon">💵</span><span>Kurs</span></button>
+  </nav>
+
+  <script>
+    const tg = window.Telegram && window.Telegram.WebApp ? window.Telegram.WebApp : null;
+    if (tg) {
+      tg.ready();
+      tg.expand();
+    }
+
+    let currentQuery = "";
+
+    function escapeHtml(str) {
+      return String(str || "").replace(/[&<>"']/g, s => ({
+        "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;"
+      }[s]));
+    }
+
+    function formatPrice(num) {
+      return Number(num).toLocaleString("ru-RU") + " so'm";
+    }
+
+    function openExternal(url) {
+      if (tg && tg.openLink) {
+        tg.openLink(url);
+      } else {
+        window.open(url, "_blank");
+      }
+    }
+
+    // TAB SWITCHING
+    const tabs = document.querySelectorAll(".tab");
+    const sections = {
+      search: document.getElementById("tab-search"),
+      categories: document.getElementById("tab-categories"),
+      favorites: document.getElementById("tab-favorites"),
+      usd: document.getElementById("tab-usd"),
+    };
+
+    function switchTab(name) {
+      tabs.forEach(t => t.classList.toggle("active", t.dataset.tab === name));
+      Object.entries(sections).forEach(([k, el]) => el.classList.toggle("hidden", k !== name));
+      if (name === "favorites") renderFavorites();
+      if (name === "usd") loadUsd();
+    }
+
+    tabs.forEach(t => t.addEventListener("click", () => switchTab(t.dataset.tab)));
+
+    // FAVORITES (localStorage)
+    function getFavs() {
+      try { return JSON.parse(localStorage.getItem("arzonibor_favs") || "[]"); }
+      catch { return []; }
+    }
+
+    function saveFav(q) {
+      if (!q) return;
+      const favs = getFavs();
+      if (!favs.includes(q)) {
+        favs.unshift(q);
+        localStorage.setItem("arzonibor_favs", JSON.stringify(favs.slice(0, 30)));
+      }
+      document.getElementById("saveFavBtn").textContent = "✅ Saqlandi";
+    }
+
+    function removeFav(q) {
+      const favs = getFavs().filter(x => x !== q);
+      localStorage.setItem("arzonibor_favs", JSON.stringify(favs));
+      renderFavorites();
+    }
+
+    function renderFavorites() {
+      const list = document.getElementById("favoritesList");
+      const favs = getFavs();
+      if (!favs.length) {
+        list.innerHTML = `<div class="card empty-box">Sevimlilar ro'yxati hozircha bo'sh.</div>`;
+        return;
+      }
+      list.innerHTML = favs.map(q => `
+        <div class="card" style="display:flex;align-items:center;justify-content:space-between;gap:10px;">
+          <span style="font-weight:700;cursor:pointer;flex:1;" onclick="runSearch('${escapeHtml(q)}')">🔍 ${escapeHtml(q)}</span>
+          <button class="fav-btn" onclick="removeFav('${escapeHtml(q)}')">❌</button>
+        </div>
+      `).join("");
+    }
+
+    // SEARCH
+    async function runSearch(query) {
+      query = (query || "").trim();
+      if (query.length < 2) return;
+
+      switchTab("search");
+      currentQuery = query;
+      document.getElementById("searchInput").value = query;
+      document.getElementById("resultsHeader").classList.remove("hidden");
+      document.getElementById("resultsTitle").textContent = `«${query}» natijalari`;
+      document.getElementById("saveFavBtn").textContent = "❤️ Saqlash";
+      document.getElementById("directStoresWrap").classList.add("hidden");
+
+      const area = document.getElementById("resultsArea");
+      area.innerHTML = `<div class="skeleton"></div><div class="skeleton"></div><div class="skeleton"></div>`;
+
+      try {
+        const res = await fetch(`/api/search?q=${encodeURIComponent(query)}`);
+        const data = await res.json();
+
+        if (data.results && data.results.length) {
+          area.innerHTML = data.results.map((item, idx) => `
+            <div class="card offer-card">
+              <div class="offer-top">
+                <div>
+                  <span class="store-name">${escapeHtml(item.store)}</span>
+                  ${idx === 0 ? '<span class="best-badge">Eng arzon</span>' : ''}
+                  <div class="offer-title">${escapeHtml(item.title || query)}</div>
+                </div>
+              </div>
+              <div class="offer-bottom">
+                <div class="price ${idx === 0 ? 'cheapest' : ''}">${formatPrice(item.price)}</div>
+                <button class="go-btn" onclick="openExternal('${escapeHtml(item.url)}')">O'tish →</button>
+              </div>
+            </div>
+          `).join("");
+        } else {
+          area.innerHTML = `
+            <div class="card empty-box">
+              Avtomatik narx topilmadi.<br/>Pastdagi do'kon tugmalari orqali to'g'ridan-to'g'ri ko'ring 👇
+            </div>
+          `;
+        }
+
+        if (data.stores && data.stores.length) {
+          document.getElementById("directStoresWrap").classList.remove("hidden");
+          document.getElementById("directStoresGrid").innerHTML = data.stores.map(s => `
+            <button class="store-grid-btn" onclick="openExternal('${escapeHtml(s.url)}')">🛍 ${escapeHtml(s.name)}</button>
+          `).join("");
+        }
+      } catch (e) {
+        area.innerHTML = `
+          <div class="card empty-box">
+            ❌ Tarmoqda xatolik yuz berdi.<br/><br/>
+            <button class="go-btn" onclick="runSearch('${escapeHtml(query)}')">Qayta urinish</button>
+          </div>
+        `;
+      }
+    }
+
+    // USD
+    let usdLoaded = false;
+    async function loadUsd() {
+      if (usdLoaded) return;
+      const box = document.getElementById("usdArea");
+      try {
+        const res = await fetch("/api/usd");
+        const d = await res.json();
+        if (d.rate) {
+          usdLoaded = true;
+          const sign = String(d.diff).startsWith("-") ? "📉" : "📈";
+          box.className = "card";
+          box.innerHTML = `
+            <div style="font-size:13px;color:var(--muted);margin-bottom:6px;">Markaziy bank (${escapeHtml(d.date)})</div>
+            <div style="font-size:24px;font-weight:800;color:var(--navy);margin-bottom:6px;">1 USD = ${Number(d.rate).toLocaleString("ru-RU")} so'm</div>
+            <div style="font-size:14px;margin-bottom:14px;">O'zgarish: ${sign} <b>${escapeHtml(d.diff)}</b></div>
+            <button class="go-btn" style="width:100%;" onclick="openExternal('https://bank.uz/uz/currency')">🏦 Banklar kursini ko'rish</button>
+          `;
+        } else {
+          box.innerHTML = "Kursni yuklab bo'lmadi.";
+        }
+      } catch {
+        box.innerHTML = "Tarmoq xatoligi.";
+      }
+    }
+
+    // EVENTS
+    document.getElementById("searchForm").addEventListener("submit", e => {
+      e.preventDefault();
+      runSearch(document.getElementById("searchInput").value);
+    });
+
+    document.getElementById("saveFavBtn").addEventListener("click", () => saveFav(currentQuery));
+
+    document.querySelectorAll("[data-q]").forEach(el => {
+      el.addEventListener("click", () => runSearch(el.dataset.q));
+    });
+  </script>
+</body>
+</html>
