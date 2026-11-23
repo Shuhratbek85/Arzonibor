@@ -25,8 +25,8 @@ ADMIN_ID = 565834132
 ENV_SUPPORT_GROUP_ID = os.environ.get("SUPPORT_GROUP_ID")
 WEBAPP_URL = "https://arzonibor-ywla.onrender.com"
 CHANNELS = [
-    {"name": "🤖 Mr Texno AI", "username": "@mrtexnoai", "url": "https://t.me/mrtexnoai"},
-    {"name": "🛍 Arzoni Bor", "username": "@arzoniboragent", "url": "https://t.me/arzoniboragent"},
+    {"username": "@mrtexnoai", "url": "https://t.me/mrtexnoai"},
+    {"username": "@arzoniboragent", "url": "https://t.me/arzoniboragent"},
 ]
 
 HEADERS = {
@@ -37,8 +37,25 @@ HEADERS = {
 ACCESSORY_WORDS = (
     "chexol", "чехол", "case", "g'ilof", "gilof", "oyna", "стекло", "glass",
     "plenka", "пленка", "himoya", "защит", "kabel", "кабель", "shnur", "шнур",
-    "zaryad", "заряд", "adapter", "адаптер", "remeshok", "ремешок", "kovrik"
+    "zaryad", "заряд", "adapter", "адаптер", "remeshok", "ремешок", "kovrik",
+    "ryukzak", "рюкзак", "sumka", "сумка", "backpack", "bag", "ushlagich",
+    "держатель", "holder", "stiker", "стикер", "stativ", "штатив", "linza",
+    "линза", "batareya", "батарея", "akkumulyator", "аккумулятор"
 )
+
+BRAND_SUGGESTIONS = {
+    "iphone": ["iPhone 16 Pro", "iPhone 16 Pro Max", "iPhone 15 Pro", "iPhone 15", "iPhone 14", "iPhone 13"],
+    "ayfon": ["iPhone 16 Pro", "iPhone 16 Pro Max", "iPhone 15 Pro", "iPhone 15", "iPhone 13"],
+    "redmi": ["Redmi Note 13", "Redmi Note 13 Pro", "Redmi Note 14", "Redmi 14C", "Redmi 13C", "Redmi A3"],
+    "redni": ["Redmi Note 13", "Redmi Note 13 Pro", "Redmi Note 14", "Redmi 14C", "Redmi 13C"],
+    "samsung": ["Samsung A55", "Samsung A35", "Samsung A25", "Samsung S24 Ultra", "Samsung S24", "Samsung A15"],
+    "poco": ["Poco X6 Pro", "Poco X6", "Poco M6 Pro", "Poco F6"],
+    "honor": ["Honor X9b", "Honor X8b", "Honor X7b", "Honor 200"],
+    "macbook": ["MacBook Air M2", "MacBook Air M3", "MacBook Pro M3"],
+    "airpods": ["AirPods Pro 2", "AirPods 3", "AirPods 4"],
+    "playstation": ["PlayStation 5", "PlayStation 5 Slim"],
+    "ps5": ["PlayStation 5", "PlayStation 5 Slim"],
+}
 
 # --- MA'LUMOTLAR BAZASI ---
 db_lock = threading.Lock()
@@ -64,6 +81,25 @@ with db_lock:
         value TEXT
     )
     """)
+    conn.execute("""
+    CREATE TABLE IF NOT EXISTS price_alerts (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        user_id INTEGER,
+        query TEXT,
+        target_price INTEGER,
+        current_price INTEGER,
+        created_at INTEGER,
+        UNIQUE(user_id, query)
+    )
+    """)
+    conn.execute("""
+    CREATE TABLE IF NOT EXISTS price_history (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        query TEXT,
+        price INTEGER,
+        ts INTEGER
+    )
+    """)
     conn.commit()
 
 def get_support_chat_id():
@@ -80,6 +116,29 @@ def set_support_chat_id(chat_id):
     with db_lock:
         conn.execute("INSERT OR REPLACE INTO settings (key, value) VALUES ('support_group_id', ?)", (str(chat_id),))
         conn.commit()
+
+def save_price_history(query, price):
+    if not query or not price:
+        return
+    key = query.lower().strip()
+    now = int(time.time())
+    with db_lock:
+        last = conn.execute(
+            "SELECT price, ts FROM price_history WHERE query = ? ORDER BY ts DESC LIMIT 1",
+            (key,)
+        ).fetchone()
+        if not last or (now - last[1] > 3600 * 6) or last[0] != int(price):
+            conn.execute("INSERT INTO price_history (query, price, ts) VALUES (?, ?, ?)", (key, int(price), now))
+            conn.commit()
+
+def get_price_history(query):
+    key = query.lower().strip()
+    with db_lock:
+        rows = conn.execute(
+            "SELECT price, ts FROM price_history WHERE query = ? ORDER BY ts ASC LIMIT 30",
+            (key,)
+        ).fetchall()
+    return [{"price": r[0], "ts": r[1]} for r in rows]
 
 waiting_admin_msg = set()
 waiting_lock = threading.Lock()
@@ -125,20 +184,27 @@ def clean_title(title):
     return t[:95] + ("..." if len(t) > 95 else "")
 
 def is_relevant_product(query, title):
-    q_low = query.lower()
-    t_low = (title or "").lower()
+    q_low = (query or "").lower().strip()
+    t_low = (title or "").lower().strip()
     if not t_low:
         return False
     if not any(w in q_low for w in ACCESSORY_WORDS):
         if any(w in t_low for w in ACCESSORY_WORDS):
             return False
-    words = [w for w in re.findall(r"[a-zA-Zа-яА-Я0-9]+", q_low) if len(w) > 1]
-    if not words:
+    q_tokens = [w for w in re.findall(r"[a-zA-Zа-яА-Я0-9]+", q_low) if len(w) > 1 or w.isdigit()]
+    if not q_tokens:
         return True
-    matched = sum(1 for w in words if w in t_low)
-    return matched >= max(1, (len(words) + 1) // 2)
+    t_tokens = set(re.findall(r"[a-zA-Zа-яА-Я0-9]+", t_low))
+    for tok in q_tokens:
+        if tok.isdigit():
+            if not re.search(rf"(?<![0-9.,]){re.escape(tok)}(?![0-9.,])", t_low):
+                return False
+        else:
+            if tok not in t_tokens and tok not in t_low:
+                return False
+    return True
 
-# --- MAJBURIY OBUNA ---
+# --- MAJBURIY OBUNA (KANAL NOMISIZ) ---
 def check_subscription(user_id):
     not_joined = []
     for ch in CHANNELS:
@@ -152,12 +218,13 @@ def check_subscription(user_id):
 
 def send_sub_message(chat_id, not_joined):
     markup = types.InlineKeyboardMarkup(row_width=1)
-    for ch in not_joined:
-        markup.add(types.InlineKeyboardButton(f"➕ {ch['name']}", url=ch["url"]))
-    markup.add(types.InlineKeyboardButton("✅ Obuna bo'ldim (Tekshirish)", callback_data="check_sub"))
+    for idx, ch in enumerate(not_joined, 1):
+        btn_label = f"➕ {idx}-kanalga obuna" if len(not_joined) > 1 else "➕ Obuna bo'lish"
+        markup.add(types.InlineKeyboardButton(btn_label, url=ch["url"]))
+    markup.add(types.InlineKeyboardButton("✅ Tekshirish", callback_data="check_sub"))
     text = (
-        "👋 <b>Botdan to'liq va bepul foydalanish uchun quyidagi kanallarga obuna bo'ling:</b>\n\n"
-        "Obuna bo'lgach, pastdagi <b>«✅ Obuna bo'ldim»</b> tugmasini bosing 👇"
+        "👋 <b>Bot ishlashi uchun quyidagi kanallarga obuna bo'ling:</b>\n\n"
+        "Obuna bo'lgach, <b>«✅ Tekshirish»</b> tugmasini bosing 👇"
     )
     bot.send_message(chat_id, text, reply_markup=markup)
 
@@ -168,15 +235,16 @@ def require_sub(message):
         return False
     return True
 
-# --- VALYUTA VA BITCOIN KURSLARI ---
+# --- VALYUTA VA BITCOIN KURSLARI (ZAXIRA MANBALAR BILAN) ---
 def fetch_all_rates():
     now = time.time()
     if RATES_CACHE["data"] and (now - RATES_CACHE["time"] < RATES_TTL):
         return RATES_CACHE["data"]
 
     result = {}
+    # 1. USD, EUR, RUB (Markaziy bank)
     try:
-        r = requests.get("https://cbu.uz/uz/arkhiv-kursov-valyut/json/", timeout=8)
+        r = requests.get("https://cbu.uz/uz/arkhiv-kursov-valyut/json/", headers=HEADERS, timeout=8)
         if r.status_code == 200:
             for item in r.json():
                 ccy = item.get("Ccy")
@@ -189,17 +257,33 @@ def fetch_all_rates():
     except Exception as e:
         print(f"[CBU] xato: {e}")
 
+    # 2. Bitcoin (Coinbase -> CoinGecko -> Binance)
+    btc_price = None
     try:
-        r = requests.get("https://api.binance.com/api/v3/ticker/price?symbol=BTCUSDT", timeout=5)
+        r = requests.get("https://api.coinbase.com/v2/prices/BTC-USD/spot", timeout=6)
         if r.status_code == 200:
-            result["btc"] = {"usd": float(r.json()["price"])}
+            btc_price = float(r.json()["data"]["amount"])
     except Exception:
+        pass
+
+    if not btc_price:
         try:
             r = requests.get("https://api.coingecko.com/api/v3/simple/price?ids=bitcoin&vs_currencies=usd", timeout=6)
             if r.status_code == 200:
-                result["btc"] = {"usd": float(r.json()["bitcoin"]["usd"])}
-        except Exception as e:
-            print(f"[BTC] xato: {e}")
+                btc_price = float(r.json()["bitcoin"]["usd"])
+        except Exception:
+            pass
+
+    if not btc_price:
+        try:
+            r = requests.get("https://api.binance.com/api/v3/ticker/price?symbol=BTCUSDT", timeout=5)
+            if r.status_code == 200:
+                btc_price = float(r.json()["price"])
+        except Exception:
+            pass
+
+    if btc_price:
+        result["btc"] = {"usd": btc_price}
 
     if result:
         RATES_CACHE["time"] = now
@@ -209,14 +293,16 @@ def fetch_all_rates():
 def get_rates_text():
     d = fetch_all_rates()
     lines = ["💵 <b>Bugungi valyuta va Bitcoin kurslari:</b>\n"]
-    if "btc" in d:
-        lines.append(f"₿ <b>Bitcoin (BTC):</b> ${d['btc']['usd']:,.0f}".replace(",", " "))
     if "usd" in d:
         lines.append(f"🇺🇸 <b>1 USD:</b> {d['usd']['rate']:,.2f} so'm ({d['usd']['diff']})".replace(",", " "))
     if "eur" in d:
         lines.append(f"🇪🇺 <b>1 EUR:</b> {d['eur']['rate']:,.2f} so'm ({d['eur']['diff']})".replace(",", " "))
     if "rub" in d:
         lines.append(f"🇷🇺 <b>1 RUB:</b> {d['rub']['rate']:,.2f} so'm ({d['rub']['diff']})".replace(",", " "))
+    if "btc" in d:
+        lines.append(f"₿ <b>Bitcoin (BTC):</b> ${d['btc']['usd']:,.0f}".replace(",", " "))
+    if len(lines) == 1:
+        lines.append("Hozircha kurslarni yuklab bo'lmadi, birozdan so'ng qayta urinib ko'ring.")
     markup = types.InlineKeyboardMarkup(row_width=1)
     markup.add(types.InlineKeyboardButton("🏦 Banklar kursi (Bank.uz)", url="https://bank.uz/uz/currency"))
     return "\n".join(lines), markup
@@ -224,7 +310,7 @@ def get_rates_text():
 # --- DO'KONLARDAN QIDIRISH ---
 def fetch_olcha(query):
     try:
-        url = f"https://api.olcha.uz/api/v2/products?search={quote_plus(query)}&per_page=10"
+        url = f"https://api.olcha.uz/api/v2/products?search={quote_plus(query)}&per_page=15"
         r = requests.get(url, headers={**HEADERS, "Accept": "application/json"}, timeout=7)
         if r.status_code != 200:
             return None
@@ -282,7 +368,7 @@ def fetch_asaxiy(query):
             return None
         soup = BeautifulSoup(r.text, "html.parser")
         best = None
-        for card in soup.select(".product__item")[:12]:
+        for card in soup.select(".product__item")[:15]:
             title_el = card.select_one(".product__item__info-title")
             price_el = card.select_one(".product__item-price")
             link_el = card.select_one("a[href*='/product/']")
@@ -314,7 +400,7 @@ def fetch_uzum(query):
                     "showAdultContent": "NONE",
                     "filters": [],
                     "sort": "BY_RELEVANCE_DESC",
-                    "pagination": {"offset": 0, "limit": 12}
+                    "pagination": {"offset": 0, "limit": 15}
                 }
             },
             "query": """
@@ -396,10 +482,10 @@ def search_ddg_fallback(query):
         pass
     return results
 
-def search_prices(query):
+def search_prices(query, bypass_cache=False):
     key = query.lower().strip()
     now = time.time()
-    if key in CACHE and (now - CACHE[key]["time"] < CACHE_TTL):
+    if not bypass_cache and key in CACHE and (now - CACHE[key]["time"] < CACHE_TTL):
         return CACHE[key]["data"]
 
     fetchers = [fetch_olcha, fetch_texnomart, fetch_asaxiy, fetch_uzum]
@@ -421,11 +507,44 @@ def search_prices(query):
     results = results[:8]
 
     if results:
+        save_price_history(query, results[0]["price"])
         if len(CACHE) >= MAX_CACHE_ITEMS:
             CACHE.clear()
         CACHE[key] = {"time": now, "data": results}
 
     return results
+
+# --- NARX KUZATISH (ORQA FONDA TEKSHIRUV) ---
+def price_alert_worker():
+    while True:
+        time.sleep(3 * 3600)  # Har 3 soatda tekshiradi
+        try:
+            with db_lock:
+                alerts = conn.execute("SELECT id, user_id, query, target_price FROM price_alerts").fetchall()
+            for alert_id, user_id, query, target_price in alerts:
+                results = search_prices(query, bypass_cache=True)
+                if not results:
+                    continue
+                best = results[0]
+                if best["price"] <= target_price:
+                    text = (
+                        f"🔔 <b>Narx tushdi!</b>\n\n"
+                        f"📦 <b>{html.escape(query)}</b>\n"
+                        f"💰 Yangi eng arzon narx: <b>{format_price(best['price'])}</b>\n"
+                        f"🛍 Do'kon: <b>{html.escape(best['store'])}</b>"
+                    )
+                    markup = types.InlineKeyboardMarkup()
+                    markup.add(types.InlineKeyboardButton(f"🛍 {best['store']} ga o'tish", url=best["url"]))
+                    try:
+                        bot.send_message(user_id, text, reply_markup=markup)
+                        with db_lock:
+                            conn.execute("DELETE FROM price_alerts WHERE id = ?", (alert_id,))
+                            conn.commit()
+                    except Exception:
+                        pass
+                time.sleep(2)
+        except Exception as e:
+            print(f"[ALERT WORKER] xato: {e}")
 
 # --- WEB SERVER (MINI APP + API) ---
 class AppHandler(BaseHTTPRequestHandler):
@@ -456,6 +575,11 @@ class AppHandler(BaseHTTPRequestHandler):
             self._send_json(fetch_all_rates())
             return
 
+        if path == "/api/history":
+            q = (parse_qs(parsed.query).get("q", [""])[0] or "").strip()[:80]
+            self._send_json({"query": q, "history": get_price_history(q)})
+            return
+
         if path in ("/", "/index.html"):
             try:
                 with open("index.html", "r", encoding="utf-8") as f:
@@ -474,6 +598,44 @@ class AppHandler(BaseHTTPRequestHandler):
         self.send_response(404)
         self.end_headers()
 
+    def do_POST(self):
+        parsed = urlparse(self.path)
+        if parsed.path == "/api/alert":
+            try:
+                length = int(self.headers.get("Content-Length", 0))
+                raw = self.rfile.read(length).decode("utf-8")
+                data = json.loads(raw)
+                user_id = int(data.get("user_id") or 0)
+                query = (data.get("query") or "").strip()[:80]
+                target_price = int(data.get("target_price") or 0)
+                current_price = int(data.get("current_price") or 0)
+                if not user_id or not query or target_price <= 0:
+                    self._send_json({"ok": False, "error": "Ma'lumot to'liq emas"}, 400)
+                    return
+                with db_lock:
+                    conn.execute(
+                        "INSERT OR REPLACE INTO price_alerts (user_id, query, target_price, current_price, created_at) VALUES (?, ?, ?, ?, ?)",
+                        (user_id, query, target_price, current_price, int(time.time()))
+                    )
+                    conn.commit()
+                try:
+                    bot.send_message(
+                        user_id,
+                        f"🔔 <b>Narx kuzatish yoqildi!</b>\n\n"
+                        f"📦 <b>{html.escape(query)}</b>\n"
+                        f"🎯 Maqsad narx: <b>{format_price(target_price)}</b>\n\n"
+                        f"Narx shu summaga tushishi bilan sizga xabar beraman."
+                    )
+                except Exception:
+                    pass
+                self._send_json({"ok": True})
+            except Exception as e:
+                self._send_json({"ok": False, "error": str(e)}, 500)
+            return
+
+        self.send_response(404)
+        self.end_headers()
+
     def log_message(self, format, *args):
         pass
 
@@ -481,12 +643,12 @@ def run_web_server():
     port = int(os.environ.get("PORT", 10000))
     ThreadingHTTPServer(("0.0.0.0", port), AppHandler).serve_forever()
 
-# --- TUGMALAR ---
+# --- TUGMALAR (KATEGORIYASIZ, TOZA MENYU) ---
 def main_menu():
     markup = types.ReplyKeyboardMarkup(resize_keyboard=True)
     markup.row(types.KeyboardButton("📱 Ilovani ochish (Arzoni Bor)", web_app=types.WebAppInfo(url=WEBAPP_URL)))
     markup.row("🔍 Mahsulot qidirish", "🔥 Mashhur tovarlar")
-    markup.row("📁 Kategoriyalar", "💵 Kurslar (USD/BTC)")
+    markup.row("💵 Kurslar (USD/BTC)", "🔔 Kuzatuvlarim")
     markup.row("❤️ Sevimlilar", "ℹ️ Yordam / Aloqa")
     return markup
 
@@ -495,7 +657,11 @@ def result_buttons(query, results):
     for r in results:
         btn_text = f"🛍 {r['store']} — {format_price(r['price'])}"
         markup.add(types.InlineKeyboardButton(btn_text, url=r["url"]))
-    markup.add(types.InlineKeyboardButton("❤️ Sevimlilarga saqlash", callback_data=safe_callback("fav:", query)))
+    best_price = results[0]["price"]
+    markup.add(
+        types.InlineKeyboardButton("🔔 Narx tushsa xabar ber", callback_data=safe_callback(f"alertmenu:{best_price}:", query)),
+        types.InlineKeyboardButton("❤️ Sevimlilarga saqlash", callback_data=safe_callback("fav:", query))
+    )
     return markup
 
 # --- GURUHNI ULASH (/setgroup) ---
@@ -510,11 +676,11 @@ def set_group_cmd(message):
     bot.reply_to(
         message,
         f"✅ Murojaatlar guruhi ulandi!\n\n"
-        f"Render qayta yonganda ham o'chib ketmasligi uchun Render → Environment Variables ga qo'shib qo'ying:\n"
+        f"Render → Environment Variables ga qo'shing:\n"
         f"<code>SUPPORT_GROUP_ID</code> = <code>{message.chat.id}</code>"
     )
 
-# --- ADMIN JAVOBI (GURUHDA YOKI LICHKADA REPLY) ---
+# --- ADMIN JAVOBI ---
 @bot.message_handler(func=lambda m: m.from_user and m.from_user.id == ADMIN_ID and m.reply_to_message)
 def admin_reply_handler(message):
     with db_lock:
@@ -539,8 +705,8 @@ def start_cmd(message):
     if not require_sub(message):
         return
     text = (
-        "🤖 <b>Arzoni Bor</b>: O'zbekiston onlayn do'konlarida mahsulot narxlarini solishtirish boti.\n\n"
-        "📱 Pastdagi <b>«Ilovani ochish»</b> tugmasi orqali qulay ilovadan foydalaning yoki shunchaki mahsulot nomini yozing!"
+        "🤖 <b>Arzoni Bor</b> — O'zbekiston do'konlarida eng arzon narxlarni topish boti.\n\n"
+        "📱 Pastdagi <b>«Ilovani ochish»</b> tugmasini bosing yoki shunchaki mahsulot nomini yozing!"
     )
     bot.send_message(message.chat.id, text, reply_markup=main_menu())
 
@@ -556,7 +722,15 @@ def ask_product(message):
     set_waiting_admin(message.from_user.id, False)
     if not require_sub(message):
         return
-    bot.send_message(message.chat.id, "Qaysi mahsulot narxini bilmoqchisiz? Nomini yozing 👇")
+    text = (
+        "🔍 <b>Mahsulot nomini aniqroq yozing:</b>\n\n"
+        "Masalan:\n"
+        "• <code>iPhone 16 Pro</code>\n"
+        "• <code>Redmi Note 13</code>\n"
+        "• <code>Samsung A55</code>\n"
+        "• <code>Artel 43</code>"
+    )
+    bot.send_message(message.chat.id, text)
 
 @bot.message_handler(func=lambda m: m.chat.type == "private" and m.text and "Mashhur tovarlar" in m.text)
 def popular_products(message):
@@ -568,16 +742,6 @@ def popular_products(message):
     markup.add(*[types.InlineKeyboardButton(i, callback_data=safe_callback("search:", i)) for i in items])
     bot.send_message(message.chat.id, "🔥 Eng ko'p qidirilayotgan mahsulotlar:", reply_markup=markup)
 
-@bot.message_handler(func=lambda m: m.chat.type == "private" and m.text and "Kategoriyalar" in m.text)
-def categories(message):
-    set_waiting_admin(message.from_user.id, False)
-    if not require_sub(message):
-        return
-    markup = types.InlineKeyboardMarkup(row_width=2)
-    active_cats = [("📱 Smartfonlar", "Smartfon"), ("🏠 Maishiy texnika", "Maishiy texnika"), ("💻 Noutbuklar", "Noutbuk"), ("📺 Televizorlar", "Televizor"), ("🎧 Aksessuarlar", "Aksessuarlar")]
-    markup.add(*[types.InlineKeyboardButton(l, callback_data=safe_callback("search:", q)) for l, q in active_cats])
-    bot.send_message(message.chat.id, "📁 <b>Kategoriyani tanlang:</b>", reply_markup=markup)
-
 @bot.message_handler(func=lambda m: m.chat.type == "private" and m.text and ("Kurslar" in m.text or "Dollar kursi" in m.text))
 def dollar_cmd(message):
     set_waiting_admin(message.from_user.id, False)
@@ -585,6 +749,24 @@ def dollar_cmd(message):
         return
     text, markup = get_rates_text()
     bot.send_message(message.chat.id, text, reply_markup=markup, disable_web_page_preview=True)
+
+@bot.message_handler(func=lambda m: m.chat.type == "private" and m.text and "Kuzatuvlarim" in m.text)
+def show_alerts(message):
+    set_waiting_admin(message.from_user.id, False)
+    if not require_sub(message):
+        return
+    with db_lock:
+        rows = conn.execute("SELECT id, query, target_price FROM price_alerts WHERE user_id = ? ORDER BY id DESC", (message.from_user.id,)).fetchall()
+    if not rows:
+        bot.send_message(message.chat.id, "🔔 Hozircha narx kuzatuvlaringiz yo'q.\n\nBiror mahsulotni qidirib, <b>«🔔 Narx tushsa xabar ber»</b> tugmasini bosing.")
+        return
+    markup = types.InlineKeyboardMarkup()
+    for row_id, q, target in rows:
+        markup.row(
+            types.InlineKeyboardButton(f"🔔 {q} (≤ {format_price(target)})", callback_data=safe_callback("search:", q)),
+            types.InlineKeyboardButton("❌", callback_data=f"delalert:{row_id}")
+        )
+    bot.send_message(message.chat.id, "🔔 <b>Faol narx kuzatuvlaringiz:</b>", reply_markup=markup)
 
 @bot.message_handler(func=lambda m: m.chat.type == "private" and m.text and "Sevimlilar" in m.text)
 def show_favorites(message):
@@ -610,6 +792,14 @@ def help_cmd(message):
     bot.send_message(message.chat.id, text, reply_markup=markup)
 
 def process_search(chat_id, query):
+    # Agar faqat brend nomi yozilgan bo'lsa — aniq modellarni tavsiya berish
+    q_low = query.lower().strip()
+    if q_low in BRAND_SUGGESTIONS:
+        markup = types.InlineKeyboardMarkup(row_width=2)
+        markup.add(*[types.InlineKeyboardButton(m, callback_data=safe_callback("search:", m)) for m in BRAND_SUGGESTIONS[q_low]])
+        bot.send_message(chat_id, f"🔍 <b>{html.escape(query)}</b> bo'yicha aniq modelni tanlang:", reply_markup=markup)
+        return
+
     safe_q = html.escape(query)
     wait_msg = bot.send_message(chat_id, f"🔍 <b>{safe_q}</b> narxlari qidirilmoqda...")
     results = search_prices(query)
@@ -623,8 +813,18 @@ def process_search(chat_id, query):
         text = f"🔎 <b>{safe_q}</b> bo'yicha topilgan narxlar:\n\n<i>Do'konga o'tish uchun tugmani bosing 👇</i>"
         bot.send_message(chat_id, text, reply_markup=result_buttons(query, results), disable_web_page_preview=True)
     else:
-        text = f"🔎 <b>{safe_q}</b>\n\nAfsuski, do'konlardan narx topilmadi. Mahsulot nomini aniqroq yozib ko'ring."
-        bot.send_message(chat_id, text)
+        # Xato yozilgan bo'lsa brend bo'yicha tavsiya berish
+        sug = None
+        for brand, models in BRAND_SUGGESTIONS.items():
+            if brand in q_low:
+                sug = models
+                break
+        if sug:
+            markup = types.InlineKeyboardMarkup(row_width=2)
+            markup.add(*[types.InlineKeyboardButton(m, callback_data=safe_callback("search:", m)) for m in sug])
+            bot.send_message(chat_id, f"🔎 <b>{safe_q}</b> bo'yicha aniq narx topilmadi.\nBalki quyidagilardan birini qidiryapsiz?", reply_markup=markup)
+        else:
+            bot.send_message(chat_id, f"🔎 <b>{safe_q}</b>\n\nAfsuski, do'konlardan aniq narx topilmadi. Model nomini to'g'ri yozib ko'ring (masalan: <code>Redmi Note 13</code>).")
 
 @bot.callback_query_handler(func=lambda call: True)
 def handle_callbacks(call):
@@ -646,6 +846,49 @@ def handle_callbacks(call):
     elif call.data.startswith("search:"):
         bot.answer_callback_query(call.id)
         process_search(call.message.chat.id, call.data.split("search:", 1)[1])
+    elif call.data.startswith("alertmenu:"):
+        bot.answer_callback_query(call.id)
+        parts = call.data.split(":", 2)
+        cur_price = int(parts[1])
+        q = parts[2]
+        p5 = int(cur_price * 0.95)
+        p10 = int(cur_price * 0.90)
+        p15 = int(cur_price * 0.85)
+        markup = types.InlineKeyboardMarkup(row_width=1)
+        markup.add(
+            types.InlineKeyboardButton(f"📉 -5% ({format_price(p5)})", callback_data=safe_callback(f"setalert:{p5}:{cur_price}:", q)),
+            types.InlineKeyboardButton(f"📉 -10% ({format_price(p10)})", callback_data=safe_callback(f"setalert:{p10}:{cur_price}:", q)),
+            types.InlineKeyboardButton(f"📉 -15% ({format_price(p15)})", callback_data=safe_callback(f"setalert:{p15}:{cur_price}:", q)),
+        )
+        bot.send_message(
+            call.message.chat.id,
+            f"🔔 <b>{html.escape(q)}</b>\nHozirgi narx: <b>{format_price(cur_price)}</b>\n\nQaysi narxga tushganda xabar beray?",
+            reply_markup=markup
+        )
+    elif call.data.startswith("setalert:"):
+        parts = call.data.split(":", 3)
+        target_p, cur_p, q = int(parts[1]), int(parts[2]), parts[3]
+        with db_lock:
+            conn.execute(
+                "INSERT OR REPLACE INTO price_alerts (user_id, query, target_price, current_price, created_at) VALUES (?, ?, ?, ?, ?)",
+                (call.from_user.id, q, target_p, cur_p, int(time.time()))
+            )
+            conn.commit()
+        bot.answer_callback_query(call.id, "✅ Kuzatuv yoqildi!")
+        bot.edit_message_text(
+            f"✅ <b>Narx kuzatish yoqildi!</b>\n\n📦 {html.escape(q)}\n🎯 Maqsad narx: <b>{format_price(target_p)}</b>\n\nNarx tushishi bilan xabar beraman.",
+            call.message.chat.id,
+            call.message.message_id
+        )
+    elif call.data.startswith("delalert:"):
+        with db_lock:
+            conn.execute("DELETE FROM price_alerts WHERE id = ? AND user_id = ?", (int(call.data.split("delalert:", 1)[1]), call.from_user.id))
+            conn.commit()
+        bot.answer_callback_query(call.id, "🗑 O'chirildi")
+        try:
+            bot.delete_message(call.message.chat.id, call.message.message_id)
+        except Exception:
+            pass
     elif call.data.startswith("fav:"):
         q = call.data.split("fav:", 1)[1]
         with db_lock:
@@ -692,5 +935,6 @@ def handle_text(message):
 
 if __name__ == "__main__":
     threading.Thread(target=run_web_server, daemon=True).start()
+    threading.Thread(target=price_alert_worker, daemon=True).start()
     print("Arzoni Bor ishga tushdi!")
     bot.infinity_polling(skip_pending=True)
