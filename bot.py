@@ -161,6 +161,18 @@ def clean_title(title):
     t = re.sub(r"\s+", " ", (title or "").strip())
     return t[:110] + ("..." if len(t) > 110 else "")
 
+def parse_monthly_price(raw_val, full_price):
+    # Matndan faqat birinchi oylik summani ajratib olish ("161 700 so'm / 24 oy" -> 161700)
+    if isinstance(raw_val, (int, float)) and 1000 <= raw_val < full_price:
+        return int(raw_val)
+    text = str(raw_val or "").strip()
+    m = re.search(r"(\d{1,3}(?:[\s\u00a0.,]\d{3})+|\d{4,8})", text)
+    if m:
+        val = int(re.sub(r"\D", "", m.group(1)))
+        if 1000 <= val < full_price:
+            return val
+    return round(full_price / 12)
+
 def is_relevant_product(query, title):
     q_low = (query or "").lower().strip()
     t_low = (title or "").lower().strip()
@@ -273,7 +285,7 @@ def get_rates_text():
     markup.add(types.InlineKeyboardButton("🏦 Banklar kursi (Bank.uz)", url="https://bank.uz/uz/currency"))
     return "\n".join(lines), markup
 
-# --- DO'KONLARDAN QIDIRISH (RASM + RASSROCHKA + YETKAZIB BERISH BILAN) ---
+# --- DO'KONLARDAN QIDIRISH ---
 def fetch_olcha(query):
     try:
         url = f"https://api.olcha.uz/api/v2/products?search={quote_plus(query)}&per_page=15"
@@ -290,7 +302,7 @@ def fetch_olcha(query):
                 continue
             price = int(price)
             img = p.get("main_image") or ""
-            monthly = int(p.get("monthly_repayment") or round(price / 12))
+            monthly = parse_monthly_price(p.get("monthly_repayment"), price)
             if best is None or price < best["price"]:
                 best = {
                     "store": "Olcha",
@@ -321,9 +333,7 @@ def fetch_texnomart(query):
                 continue
             price = int(price)
             img = p.get("image") or ""
-            raw_m = str(p.get("axiom_monthly_price") or "")
-            m_digits = re.sub(r"\D", "", raw_m)
-            monthly = int(m_digits) if m_digits else round(price / 12)
+            monthly = parse_monthly_price(p.get("axiom_monthly_price"), price)
             if best is None or price < best["price"]:
                 best = {
                     "store": "Texnomart",
@@ -466,6 +476,18 @@ def extract_price_fallback(text):
     found = [int(re.sub(r'\D', '', m)) for m in matches if 100000 <= int(re.sub(r'\D', '', m)) <= 200000000]
     return min(found) if found else None
 
+def fetch_fallback_image(query):
+    try:
+        with DDGS() as ddgs:
+            imgs = list(ddgs.images(f"{query} official product", max_results=3))
+            for im in imgs:
+                u = im.get("image") or im.get("thumbnail") or ""
+                if u.startswith("http"):
+                    return u
+    except Exception:
+        pass
+    return ""
+
 def search_ddg_fallback(query):
     results = []
     seen = set()
@@ -524,8 +546,10 @@ def search_prices(query, bypass_cache=False):
     results.sort(key=lambda x: x["price"])
     results = results[:8]
 
-    # Agar biror natijada rasm yo'q bo'lsa, boshqa do'kondagi rasmni ulash
+    # Rasm topilmasa zaxira rasm qidiruvidan olish
     main_img = next((r["image"] for r in results if r.get("image")), "")
+    if results and not main_img:
+        main_img = fetch_fallback_image(query)
     for r in results:
         if not r.get("image"):
             r["image"] = main_img
@@ -703,7 +727,6 @@ def main_menu():
     markup.row("ℹ️ Yordam / Aloqa")
     return markup
 
-# --- GURUHNI ULASH (/setgroup) ---
 @bot.message_handler(commands=["setgroup"])
 def set_group_cmd(message):
     if message.from_user.id != ADMIN_ID:
@@ -719,7 +742,6 @@ def set_group_cmd(message):
         f"<code>SUPPORT_GROUP_ID</code> = <code>{message.chat.id}</code>"
     )
 
-# --- ADMIN JAVOBI ---
 @bot.message_handler(func=lambda m: m.from_user and m.from_user.id == ADMIN_ID and m.reply_to_message)
 def admin_reply_handler(message):
     with db_lock:
@@ -735,7 +757,6 @@ def admin_reply_handler(message):
     except Exception as e:
         bot.reply_to(message, f"❌ Xato: {html.escape(str(e))}")
 
-# --- HANDLERLAR ---
 @bot.message_handler(commands=["start"])
 def start_cmd(message):
     if message.chat.type != "private":
@@ -846,7 +867,6 @@ def handle_text(message):
         bot.send_message(message.chat.id, "Mahsulot nomini to'liqroq yozing yoki ilovani oching 👇", reply_markup=main_menu())
         return
 
-    # Aqlli yo'naltirish: to'g'ridan-to'g'ri ilovada rasmi va rassrochkasi bilan ochish
     app_link = f"{WEBAPP_URL}/?q={quote_plus(text)}"
     markup = types.InlineKeyboardMarkup()
     markup.add(types.InlineKeyboardButton(f"🔍 «{text[:25]}» — ilovada ko'rish", web_app=types.WebAppInfo(url=app_link)))
