@@ -9,14 +9,14 @@
     :root {
       --navy: #0A3761;
       --bg: #12161A;
-      --card: #1E242B;
-      --card-hover: #252C35;
+      --surface: #1B2027;
+      --surface-2: #222831;
       --orange: #FF6600;
       --blue: #60A5FA;
       --green: #22C55E;
-      --text: #F1F5F9;
+      --text: #EEF2F6;
       --muted: #94A3B8;
-      --border: #2B333E;
+      --border: #2A313C;
       --radius: 12px;
     }
 
@@ -26,124 +26,228 @@
       font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
       background: var(--bg);
       color: var(--text);
-      padding-bottom: 72px;
+      padding-bottom: 68px;
       overflow-x: hidden;
+      font-size: 13.5px;
       font-weight: 400;
       -webkit-font-smoothing: antialiased;
     }
 
+    /* HEADER */
     .header {
-      background: linear-gradient(180deg, var(--navy) 0%, #0D2640 75%, var(--bg) 100%);
-      padding: 12px 14px 14px;
+      background: linear-gradient(180deg, var(--navy) 0%, #0D2640 72%, var(--bg) 100%);
+      padding: 10px 14px 12px;
       position: sticky;
       top: 0;
       z-index: 20;
     }
-
-    .brand-row { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; }
-    .brand { font-size: 18px; font-weight: 600; letter-spacing: -0.2px; color: #fff; }
+    .brand-row { display: flex; align-items: center; justify-content: space-between; margin-bottom: 9px; }
+    .brand { font-size: 17px; font-weight: 600; letter-spacing: -0.2px; color: #fff; }
     .brand span { color: var(--orange); }
-    .live-dot { font-size: 11px; color: #CBD5E1; display: flex; align-items: center; gap: 5px; }
-    .live-dot::before { content: ""; width: 6px; height: 6px; border-radius: 50%; background: var(--green); }
+    .live-badge { font-size: 11px; color: #CBD5E1; display: flex; align-items: center; gap: 5px; }
+    .live-badge::before { content: ""; width: 6px; height: 6px; border-radius: 50%; background: var(--green); }
 
     .search-wrap { position: relative; display: flex; align-items: center; }
     .search-input {
-      width: 100%; height: 42px; border: 1px solid rgba(255,255,255,0.12);
-      border-radius: 10px; padding: 0 42px 0 14px; font-size: 14px;
-      outline: none; color: var(--text); background: #1B222C;
+      width: 100%; height: 39px; border: 1px solid rgba(255,255,255,0.12);
+      border-radius: 9px; padding: 0 38px 0 12px; font-size: 13.5px;
+      outline: none; color: var(--text); background: #1A212B;
     }
     .search-input::placeholder { color: var(--muted); }
     .search-input:focus { border-color: var(--orange); }
-    .search-icon-btn {
-      position: absolute; right: 4px; width: 36px; height: 36px; border: none;
+    .search-btn {
+      position: absolute; right: 3px; width: 34px; height: 34px; border: none;
       background: transparent; color: var(--muted); display: flex; align-items: center; justify-content: center; cursor: pointer;
     }
 
-    .ticker-bar { display: flex; gap: 8px; overflow-x: auto; padding: 4px 14px 10px; scrollbar-width: none; }
+    /* TICKER */
+    .ticker-bar { display: flex; gap: 7px; overflow-x: auto; padding: 2px 14px 10px; scrollbar-width: none; }
     .ticker-bar::-webkit-scrollbar { display: none; }
     .ticker-pill {
-      white-space: nowrap; background: var(--card); border: 1px solid var(--border);
-      border-radius: 8px; padding: 6px 10px; font-size: 12px; color: var(--muted);
+      white-space: nowrap; background: var(--surface); border: 1px solid var(--border);
+      border-radius: 7px; padding: 5px 9px; font-size: 11.5px; color: var(--muted);
       display: flex; align-items: center; gap: 5px; cursor: pointer;
     }
     .ticker-pill b { color: var(--text); font-weight: 500; }
     .ticker-pill.btc b { color: var(--orange); }
 
-    .container { padding: 8px 14px 20px; }
-    .section-title {
-      font-size: 13px; font-weight: 500; color: var(--muted); margin-bottom: 10px;
-      display: flex; align-items: center; justify-content: space-between; text-transform: uppercase; letter-spacing: 0.4px;
+    /* STORIES (Compact Idealo style) */
+    .stories { display: flex; gap: 12px; overflow-x: auto; padding: 4px 14px 12px; scrollbar-width: none; }
+    .stories::-webkit-scrollbar { display: none; }
+    .story { display: flex; flex-direction: column; align-items: center; gap: 5px; width: 68px; flex-shrink: 0; cursor: pointer; }
+    .story-ring {
+      width: 58px; height: 58px; border-radius: 50%; padding: 2px;
+      background: linear-gradient(135deg, #FF6600, #F59E0B);
+    }
+    .story-inner {
+      width: 100%; height: 100%; border-radius: 50%; background: var(--navy);
+      border: 2px solid var(--bg); display: flex; align-items: center; justify-content: center;
+      font-size: 20px; font-weight: 600; color: #fff;
+    }
+    .story-label { font-size: 11px; color: var(--text); text-align: center; line-height: 1.2; }
+
+    /* CONTAINER & TITLES */
+    .container { padding: 4px 14px 20px; }
+    .sec-head { display: flex; align-items: center; justify-content: space-between; margin: 12px 0 9px; }
+    .sec-title { font-size: 15px; font-weight: 500; color: var(--text); }
+    .sec-link { font-size: 12.5px; color: var(--blue); background: none; border: none; cursor: pointer; }
+
+    /* HORIZONTAL CARDS (Last Viewed) */
+    .h-scroll { display: flex; gap: 10px; overflow-x: auto; padding-bottom: 4px; scrollbar-width: none; }
+    .h-scroll::-webkit-scrollbar { display: none; }
+    .mini-card {
+      width: 142px; flex-shrink: 0; background: var(--surface); border: 1px solid var(--border);
+      border-radius: var(--radius); overflow: hidden; cursor: pointer;
+    }
+    .mini-img-box {
+      height: 115px; background: #fff; display: flex; align-items: center; justify-content: center; padding: 8px;
+    }
+    .mini-img-box img { max-width: 100%; max-height: 100%; object-fit: contain; }
+    .mini-body { padding: 8px 9px; }
+    .mini-title {
+      font-size: 12px; color: var(--text); line-height: 1.3; height: 31px;
+      display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; margin-bottom: 4px;
+    }
+    .mini-price { font-size: 12.5px; font-weight: 500; color: var(--orange); }
+
+    /* 2-COLUMN POPULAR GRID */
+    .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 9px; }
+    .pop-card {
+      background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius);
+      padding: 10px; cursor: pointer; display: flex; flex-direction: column; gap: 4px;
+    }
+    .pop-card:active { background: var(--surface-2); }
+    .pop-name { font-size: 13px; font-weight: 500; color: var(--text); }
+    .pop-sub { font-size: 11.5px; color: var(--muted); }
+
+    /* SEARCH RESULT CARD (Idealo Horizontal Product Card) */
+    .sort-row { display: flex; gap: 7px; margin-bottom: 10px; }
+    .pill-btn {
+      background: var(--surface); border: 1px solid var(--border); color: var(--text);
+      padding: 6px 11px; border-radius: 16px; font-size: 12px; cursor: pointer;
+    }
+    .pill-btn.active { border-color: var(--blue); color: var(--blue); }
+
+    .result-card {
+      display: flex; background: var(--surface); border: 1px solid var(--border);
+      border-radius: var(--radius); overflow: hidden; margin-bottom: 10px; cursor: pointer;
+    }
+    .res-img-col {
+      width: 112px; flex-shrink: 0; background: #fff; display: flex; align-items: center;
+      justify-content: center; padding: 8px; position: relative;
+    }
+    .res-img-col img { max-width: 100%; max-height: 104px; object-fit: contain; }
+    .res-heart {
+      position: absolute; bottom: 6px; right: 6px; width: 28px; height: 28px; border-radius: 50%;
+      background: rgba(18,22,26,0.82); border: none; color: #fff; display: flex; align-items: center; justify-content: center; cursor: pointer;
+    }
+    .res-heart.saved { color: var(--orange); }
+    .res-info { flex: 1; padding: 10px 11px; display: flex; flex-direction: column; justify-content: space-between; min-width: 0; }
+    .res-title {
+      font-size: 13px; font-weight: 500; color: var(--text); line-height: 1.32;
+      display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; margin-bottom: 5px;
+    }
+    .res-meta { font-size: 11.5px; color: var(--green); margin-bottom: 3px; }
+    .res-monthly { font-size: 11.5px; color: var(--muted); margin-bottom: 6px; }
+    .res-price-row { display: flex; align-items: baseline; justify-content: space-between; gap: 6px; }
+    .res-price { font-size: 15px; font-weight: 600; color: var(--orange); }
+    .res-store { font-size: 11px; color: var(--muted); }
+
+    /* CATALOGUE */
+    .top-cats { display: flex; gap: 14px; overflow-x: auto; padding-bottom: 8px; scrollbar-width: none; }
+    .top-cats::-webkit-scrollbar { display: none; }
+    .top-cat { display: flex; flex-direction: column; align-items: center; gap: 6px; width: 76px; flex-shrink: 0; cursor: pointer; }
+    .top-cat-circle {
+      width: 64px; height: 64px; border-radius: 50%; background: #fff;
+      display: flex; align-items: center; justify-content: center; font-size: 26px;
+    }
+    .top-cat-name { font-size: 11.5px; color: var(--text); text-align: center; }
+
+    .cat-list { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; }
+    .cat-row {
+      display: flex; align-items: center; gap: 12px; padding: 12px 14px;
+      border-bottom: 1px solid var(--border); cursor: pointer; font-size: 13.5px; color: var(--text);
+    }
+    .cat-row:last-child { border-bottom: none; }
+    .cat-row:active { background: var(--surface-2); }
+
+    /* PRODUCT DETAIL OVERLAY */
+    .overlay { position: fixed; inset: 0; background: var(--bg); z-index: 40; overflow-y: auto; padding-bottom: 28px; }
+    .ov-top {
+      display: flex; align-items: center; justify-content: space-between; padding: 10px 14px;
+      position: sticky; top: 0; background: rgba(18,22,26,0.95); z-index: 5; border-bottom: 1px solid var(--border);
+    }
+    .ov-btn {
+      width: 34px; height: 34px; border-radius: 50%; background: var(--surface); border: 1px solid var(--border);
+      color: var(--text); display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 16px;
+    }
+    .ov-btn.blue { background: var(--blue); color: #0B1220; border-color: var(--blue); }
+
+    .detail-img-wrap {
+      background: #fff; margin: 12px 14px; border-radius: var(--radius); height: 210px;
+      display: flex; align-items: center; justify-content: center; padding: 14px;
+    }
+    .detail-img-wrap img { max-width: 100%; max-height: 100%; object-fit: contain; }
+    .detail-body { padding: 0 14px; }
+    .detail-title { font-size: 16px; font-weight: 500; line-height: 1.35; margin-bottom: 8px; }
+    .detail-from { font-size: 12px; color: var(--muted); }
+    .detail-price { font-size: 20px; font-weight: 600; color: var(--orange); margin-bottom: 12px; }
+    .blue-cta {
+      width: 100%; background: var(--blue); color: #0B1220; border: none; border-radius: 10px;
+      padding: 11px; font-size: 14px; font-weight: 600; cursor: pointer; margin-bottom: 14px;
     }
 
-    .chips { display: flex; gap: 7px; overflow-x: auto; padding-bottom: 4px; margin-bottom: 14px; scrollbar-width: none; }
-    .chips::-webkit-scrollbar { display: none; }
-    .chip {
-      white-space: nowrap; background: var(--card); border: 1px solid var(--border);
-      color: var(--text); padding: 7px 12px; border-radius: 18px; font-size: 12.5px; cursor: pointer;
+    .offer-card {
+      background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius);
+      padding: 11px 12px; margin-bottom: 9px;
+    }
+    .offer-badge {
+      display: inline-block; background: var(--orange); color: #fff; font-size: 10.5px;
+      font-weight: 500; padding: 2px 7px; border-radius: 4px; margin-bottom: 6px;
+    }
+    .offer-row { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+    .offer-p { font-size: 16px; font-weight: 600; color: var(--text); }
+    .offer-m { font-size: 11.5px; color: var(--muted); margin-top: 2px; }
+    .offer-del { font-size: 11.5px; color: var(--green); margin-top: 4px; }
+    .shop-btn {
+      background: var(--surface-2); border: 1px solid var(--border); color: var(--text);
+      padding: 7px 12px; border-radius: 8px; font-size: 12.5px; font-weight: 500; cursor: pointer; white-space: nowrap;
     }
 
-    .card { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius); padding: 12px; margin-bottom: 10px; }
-    .offer-top { display: flex; align-items: center; justify-content: space-between; margin-bottom: 5px; }
-    .store-name { font-size: 13px; font-weight: 500; color: #CBD5E1; }
-    .best-badge { background: rgba(255, 102, 0, 0.16); color: var(--orange); font-size: 10.5px; font-weight: 500; padding: 2px 7px; border-radius: 5px; }
-    .offer-title {
-      font-size: 13px; color: var(--muted); line-height: 1.38;
-      display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; margin-bottom: 10px;
-    }
-    .offer-bottom { display: flex; align-items: center; justify-content: space-between; padding-top: 9px; border-top: 1px solid var(--border); }
-    .price { font-size: 16px; font-weight: 600; color: var(--text); }
-    .price.cheapest { color: var(--orange); }
-
-    .go-btn { background: transparent; color: var(--text); border: 1px solid var(--border); padding: 6px 12px; border-radius: 8px; font-size: 12.5px; font-weight: 500; cursor: pointer; }
-    .go-btn.primary { background: var(--orange); border-color: var(--orange); color: #fff; }
-    .fav-btn { background: transparent; color: var(--muted); border: 1px solid var(--border); padding: 5px 10px; border-radius: 8px; font-size: 12px; cursor: pointer; }
-    .alert-open-btn { background: rgba(96, 165, 250, 0.14); color: var(--blue); border: 1px solid rgba(96, 165, 250, 0.35); padding: 5px 10px; border-radius: 8px; font-size: 12px; cursor: pointer; }
-
-    .cat-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
-    .cat-item { display: flex; flex-direction: column; align-items: center; gap: 7px; cursor: pointer; padding: 6px 4px; }
-    .cat-circle { width: 54px; height: 54px; border-radius: 50%; background: #232B35; border: 1px solid var(--border); display: flex; align-items: center; justify-content: center; color: var(--text); }
-    .cat-label { font-size: 12px; color: var(--text); text-align: center; }
-
-    .rate-row { display: flex; align-items: center; justify-content: space-between; padding: 12px; background: var(--card); border: 1px solid var(--border); border-radius: var(--radius); margin-bottom: 8px; }
-    .rate-left { display: flex; flex-direction: column; gap: 2px; }
-    .rate-code { font-size: 14px; font-weight: 500; color: var(--text); }
-    .rate-sub { font-size: 11.5px; color: var(--muted); }
-    .rate-val { font-size: 15px; font-weight: 600; color: var(--text); text-align: right; }
-    .rate-diff { font-size: 11.5px; color: var(--muted); text-align: right; }
-
-    .skeleton { height: 84px; border-radius: var(--radius); background: linear-gradient(90deg, #1E242B 25%, #272F38 50%, #1E242B 75%); background-size: 200% 100%; animation: shimmer 1.2s infinite; margin-bottom: 10px; }
-    @keyframes shimmer { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
-    .empty-box { text-align: center; padding: 24px 14px; color: var(--muted); font-size: 13px; line-height: 1.5; }
-
-    /* PRICE ALERT MODAL (Idealo Style) */
-    .modal-overlay {
-      position: fixed; inset: 0; background: #12161A; z-index: 50;
-      overflow-y: auto; padding: 14px;
-    }
-    .modal-top { display: flex; align-items: center; gap: 12px; margin-bottom: 16px; }
-    .modal-close { background: none; border: none; color: var(--text); font-size: 22px; cursor: pointer; padding: 4px 8px; }
-    .modal-title { font-size: 17px; font-weight: 600; }
+    /* PRICE ALERT MODAL */
+    .alert-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 13px; margin: 12px 14px; }
     .alert-input-box {
-      display: flex; align-items: center; justify-content: space-between;
-      background: #14191F; border: 1px solid var(--border); border-radius: 10px; padding: 10px 14px; margin-bottom: 6px;
+      display: flex; align-items: center; background: #14191F; border: 1px solid var(--border);
+      border-radius: 9px; padding: 8px 12px; margin-bottom: 5px;
     }
-    .alert-input {
-      background: transparent; border: none; color: var(--text); font-size: 22px; font-weight: 500; width: 100%; outline: none;
-    }
-    .save-hint { text-align: right; font-size: 12.5px; color: var(--muted); margin-bottom: 14px; }
-    .alert-slider { width: 100%; accent-color: var(--blue); height: 6px; margin-bottom: 18px; }
-    .toggle-row { display: flex; align-items: center; justify-content: space-between; padding: 10px 0; font-size: 13.5px; color: var(--text); }
-    .trend-row { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 14px; }
-    .trend-price { font-size: 20px; font-weight: 600; color: var(--orange); margin-top: 2px; }
-    .trend-badge { font-size: 13px; color: var(--green); display: flex; align-items: center; gap: 5px; margin-top: 2px; }
+    .alert-input { background: transparent; border: none; color: var(--text); font-size: 20px; font-weight: 500; width: 100%; outline: none; }
+    .alert-slider { width: 100%; accent-color: var(--blue); margin: 10px 0 14px; }
 
-    .tabbar {
-      position: fixed; bottom: 0; left: 0; right: 0; height: 60px; background: #161B22;
-      border-top: 1px solid var(--border); display: grid; grid-template-columns: repeat(4, 1fr); z-index: 30;
+    /* ALERTS & PROFILE CARDS */
+    .rate-row {
+      display: flex; align-items: center; justify-content: space-between; padding: 11px 13px;
+      background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); margin-bottom: 8px;
     }
-    .tab { background: none; border: none; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; font-size: 10.5px; color: var(--muted); cursor: pointer; }
-    .tab svg { width: 20px; height: 20px; stroke: currentColor; fill: none; stroke-width: 1.8; }
+    .skeleton {
+      height: 96px; border-radius: var(--radius); margin-bottom: 10px;
+      background: linear-gradient(90deg, #1B2027 25%, #242B35 50%, #1B2027 75%);
+      background-size: 200% 100%; animation: shimmer 1.2s infinite;
+    }
+    @keyframes shimmer { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
+    .empty-box { text-align: center; padding: 26px 14px; color: var(--muted); font-size: 13px; line-height: 1.5; }
+
+    /* 5-TAB BOTTOM BAR (Idealo style) */
+    .tabbar {
+      position: fixed; bottom: 0; left: 0; right: 0; height: 58px; background: #161B22;
+      border-top: 1px solid var(--border); display: grid; grid-template-columns: repeat(5, 1fr); z-index: 30;
+    }
+    .tab {
+      background: none; border: none; display: flex; flex-direction: column; align-items: center;
+      justify-content: center; gap: 3px; font-size: 10px; color: var(--muted); cursor: pointer;
+    }
+    .tab svg { width: 19px; height: 19px; stroke: currentColor; fill: none; stroke-width: 1.8; }
     .tab.active { color: var(--orange); font-weight: 500; }
+
     .hidden { display: none !important; }
   </style>
 </head>
@@ -152,131 +256,191 @@
   <header class="header">
     <div class="brand-row">
       <div class="brand">Arzoni<span>Bor</span></div>
-      <div class="live-dot">Jonli narxlar</div>
+      <div class="live-badge">Jonli narxlar</div>
     </div>
     <form class="search-wrap" id="searchForm">
-      <input id="searchInput" class="search-input" type="search" placeholder="Mahsulot nomini yozing (iPhone 16 Pro...)" autocomplete="off" />
-      <button class="search-icon-btn" type="submit" aria-label="Qidirish">
-        <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" fill="none" stroke-width="2">
+      <input id="searchInput" class="search-input" type="search" placeholder="Mahsulot qidirish (iPhone, Redmi...)" autocomplete="off" />
+      <button class="search-btn" type="submit" aria-label="Qidirish">
+        <svg viewBox="0 0 24 24" width="17" height="17" stroke="currentColor" fill="none" stroke-width="2">
           <circle cx="11" cy="11" r="7"></circle><line x1="20" y1="20" x2="16.65" y2="16.65"></line>
         </svg>
       </button>
     </form>
   </header>
 
-  <div class="ticker-bar" onclick="switchTab('rates')">
+  <div class="ticker-bar" onclick="switchTab('profile')">
     <div class="ticker-pill">USD <b id="t-usd">...</b></div>
     <div class="ticker-pill">EUR <b id="t-eur">...</b></div>
     <div class="ticker-pill">RUB <b id="t-rub">...</b></div>
     <div class="ticker-pill btc">BTC <b id="t-btc">...</b></div>
   </div>
 
-  <main class="container">
-    <section id="tab-search">
-      <div class="chips">
-        <button class="chip" data-q="iPhone 16 Pro">iPhone 16 Pro</button>
-        <button class="chip" data-q="Redmi Note 13">Redmi Note 13</button>
-        <button class="chip" data-q="Samsung A55">Samsung A55</button>
-        <button class="chip" data-q="AirPods Pro 2">AirPods Pro 2</button>
-        <button class="chip" data-q="PlayStation 5">PlayStation 5</button>
-        <button class="chip" data-q="MacBook Air M2">MacBook Air M2</button>
+  <!-- TAB 1: HOME -->
+  <section id="tab-home">
+    <div id="homeDashboard">
+      <div class="stories">
+        <div class="story" onclick="runSearch('iPhone 16 Pro')"><div class="story-ring"><div class="story-inner">%</div></div><div class="story-label">Kun narxi</div></div>
+        <div class="story" onclick="runSearch('Redmi Note 13')"><div class="story-ring"><div class="story-inner">📱</div></div><div class="story-label">Top Redmi</div></div>
+        <div class="story" onclick="runSearch('PlayStation 5')"><div class="story-ring"><div class="story-inner">🎮</div></div><div class="story-label">O'yinlar</div></div>
+        <div class="story" onclick="switchTab('profile')"><div class="story-ring"><div class="story-inner">₿</div></div><div class="story-label">Kurslar</div></div>
       </div>
 
-      <div id="resultsHeader" class="section-title hidden">
-        <span id="resultsTitle">Natijalar</span>
-        <div style="display:flex;gap:6px;">
-          <button id="openAlertBtn" class="alert-open-btn hidden">🔔 Kuzatish</button>
-          <button id="saveFavBtn" class="fav-btn">Saqlash</button>
+      <div class="container">
+        <div id="lastViewedWrap" class="hidden">
+          <div class="sec-head">
+            <span class="sec-title">Oxirgi ko'rilganlar</span>
+            <button class="sec-link" onclick="clearHistory()">Tozalash</button>
+          </div>
+          <div id="lastViewedList" class="h-scroll"></div>
+        </div>
+
+        <div class="sec-head"><span class="sec-title">Eng ko'p qidirilganlar</span></div>
+        <div class="grid-2">
+          <div class="pop-card" onclick="runSearch('iPhone 16 Pro')"><span class="pop-name">iPhone 16 Pro</span><span class="pop-sub">Smartfonlar</span></div>
+          <div class="pop-card" onclick="runSearch('Redmi Note 13')"><span class="pop-name">Redmi Note 13</span><span class="pop-sub">Smartfonlar</span></div>
+          <div class="pop-card" onclick="runSearch('Samsung A55')"><span class="pop-name">Samsung A55</span><span class="pop-sub">Smartfonlar</span></div>
+          <div class="pop-card" onclick="runSearch('AirPods Pro 2')"><span class="pop-name">AirPods Pro 2</span><span class="pop-sub">Aksessuarlar</span></div>
+          <div class="pop-card" onclick="runSearch('MacBook Air M2')"><span class="pop-name">MacBook Air M2</span><span class="pop-sub">Noutbuklar</span></div>
+          <div class="pop-card" onclick="runSearch('PlayStation 5')"><span class="pop-name">PlayStation 5</span><span class="pop-sub">Konsollar</span></div>
         </div>
       </div>
-
-      <div id="resultsArea">
-        <div class="card empty-box">
-          Mahsulot nomini yozing — O'zbekistonning yirik do'konlaridagi eng arzon narxlarni bir joyda solishtiramiz.
-        </div>
-      </div>
-    </section>
-
-    <section id="tab-categories" class="hidden">
-      <div class="section-title">Kategoriyalar</div>
-      <div class="cat-grid">
-        <div class="cat-item" data-q="iPhone 16 Pro"><div class="cat-circle">📱</div><span class="cat-label">Smartfonlar</span></div>
-        <div class="cat-item" data-q="MacBook Air M2"><div class="cat-circle">💻</div><span class="cat-label">Noutbuklar</span></div>
-        <div class="cat-item" data-q="Artel 43"><div class="cat-circle">📺</div><span class="cat-label">Televizorlar</span></div>
-        <div class="cat-item" data-q="Konditsioner"><div class="cat-circle">❄️</div><span class="cat-label">Konditsioner</span></div>
-        <div class="cat-item" data-q="AirPods Pro 2"><div class="cat-circle">🎧</div><span class="cat-label">Aksessuarlar</span></div>
-        <div class="cat-item" data-q="PlayStation 5"><div class="cat-circle">🎮</div><span class="cat-label">Konsollar</span></div>
-      </div>
-    </section>
-
-    <section id="tab-favorites" class="hidden">
-      <div class="section-title">Saqlangan mahsulotlar</div>
-      <div id="favoritesList"></div>
-    </section>
-
-    <section id="tab-rates" class="hidden">
-      <div class="section-title">Valyuta va Bitcoin kurslari</div>
-      <div id="ratesArea"><div class="skeleton"></div><div class="skeleton"></div></div>
-    </section>
-  </main>
-
-  <!-- IDEALO STYLE PRICE ALERT MODAL -->
-  <div id="alertModal" class="modal-overlay hidden">
-    <div class="modal-top">
-      <button class="modal-close" onclick="closeAlertModal()">✕</button>
-      <div class="modal-title">Narx kuzatish</div>
     </div>
 
-    <div class="card">
-      <div style="font-size:13px;color:var(--muted);margin-bottom:8px;" id="alertProductName"></div>
-      <div class="alert-input-box">
-        <input id="alertPriceInput" class="alert-input" type="number" />
-        <span style="color:var(--muted);font-size:14px;">so'm</span>
+    <div id="searchResultsWrap" class="container hidden">
+      <div class="sec-head">
+        <span class="sec-title" id="searchHeading">Natijalar</span>
+        <button class="sec-link" onclick="backToHome()">Yopish</button>
       </div>
-      <div class="save-hint" id="alertSaveHint">Tejaysiz: 0 so'm</div>
-      <input id="alertSlider" class="alert-slider" type="range" />
-      <div class="toggle-row">
-        <span>Telegram bot orqali xabar berish</span>
-        <input type="checkbox" checked style="width:18px;height:18px;accent-color:var(--blue);" />
+      <div class="sort-row">
+        <button class="pill-btn active" id="sortAsc" onclick="sortResults('asc')">Arzonidan</button>
+        <button class="pill-btn" id="sortDesc" onclick="sortResults('desc')">Qimmatidan</button>
       </div>
-      <button id="confirmAlertBtn" class="go-btn primary" style="width:100%;padding:11px;margin-top:8px;" onclick="submitAlert()">
-        🔔 Kuzatuvni yoqish
-      </button>
+      <div id="resultsArea"></div>
+    </div>
+  </section>
+
+  <!-- TAB 2: CATALOGUE -->
+  <section id="tab-products" class="container hidden">
+    <div class="sec-head"><span class="sec-title">Top bo'limlar</span></div>
+    <div class="top-cats">
+      <div class="top-cat" onclick="runSearch('iPhone 16 Pro')"><div class="top-cat-circle">📱</div><div class="top-cat-name">Smartfonlar</div></div>
+      <div class="top-cat" onclick="runSearch('PlayStation 5')"><div class="top-cat-circle">🎮</div><div class="top-cat-name">Konsollar</div></div>
+      <div class="top-cat" onclick="runSearch('Apple Watch')"><div class="top-cat-circle">⌚</div><div class="top-cat-name">Soatlar</div></div>
+      <div class="top-cat" onclick="runSearch('MacBook Air M2')"><div class="top-cat-circle">💻</div><div class="top-cat-name">Noutbuklar</div></div>
     </div>
 
-    <div class="card">
-      <div class="trend-row">
-        <div>
-          <div style="font-size:12px;color:var(--muted);">Hozirgi narx</div>
-          <div class="trend-price" id="alertCurrentPrice">0 so'm</div>
-        </div>
-        <div style="text-align:right;">
-          <div style="font-size:12px;color:var(--muted);">Holat</div>
-          <div class="trend-badge">Jonli kuzatuv ↘</div>
-        </div>
+    <div class="sec-head"><span class="sec-title">To'liq katalog</span></div>
+    <div class="cat-list">
+      <div class="cat-row" onclick="runSearch('Samsung A55')"><span>📱</span><span>Smartfonlar va gadjetlar</span></div>
+      <div class="cat-row" onclick="runSearch('MacBook Air M2')"><span>💻</span><span>Noutbuk va kompyuterlar</span></div>
+      <div class="cat-row" onclick="runSearch('Artel 43')"><span>📺</span><span>Televizorlar</span></div>
+      <div class="cat-row" onclick="runSearch('Konditsioner')"><span>❄️</span><span>Maishiy texnika</span></div>
+      <div class="cat-row" onclick="runSearch('AirPods Pro 2')"><span>🎧</span><span>Quloqchin va aksessuarlar</span></div>
+      <div class="cat-row" onclick="runSearch('PlayStation 5')"><span>🎮</span><span>O'yin pristavkalari</span></div>
+    </div>
+  </section>
+
+  <!-- TAB 3: FAVOURITES -->
+  <section id="tab-favs" class="container hidden">
+    <div class="sec-head"><span class="sec-title">Sevimlilar</span></div>
+    <div id="favsList"></div>
+  </section>
+
+  <!-- TAB 4: PRICE ALERTS -->
+  <section id="tab-alerts" class="container hidden">
+    <div class="sec-head"><span class="sec-title">Narx kuzatuvlari</span></div>
+    <div id="alertsList"></div>
+  </section>
+
+  <!-- TAB 5: PROFILE & RATES -->
+  <section id="tab-profile" class="container hidden">
+    <div class="sec-head"><span class="sec-title">Valyuta va Bitcoin kurslari</span></div>
+    <div id="ratesArea"><div class="skeleton"></div></div>
+    <div class="sec-head"><span class="sec-title">Mening profilim</span></div>
+    <div class="cat-list">
+      <div class="cat-row" id="profileUserRow"><span>👤</span><span>Telegram foydalanuvchisi</span></div>
+      <div class="cat-row" onclick="openExternal('https://t.me/arzoniboragent')"><span>📢</span><span>Arzoni Bor kanali</span></div>
+      <div class="cat-row" onclick="openExternal('https://t.me/mrtexnoai')"><span>🤖</span><span>Mr Texno AI kanali</span></div>
+    </div>
+  </section>
+
+  <!-- PRODUCT DETAIL OVERLAY -->
+  <div id="detailOverlay" class="overlay hidden">
+    <div class="ov-top">
+      <button class="ov-btn" onclick="closeDetail()">✕</button>
+      <div style="display:flex;gap:8px;">
+        <button class="ov-btn blue" onclick="openAlertModal()" title="Narx kuzatish">🔔</button>
+        <button class="ov-btn" id="detailHeartBtn" onclick="toggleDetailFav()">♡</button>
       </div>
-      <div id="alertChartWrap" style="height:110px;display:flex;align-items:center;justify-content:center;color:var(--muted);font-size:12px;">
-        Grafik yuklanmoqda...
-      </div>
+    </div>
+    <div class="detail-img-wrap"><img id="detailImg" src="" alt="" /></div>
+    <div class="detail-body">
+      <div class="detail-title" id="detailTitle"></div>
+      <div class="detail-from">Eng arzon narx</div>
+      <div class="detail-price" id="detailPrice"></div>
+      <button class="blue-cta" id="detailOffersBtn" onclick="document.getElementById('offersList').scrollIntoView({behavior:'smooth'})">Takliflarni solishtirish</button>
+      <div class="sec-head"><span class="sec-title" id="offersCountTitle">Do'konlar takliflari</span></div>
+      <div id="offersList"></div>
     </div>
   </div>
 
+  <!-- PRICE ALERT MODAL -->
+  <div id="alertOverlay" class="overlay hidden" style="z-index:50;">
+    <div class="ov-top">
+      <button class="ov-btn" onclick="closeAlertModal()">✕</button>
+      <span style="font-size:15px;font-weight:500;">Narx kuzatish</span>
+      <span style="width:34px;"></span>
+    </div>
+    <div class="alert-card">
+      <div style="font-size:12.5px;color:var(--muted);margin-bottom:8px;" id="alertProdName"></div>
+      <div class="alert-input-box">
+        <input id="alertPriceInput" class="alert-input" type="number" />
+        <span style="color:var(--muted);font-size:13px;">so'm</span>
+      </div>
+      <div style="text-align:right;font-size:12px;color:var(--muted);" id="alertSaveHint">Tejaysiz: 0 so'm</div>
+      <input id="alertSlider" class="alert-slider" type="range" />
+      <div style="display:flex;justify-content:space-between;align-items:center;font-size:13px;margin-bottom:12px;">
+        <span>Telegram bot orqali xabar berish</span>
+        <input type="checkbox" checked style="width:17px;height:17px;accent-color:var(--blue);" />
+      </div>
+      <button id="confirmAlertBtn" class="blue-cta" style="margin-bottom:0;" onclick="submitAlert()">🔔 Kuzatuvni yoqish</button>
+    </div>
+    <div class="alert-card">
+      <div style="display:flex;justify-content:space-between;margin-bottom:10px;">
+        <div>
+          <div style="font-size:11.5px;color:var(--muted);">Hozirgi narx</div>
+          <div style="font-size:17px;font-weight:600;color:var(--orange);" id="alertCurPrice"></div>
+        </div>
+        <div style="text-align:right;">
+          <div style="font-size:11.5px;color:var(--muted);">Holat</div>
+          <div style="font-size:12.5px;color:var(--green);">Jonli kuzatuv ↘</div>
+        </div>
+      </div>
+      <div id="alertChartWrap" style="height:100px;display:flex;align-items:center;justify-content:center;color:var(--muted);font-size:12px;"></div>
+    </div>
+  </div>
+
+  <!-- 5-TAB BOTTOM BAR -->
   <nav class="tabbar">
-    <button class="tab active" data-tab="search">
+    <button class="tab active" data-tab="home">
+      <svg viewBox="0 0 24 24"><path d="M3 10l9-7 9 7v11a1 1 0 0 1-1 1h-5v-7H9v7H4a1 1 0 0 1-1-1z"/></svg>
+      <span>Asosiy</span>
+    </button>
+    <button class="tab" data-tab="products">
       <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><line x1="20" y1="20" x2="16.65" y2="16.65"/></svg>
-      <span>Qidiruv</span>
+      <span>Katalog</span>
     </button>
-    <button class="tab" data-tab="categories">
-      <svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg>
-      <span>Bo'limlar</span>
-    </button>
-    <button class="tab" data-tab="favorites">
+    <button class="tab" data-tab="favs">
       <svg viewBox="0 0 24 24"><path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.7l-1-1.1a5.5 5.5 0 0 0-7.8 7.8l1 1.1L12 21l7.8-7.5 1-1.1a5.5 5.5 0 0 0 0-7.8z"/></svg>
       <span>Sevimli</span>
     </button>
-    <button class="tab" data-tab="rates">
-      <svg viewBox="0 0 24 24"><polyline points="22 7 13.5 15.5 8.5 10.5 2 17"/><polyline points="16 7 22 7 22 13"/></svg>
-      <span>Kurslar</span>
+    <button class="tab" data-tab="alerts">
+      <svg viewBox="0 0 24 24"><circle cx="12" cy="13" r="8"/><polyline points="12 9 12 13 14.5 14.5"/><path d="M5 3L2 6M22 6l-3-3"/></svg>
+      <span>Kuzatuv</span>
+    </button>
+    <button class="tab" data-tab="profile">
+      <svg viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+      <span>Profil</span>
     </button>
   </nav>
 
@@ -286,33 +450,286 @@
       tg.ready(); tg.expand();
       if (tg.setHeaderColor) tg.setHeaderColor("#0A3761");
       if (tg.setBackgroundColor) tg.setBackgroundColor("#12161A");
+      if (tg.initDataUnsafe && tg.initDataUnsafe.user) {
+        const u = tg.initDataUnsafe.user;
+        document.getElementById("profileUserRow").innerHTML = `<span>👤</span><span>${escapeHtml(u.first_name || "Foydalanuvchi")} ${escapeHtml(u.last_name || "")}</span>`;
+      }
     }
 
+    const FALLBACK_IMG = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120' viewBox='0 0 24 24' fill='none' stroke='%2394A3B8' stroke-width='1.5'%3E%3Crect x='3' y='3' width='18' height='18' rx='2'/%3E%3Ccircle cx='8.5' cy='8.5' r='1.5'/%3E%3Cpath d='M21 15l-5-5L5 21'/%3E%3C/svg%3E";
     let currentQuery = "";
-    let currentBestPrice = 0;
+    let currentResults = [];
     let ratesData = null;
 
-    function escapeHtml(str) {
-      return String(str || "").replace(/[&<>"']/g, s => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[s]));
-    }
-    function formatPrice(num) { return Number(num).toLocaleString("ru-RU") + " so'm"; }
-    function openExternal(url) { if (tg && tg.openLink) tg.openLink(url); else window.open(url, "_blank"); }
+    function escapeHtml(s) { return String(s || "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c])); }
+    function formatPrice(n) { return Number(n).toLocaleString("ru-RU") + " so'm"; }
+    function openExternal(u) { if (tg && tg.openLink) tg.openLink(u); else window.open(u, "_blank"); }
+    function getUserId() { return tg && tg.initDataUnsafe && tg.initDataUnsafe.user ? tg.initDataUnsafe.user.id : 0; }
 
+    // TABS
     const tabs = document.querySelectorAll(".tab");
     const sections = {
-      search: document.getElementById("tab-search"),
-      categories: document.getElementById("tab-categories"),
-      favorites: document.getElementById("tab-favorites"),
-      rates: document.getElementById("tab-rates"),
+      home: document.getElementById("tab-home"),
+      products: document.getElementById("tab-products"),
+      favs: document.getElementById("tab-favs"),
+      alerts: document.getElementById("tab-alerts"),
+      profile: document.getElementById("tab-profile"),
     };
     function switchTab(name) {
       tabs.forEach(t => t.classList.toggle("active", t.dataset.tab === name));
       Object.entries(sections).forEach(([k, el]) => el.classList.toggle("hidden", k !== name));
-      if (name === "favorites") renderFavorites();
-      if (name === "rates") renderRatesTab();
+      if (name === "favs") renderFavs();
+      if (name === "alerts") loadAlerts();
+      if (name === "profile") renderRates();
     }
     tabs.forEach(t => t.addEventListener("click", () => switchTab(t.dataset.tab)));
 
+    // LAST VIEWED
+    function getHistory() { try { return JSON.parse(localStorage.getItem("ab_hist") || "[]"); } catch { return []; } }
+    function addHistory(item) {
+      let h = getHistory().filter(x => x.query.toLowerCase() !== item.query.toLowerCase());
+      h.unshift(item);
+      localStorage.setItem("ab_hist", JSON.stringify(h.slice(0, 10)));
+      renderHistory();
+    }
+    function clearHistory() { localStorage.removeItem("ab_hist"); renderHistory(); }
+    function renderHistory() {
+      const h = getHistory();
+      const wrap = document.getElementById("lastViewedWrap");
+      if (!h.length) { wrap.classList.add("hidden"); return; }
+      wrap.classList.remove("hidden");
+      document.getElementById("lastViewedList").innerHTML = h.map(x => `
+        <div class="mini-card" onclick="runSearch('${escapeHtml(x.query)}')">
+          <div class="mini-img-box"><img src="${escapeHtml(x.image || FALLBACK_IMG)}" onerror="this.src='${FALLBACK_IMG}'" /></div>
+          <div class="mini-body">
+            <div class="mini-title">${escapeHtml(x.title || x.query)}</div>
+            <div class="mini-price">${formatPrice(x.price)}</div>
+          </div>
+        </div>
+      `).join("");
+    }
+
+    // FAVOURITES
+    function getFavs() { try { return JSON.parse(localStorage.getItem("ab_favs") || "[]"); } catch { return []; } }
+    function isFav(q) { return getFavs().some(x => x.query.toLowerCase() === q.toLowerCase()); }
+    function toggleFav(item, e) {
+      if (e) e.stopPropagation();
+      let f = getFavs();
+      if (isFav(item.query)) f = f.filter(x => x.query.toLowerCase() !== item.query.toLowerCase());
+      else f.unshift(item);
+      localStorage.setItem("ab_favs", JSON.stringify(f.slice(0, 30)));
+      renderResults();
+      renderFavs();
+      updateDetailHeart();
+    }
+    function renderFavs() {
+      const f = getFavs();
+      const box = document.getElementById("favsList");
+      if (!f.length) { box.innerHTML = `<div class="empty-box">Sevimlilar ro'yxati bo'sh.</div>`; return; }
+      box.innerHTML = f.map(x => `
+        <div class="result-card" onclick="runSearch('${escapeHtml(x.query)}')">
+          <div class="res-img-col"><img src="${escapeHtml(x.image || FALLBACK_IMG)}" onerror="this.src='${FALLBACK_IMG}'" /></div>
+          <div class="res-info">
+            <div class="res-title">${escapeHtml(x.title || x.query)}</div>
+            <div class="res-price">${formatPrice(x.price)}</div>
+            <div style="margin-top:6px;"><button class="pill-btn" onclick="toggleFav({query:'${escapeHtml(x.query)}'}, event)">O'chirish</button></div>
+          </div>
+        </div>
+      `).join("");
+    }
+
+    // SEARCH
+    function backToHome() {
+      document.getElementById("searchResultsWrap").classList.add("hidden");
+      document.getElementById("homeDashboard").classList.remove("hidden");
+    }
+
+    async function runSearch(query) {
+      query = (query || "").trim();
+      if (query.length < 2) return;
+      switchTab("home");
+      currentQuery = query;
+      document.getElementById("searchInput").value = query;
+      document.getElementById("homeDashboard").classList.add("hidden");
+      document.getElementById("searchResultsWrap").classList.remove("hidden");
+      document.getElementById("searchHeading").textContent = `«${query}»`;
+      document.getElementById("resultsArea").innerHTML = `<div class="skeleton"></div><div class="skeleton"></div>`;
+
+      try {
+        const res = await fetch(`/api/search?q=${encodeURIComponent(query)}`);
+        const data = await res.json();
+        currentResults = data.results || [];
+        if (currentResults.length) {
+          addHistory({ query, title: currentResults[0].title, price: currentResults[0].price, image: currentResults[0].image });
+        }
+        renderResults();
+      } catch {
+        document.getElementById("resultsArea").innerHTML = `<div class="empty-box">Tarmoqda xatolik yuz berdi.</div>`;
+      }
+    }
+
+    function sortResults(dir) {
+      document.getElementById("sortAsc").classList.toggle("active", dir === "asc");
+      document.getElementById("sortDesc").classList.toggle("active", dir === "desc");
+      currentResults.sort((a, b) => dir === "asc" ? a.price - b.price : b.price - a.price);
+      renderResults();
+    }
+
+    function renderResults() {
+      const box = document.getElementById("resultsArea");
+      if (!currentResults.length) {
+        box.innerHTML = `<div class="empty-box">Aniq natija topilmadi. Model nomini to'g'ri yozib ko'ring.</div>`;
+        return;
+      }
+      const saved = isFav(currentQuery);
+      box.innerHTML = currentResults.map((item, idx) => `
+        <div class="result-card" onclick="openDetail()">
+          <div class="res-img-col">
+            <img src="${escapeHtml(item.image || FALLBACK_IMG)}" onerror="this.src='${FALLBACK_IMG}'" />
+            ${idx === 0 ? `<button class="res-heart ${saved ? 'saved' : ''}" onclick="toggleFav({query:'${escapeHtml(currentQuery)}',title:'${escapeHtml(item.title)}',price:${item.price},image:'${escapeHtml(item.image)}'}, event)">${saved ? '♥' : '♡'}</button>` : ''}
+          </div>
+          <div class="res-info">
+            <div>
+              <div class="res-title">${escapeHtml(item.title || currentQuery)}</div>
+              <div class="res-meta">🚚 ${escapeHtml(item.delivery || "Yetkazib berish mavjud")}</div>
+              <div class="res-monthly">💳 Oyiga ~${formatPrice(item.monthly || Math.round(item.price / 12))}</div>
+            </div>
+            <div class="res-price-row">
+              <div class="res-price">${formatPrice(item.price)}</div>
+              <div class="res-store">${escapeHtml(item.store)}</div>
+            </div>
+          </div>
+        </div>
+      `).join("");
+    }
+
+    // DETAIL OVERLAY
+    function updateDetailHeart() {
+      document.getElementById("detailHeartBtn").textContent = isFav(currentQuery) ? "♥" : "♡";
+    }
+    function toggleDetailFav() {
+      if (!currentResults.length) return;
+      const b = currentResults[0];
+      toggleFav({ query: currentQuery, title: b.title, price: b.price, image: b.image });
+    }
+    function openDetail() {
+      if (!currentResults.length) return;
+      const best = currentResults[0];
+      document.getElementById("detailImg").src = best.image || FALLBACK_IMG;
+      document.getElementById("detailTitle").textContent = best.title || currentQuery;
+      document.getElementById("detailPrice").textContent = formatPrice(best.price);
+      document.getElementById("detailOffersBtn").textContent = `${currentResults.length} ta taklifni solishtirish`;
+      document.getElementById("offersCountTitle").textContent = `${currentResults.length} ta do'kon taklifi`;
+      document.getElementById("offersList").innerHTML = currentResults.map((r, i) => `
+        <div class="offer-card">
+          ${i === 0 ? '<div class="offer-badge">Eng arzon narx</div>' : ''}
+          <div class="offer-row">
+            <div>
+              <div class="offer-p">${formatPrice(r.price)}</div>
+              <div class="offer-m">💳 Oyiga ~${formatPrice(r.monthly || Math.round(r.price / 12))}</div>
+              <div class="offer-del">🚚 ${escapeHtml(r.delivery || "Yetkazib berish")}</div>
+            </div>
+            <div style="text-align:right;">
+              <div style="font-size:12.5px;font-weight:500;margin-bottom:6px;">${escapeHtml(r.store)}</div>
+              <button class="shop-btn" onclick="openExternal('${escapeHtml(r.url)}')">Do'konga ↗</button>
+            </div>
+          </div>
+        </div>
+      `).join("");
+      updateDetailHeart();
+      document.getElementById("detailOverlay").classList.remove("hidden");
+    }
+    function closeDetail() { document.getElementById("detailOverlay").classList.add("hidden"); }
+
+    // PRICE ALERT MODAL
+    function updateAlertUI(val) {
+      const maxP = currentResults.length ? currentResults[0].price : 0;
+      val = Math.max(1000, Math.min(maxP, Number(val) || 0));
+      document.getElementById("alertPriceInput").value = val;
+      document.getElementById("alertSlider").value = val;
+      document.getElementById("alertSaveHint").textContent = "Tejaysiz: " + formatPrice(Math.max(0, maxP - val));
+    }
+    async function openAlertModal() {
+      if (!currentResults.length) return;
+      const best = currentResults[0];
+      document.getElementById("alertProdName").textContent = best.title || currentQuery;
+      document.getElementById("alertCurPrice").textContent = formatPrice(best.price);
+      const slider = document.getElementById("alertSlider");
+      slider.min = Math.round(best.price * 0.65); slider.max = best.price; slider.step = 10000;
+      updateAlertUI(Math.round(best.price * 0.95));
+      document.getElementById("alertOverlay").classList.remove("hidden");
+
+      const wrap = document.getElementById("alertChartWrap");
+      wrap.textContent = "Grafik yuklanmoqda...";
+      try {
+        const res = await fetch(`/api/history?q=${encodeURIComponent(currentQuery)}`);
+        const d = await res.json();
+        const pts = (d.history || []).map(x => x.price);
+        if (pts.length < 2) { wrap.textContent = "Narx tarixi bugundan boshlab yig'ilmoqda."; }
+        else {
+          const minV = Math.min(...pts), maxV = Math.max(...pts) || 1;
+          const coords = pts.map((p, i) => `${((i/(pts.length-1))*280).toFixed(1)},${(88-((p-minV)/(maxV-minV||1))*68).toFixed(1)}`).join(" ");
+          wrap.innerHTML = `<svg viewBox="0 0 280 96" style="width:100%;height:100%;"><polyline fill="none" stroke="#FF6600" stroke-width="2.2" points="${coords}"/></svg>`;
+        }
+      } catch { wrap.textContent = ""; }
+    }
+    function closeAlertModal() { document.getElementById("alertOverlay").classList.add("hidden"); }
+    document.getElementById("alertSlider").addEventListener("input", e => updateAlertUI(e.target.value));
+    document.getElementById("alertPriceInput").addEventListener("input", e => updateAlertUI(e.target.value));
+
+    async function submitAlert() {
+      const uid = getUserId();
+      if (!uid) { alert("Kuzatuvni yoqish uchun ilovani Telegram bot ichidan oching."); return; }
+      const best = currentResults[0];
+      const targetPrice = Number(document.getElementById("alertPriceInput").value);
+      const btn = document.getElementById("confirmAlertBtn");
+      btn.textContent = "Saqlanmoqda...";
+      try {
+        const res = await fetch("/api/alert", {
+          method: "POST",
+          headers: {"Content-Type": "application/json"},
+          body: JSON.stringify({ user_id: uid, query: currentQuery, target_price: targetPrice, current_price: best.price, image: best.image })
+        });
+        const d = await res.json();
+        if (d.ok) {
+          btn.textContent = "✅ Kuzatuv yoqildi!";
+          setTimeout(() => { btn.textContent = "🔔 Kuzatuvni yoqish"; closeAlertModal(); }, 800);
+        }
+      } catch { btn.textContent = "Xatolik"; }
+    }
+
+    // LOAD ALERTS TAB
+    async function loadAlerts() {
+      const box = document.getElementById("alertsList");
+      const uid = getUserId();
+      if (!uid) { box.innerHTML = `<div class="empty-box">Kuzatuvlarni ko'rish uchun ilovani Telegram bot ichidan oching.</div>`; return; }
+      box.innerHTML = `<div class="skeleton"></div>`;
+      try {
+        const res = await fetch(`/api/alerts?user_id=${uid}`);
+        const d = await res.json();
+        const items = d.alerts || [];
+        if (!items.length) { box.innerHTML = `<div class="empty-box">Hozircha faol narx kuzatuvlaringiz yo'q.</div>`; return; }
+        box.innerHTML = items.map(a => `
+          <div class="result-card" onclick="runSearch('${escapeHtml(a.query)}')">
+            <div class="res-img-col"><img src="${escapeHtml(a.image || FALLBACK_IMG)}" onerror="this.src='${FALLBACK_IMG}'" /></div>
+            <div class="res-info">
+              <div class="res-title">${escapeHtml(a.query)}</div>
+              <div class="res-price">${formatPrice(a.current_price)}</div>
+              <div style="font-size:12px;color:var(--blue);margin-top:4px;">Maqsad: ${formatPrice(a.target_price)}</div>
+              <div style="margin-top:6px;"><button class="pill-btn" onclick="deleteAlert(${a.id}, event)">O'chirish</button></div>
+            </div>
+          </div>
+        `).join("");
+      } catch { box.innerHTML = `<div class="empty-box">Yuklab bo'lmadi.</div>`; }
+    }
+
+    async function deleteAlert(id, e) {
+      e.stopPropagation();
+      await fetch("/api/alert/delete", { method: "POST", headers: {"Content-Type": "application/json"}, body: JSON.stringify({ user_id: getUserId(), id }) });
+      loadAlerts();
+    }
+
+    // RATES
     async function fetchRates() {
       try {
         const res = await fetch("/api/rates");
@@ -321,167 +738,33 @@
         if (ratesData.eur) document.getElementById("t-eur").textContent = Math.round(ratesData.eur.rate).toLocaleString("ru-RU");
         if (ratesData.rub) document.getElementById("t-rub").textContent = Number(ratesData.rub.rate).toFixed(1);
         if (ratesData.btc) document.getElementById("t-btc").textContent = "$" + Math.round(ratesData.btc.usd).toLocaleString("ru-RU");
-        renderRatesTab();
-      } catch (e) {}
+        renderRates();
+      } catch {}
     }
-
-    function renderRatesTab() {
+    function renderRates() {
       const box = document.getElementById("ratesArea");
       if (!ratesData) return;
-      const items = [
-        { code: "Bitcoin (BTC)", sub: "Jonli kripto kursi", val: ratesData.btc ? "$" + Math.round(ratesData.btc.usd).toLocaleString("ru-RU") : "—", diff: "USD" },
-        { code: "AQSh dollari (USD)", sub: "Markaziy bank", val: ratesData.usd ? Number(ratesData.usd.rate).toLocaleString("ru-RU") + " so'm" : "—", diff: ratesData.usd ? ratesData.usd.diff : "" },
-        { code: "Yevro (EUR)", sub: "Markaziy bank", val: ratesData.eur ? Number(ratesData.eur.rate).toLocaleString("ru-RU") + " so'm" : "—", diff: ratesData.eur ? ratesData.eur.diff : "" },
-        { code: "Rossiya rubli (RUB)", sub: "Markaziy bank", val: ratesData.rub ? Number(ratesData.rub.rate).toLocaleString("ru-RU") + " so'm" : "—", diff: ratesData.rub ? ratesData.rub.diff : "" },
+      const list = [
+        { k: "Bitcoin (BTC)", v: ratesData.btc ? "$" + Math.round(ratesData.btc.usd).toLocaleString("ru-RU") : "—", d: "Jonli" },
+        { k: "AQSh dollari (USD)", v: ratesData.usd ? Number(ratesData.usd.rate).toLocaleString("ru-RU") + " so'm" : "—", d: ratesData.usd ? ratesData.usd.diff : "" },
+        { k: "Yevro (EUR)", v: ratesData.eur ? Number(ratesData.eur.rate).toLocaleString("ru-RU") + " so'm" : "—", d: ratesData.eur ? ratesData.eur.diff : "" },
+        { k: "Rossiya rubli (RUB)", v: ratesData.rub ? Number(ratesData.rub.rate).toLocaleString("ru-RU") + " so'm" : "—", d: ratesData.rub ? ratesData.rub.diff : "" },
       ];
-      box.innerHTML = items.map(i => `
+      box.innerHTML = list.map(i => `
         <div class="rate-row">
-          <div class="rate-left"><span class="rate-code">${escapeHtml(i.code)}</span><span class="rate-sub">${escapeHtml(i.sub)}</span></div>
-          <div><div class="rate-val">${escapeHtml(i.val)}</div><div class="rate-diff">${escapeHtml(i.diff)}</div></div>
-        </div>
-      `).join("") + `<button class="go-btn primary" style="width:100%;margin-top:6px;padding:10px;" onclick="openExternal('https://bank.uz/uz/currency')">Banklar kursi ↗</button>`;
-    }
-
-    // PRICE ALERT MODAL LOGIC
-    function updateAlertUI(val) {
-      val = Math.max(1000, Math.min(currentBestPrice, Number(val) || 0));
-      document.getElementById("alertPriceInput").value = val;
-      document.getElementById("alertSlider").value = val;
-      const saved = Math.max(0, currentBestPrice - val);
-      document.getElementById("alertSaveHint").textContent = "Tejaysiz: " + formatPrice(saved);
-    }
-
-    async function openAlertModal() {
-      if (!currentQuery || !currentBestPrice) return;
-      document.getElementById("alertProductName").textContent = currentQuery;
-      document.getElementById("alertCurrentPrice").textContent = formatPrice(currentBestPrice);
-      const minP = Math.round(currentBestPrice * 0.65);
-      const defaultTarget = Math.round(currentBestPrice * 0.95);
-      const slider = document.getElementById("alertSlider");
-      slider.min = minP; slider.max = currentBestPrice; slider.step = 10000;
-      updateAlertUI(defaultTarget);
-      document.getElementById("alertModal").classList.remove("hidden");
-
-      // Load history chart
-      const wrap = document.getElementById("alertChartWrap");
-      try {
-        const res = await fetch(`/api/history?q=${encodeURIComponent(currentQuery)}`);
-        const d = await res.json();
-        const pts = (d.history || []).map(x => x.price);
-        if (pts.length < 2) {
-          wrap.innerHTML = "Narx tarixi bugundan boshlab yig'ilmoqda.";
-        } else {
-          const minV = Math.min(...pts), maxV = Math.max(...pts) || 1;
-          const coords = pts.map((p, i) => {
-            const x = (i / (pts.length - 1)) * 280;
-            const y = 90 - ((p - minV) / (maxV - minV || 1)) * 70;
-            return `${x.toFixed(1)},${y.toFixed(1)}`;
-          }).join(" ");
-          wrap.innerHTML = `<svg viewBox="0 0 280 100" style="width:100%;height:100%;"><polyline fill="none" stroke="#FF6600" stroke-width="2.5" points="${coords}"/></svg>`;
-        }
-      } catch { wrap.innerHTML = ""; }
-    }
-
-    function closeAlertModal() { document.getElementById("alertModal").classList.add("hidden"); }
-
-    document.getElementById("alertSlider").addEventListener("input", e => updateAlertUI(e.target.value));
-    document.getElementById("alertPriceInput").addEventListener("input", e => updateAlertUI(e.target.value));
-
-    async function submitAlert() {
-      const userId = tg && tg.initDataUnsafe && tg.initDataUnsafe.user ? tg.initDataUnsafe.user.id : 0;
-      const targetPrice = Number(document.getElementById("alertPriceInput").value);
-      if (!userId) {
-        alert("Kuzatuvni yoqish uchun ilovani Telegram bot ichidan oching.");
-        return;
-      }
-      const btn = document.getElementById("confirmAlertBtn");
-      btn.textContent = "Saqlanmoqda...";
-      try {
-        const res = await fetch("/api/alert", {
-          method: "POST",
-          headers: {"Content-Type": "application/json"},
-          body: JSON.stringify({ user_id: userId, query: currentQuery, target_price: targetPrice, current_price: currentBestPrice })
-        });
-        const data = await res.json();
-        if (data.ok) {
-          btn.textContent = "✅ Kuzatuv yoqildi!";
-          setTimeout(() => { btn.textContent = "🔔 Kuzatuvni yoqish"; closeAlertModal(); }, 900);
-        } else {
-          btn.textContent = "Xatolik yuz berdi";
-        }
-      } catch { btn.textContent = "Tarmoq xatosi"; }
-    }
-
-    // FAVORITES
-    function getFavs() { try { return JSON.parse(localStorage.getItem("arzonibor_favs") || "[]"); } catch { return []; } }
-    function saveFav(q) {
-      if (!q) return;
-      const favs = getFavs();
-      if (!favs.includes(q)) { favs.unshift(q); localStorage.setItem("arzonibor_favs", JSON.stringify(favs.slice(0, 30))); }
-      document.getElementById("saveFavBtn").textContent = "Saqlandi ✓";
-    }
-    function removeFav(q) { localStorage.setItem("arzonibor_favs", JSON.stringify(getFavs().filter(x => x !== q))); renderFavorites(); }
-    function renderFavorites() {
-      const list = document.getElementById("favoritesList");
-      const favs = getFavs();
-      if (!favs.length) { list.innerHTML = `<div class="card empty-box">Sevimlilar ro'yxati hozircha bo'sh.</div>`; return; }
-      list.innerHTML = favs.map(q => `
-        <div class="card" style="display:flex;align-items:center;justify-content:space-between;gap:10px;">
-          <span style="font-size:13.5px;cursor:pointer;flex:1;" onclick="runSearch('${escapeHtml(q)}')">${escapeHtml(q)}</span>
-          <button class="fav-btn" onclick="removeFav('${escapeHtml(q)}')">O'chirish</button>
+          <span style="font-size:13.5px;font-weight:500;">${escapeHtml(i.k)}</span>
+          <div style="text-align:right;"><div style="font-size:14px;font-weight:600;">${escapeHtml(i.v)}</div><div style="font-size:11px;color:var(--muted);">${escapeHtml(i.d)}</div></div>
         </div>
       `).join("");
     }
 
-    // SEARCH
-    async function runSearch(query) {
-      query = (query || "").trim();
-      if (query.length < 2) return;
-      switchTab("search");
-      currentQuery = query;
-      currentBestPrice = 0;
-      document.getElementById("searchInput").value = query;
-      document.getElementById("resultsHeader").classList.remove("hidden");
-      document.getElementById("resultsTitle").textContent = `«${query}»`;
-      document.getElementById("saveFavBtn").textContent = "Saqlash";
-      document.getElementById("openAlertBtn").classList.add("hidden");
-
-      const area = document.getElementById("resultsArea");
-      area.innerHTML = `<div class="skeleton"></div><div class="skeleton"></div><div class="skeleton"></div>`;
-
-      try {
-        const res = await fetch(`/api/search?q=${encodeURIComponent(query)}`);
-        const data = await res.json();
-        if (data.results && data.results.length) {
-          currentBestPrice = data.results[0].price;
-          document.getElementById("openAlertBtn").classList.remove("hidden");
-          area.innerHTML = data.results.map((item, idx) => `
-            <div class="card">
-              <div class="offer-top">
-                <span class="store-name">${escapeHtml(item.store)}</span>
-                ${idx === 0 ? '<span class="best-badge">Eng arzon</span>' : ''}
-              </div>
-              <div class="offer-title">${escapeHtml(item.title || query)}</div>
-              <div class="offer-bottom">
-                <div class="price ${idx === 0 ? 'cheapest' : ''}">${formatPrice(item.price)}</div>
-                <button class="go-btn ${idx === 0 ? 'primary' : ''}" onclick="openExternal('${escapeHtml(item.url)}')">O'tish ↗</button>
-              </div>
-            </div>
-          `).join("");
-        } else {
-          area.innerHTML = `<div class="card empty-box">Aniq narx topilmadi. Model nomini to'g'ri yozib ko'ring.</div>`;
-        }
-      } catch (e) {
-        area.innerHTML = `<div class="card empty-box">Tarmoqda xatolik.<br/><br/><button class="go-btn primary" onclick="runSearch('${escapeHtml(query)}')">Qayta urinish</button></div>`;
-      }
-    }
-
     document.getElementById("searchForm").addEventListener("submit", e => { e.preventDefault(); runSearch(document.getElementById("searchInput").value); });
-    document.getElementById("saveFavBtn").addEventListener("click", () => saveFav(currentQuery));
-    document.getElementById("openAlertBtn").addEventListener("click", openAlertModal);
-    document.querySelectorAll("[data-q]").forEach(el => el.addEventListener("click", () => runSearch(el.dataset.q)));
 
+    // INIT
+    renderHistory();
     fetchRates();
+    const urlQ = new URLSearchParams(window.location.search).get("q");
+    if (urlQ) runSearch(urlQ);
   </script>
 </body>
-  </html>
+</html>
