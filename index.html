@@ -26,54 +26,63 @@
       font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
       background: var(--bg);
       color: var(--text);
-      padding-bottom: 68px;
+      padding-bottom: 78px;
       overflow-x: hidden;
       font-size: 13.5px;
       font-weight: 400;
       -webkit-font-smoothing: antialiased;
     }
 
-    /* HEADER */
+    /* HEADER (Faqat Asosiy sahifada) */
     .header {
       background: linear-gradient(180deg, var(--navy) 0%, #0D2640 72%, var(--bg) 100%);
-      padding: 10px 14px 12px;
+      padding: 12px 14px 14px;
       position: sticky;
       top: 0;
       z-index: 20;
     }
-    .brand-row { display: flex; align-items: center; justify-content: space-between; margin-bottom: 9px; }
-    .brand { font-size: 17px; font-weight: 600; letter-spacing: -0.2px; color: #fff; cursor: pointer; }
+    .brand-row { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; }
+    .brand { font-size: 18px; font-weight: 600; letter-spacing: -0.2px; color: #fff; cursor: pointer; }
     .brand span { color: var(--orange); }
-    .live-badge { font-size: 11px; color: #CBD5E1; display: flex; align-items: center; gap: 5px; }
+    .live-badge { font-size: 11.5px; color: #CBD5E1; display: flex; align-items: center; gap: 5px; }
     .live-badge::before { content: ""; width: 6px; height: 6px; border-radius: 50%; background: var(--green); }
 
     .search-wrap { position: relative; display: flex; align-items: center; }
     .search-input {
-      width: 100%; height: 40px; border: 1px solid rgba(255,255,255,0.12);
-      border-radius: 9px; padding: 0 74px 0 12px; font-size: 13.5px;
+      width: 100%; height: 46px; border: 1px solid rgba(255,255,255,0.14);
+      border-radius: 11px; padding: 0 82px 0 14px; font-size: 14.5px;
       outline: none; color: var(--text); background: #1A212B;
     }
+    .search-input::-webkit-search-cancel-button { display: none; }
     .search-input::placeholder { color: var(--muted); }
     .search-input:focus { border-color: var(--orange); }
-    .search-actions { position: absolute; right: 4px; display: flex; align-items: center; gap: 2px; }
+    .search-actions { position: absolute; right: 5px; display: flex; align-items: center; gap: 2px; }
     .icon-btn {
-      width: 34px; height: 34px; border: none; background: transparent;
+      width: 38px; height: 38px; border: none; background: transparent;
       color: var(--muted); display: flex; align-items: center; justify-content: center; cursor: pointer;
     }
     .icon-btn:active { color: var(--text); }
 
-    /* TICKER */
-    .ticker-bar { display: flex; gap: 7px; overflow-x: auto; padding: 2px 14px 10px; scrollbar-width: none; }
+    /* PAGE HEADER (Boshqa tablar uchun toza sarlavha) */
+    .page-top {
+      padding: 16px 14px 6px;
+      font-size: 19px;
+      font-weight: 600;
+      color: var(--text);
+    }
+
+    /* TICKER (Faqat Asosiy sahifada) */
+    .ticker-bar { display: flex; gap: 7px; overflow-x: auto; padding: 2px 14px 12px; scrollbar-width: none; }
     .ticker-bar::-webkit-scrollbar { display: none; }
     .ticker-pill {
       white-space: nowrap; background: var(--surface); border: 1px solid var(--border);
-      border-radius: 7px; padding: 5px 9px; font-size: 11.5px; color: var(--muted);
-      display: flex; align-items: center; gap: 5px; cursor: pointer;
+      border-radius: 8px; padding: 6px 10px; font-size: 12px; color: var(--muted);
+      display: flex; align-items: center; gap: 5px;
     }
     .ticker-pill b { color: var(--text); font-weight: 500; }
     .ticker-pill.btc b { color: var(--orange); }
 
-    /* STORIES (Kattaroq va aniqroq) */
+    /* STORIES */
     .stories { display: flex; gap: 13px; overflow-x: auto; padding: 4px 14px 14px; scrollbar-width: none; }
     .stories::-webkit-scrollbar { display: none; }
     .story { display: flex; flex-direction: column; align-items: center; gap: 6px; width: 78px; flex-shrink: 0; cursor: pointer; }
@@ -118,17 +127,17 @@
     .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 9px; }
     .pop-card {
       background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius);
-      padding: 10px; cursor: pointer; display: flex; flex-direction: column; gap: 4px;
+      padding: 11px; cursor: pointer; display: flex; flex-direction: column; gap: 4px;
     }
     .pop-card:active { background: var(--surface-2); }
-    .pop-name { font-size: 13px; font-weight: 500; color: var(--text); }
+    .pop-name { font-size: 13.5px; font-weight: 500; color: var(--text); }
     .pop-sub { font-size: 11.5px; color: var(--muted); }
 
     /* SEARCH RESULT CARD */
     .sort-row { display: flex; gap: 7px; margin-bottom: 10px; }
     .pill-btn {
       background: var(--surface); border: 1px solid var(--border); color: var(--text);
-      padding: 6px 11px; border-radius: 16px; font-size: 12px; cursor: pointer;
+      padding: 6px 12px; border-radius: 16px; font-size: 12px; cursor: pointer;
     }
     .pill-btn.active { border-color: var(--blue); color: var(--blue); }
 
@@ -166,19 +175,20 @@
 
     .cat-list { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; }
     .cat-row {
-      display: flex; align-items: center; gap: 12px; padding: 12px 14px;
-      border-bottom: 1px solid var(--border); cursor: pointer; font-size: 13.5px; color: var(--text);
+      display: flex; align-items: center; gap: 12px; padding: 13px 14px;
+      border-bottom: 1px solid var(--border); cursor: pointer; font-size: 14px; color: var(--text);
     }
     .cat-row:last-child { border-bottom: none; }
+    .cat-row:active { background: var(--surface-2); }
 
-    /* PRODUCT DETAIL OVERLAY (Idealo Full Structure, Medium Sizing) */
-    .overlay { position: fixed; inset: 0; background: var(--bg); z-index: 40; overflow-y: auto; padding-bottom: 72px; }
+    /* PRODUCT DETAIL OVERLAY */
+    .overlay { position: fixed; inset: 0; background: var(--bg); z-index: 40; overflow-y: auto; padding-bottom: 82px; }
     .ov-top {
-      display: flex; align-items: center; justify-content: space-between; padding: 9px 14px;
-      position: sticky; top: 0; background: rgba(18,22,26,0.96); z-index: 10; border-bottom: 1px solid var(--border);
+      display: flex; align-items: center; justify-content: space-between; padding: 10px 14px;
+      position: sticky; top: 0; background: var(--bg); z-index: 12; border-bottom: 1px solid var(--border);
     }
     .ov-btn {
-      width: 34px; height: 34px; border-radius: 50%; background: var(--surface); border: 1px solid var(--border);
+      width: 36px; height: 36px; border-radius: 50%; background: var(--surface); border: 1px solid var(--border);
       color: var(--text); display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 15px;
     }
     .ov-btn.blue { background: var(--blue); color: #0B1220; border-color: var(--blue); }
@@ -194,9 +204,7 @@
     /* VARIANT CHIPS */
     .variant-row { display: flex; gap: 7px; overflow-x: auto; margin-bottom: 12px; scrollbar-width: none; }
     .variant-row::-webkit-scrollbar { display: none; }
-    .v-chip {
-      border: 1px solid var(--border); border-radius: 8px; overflow: hidden; flex-shrink: 0; cursor: pointer; min-width: 78px;
-    }
+    .v-chip { border: 1px solid var(--border); border-radius: 8px; overflow: hidden; flex-shrink: 0; cursor: pointer; min-width: 78px; }
     .v-chip-top { background: rgba(96,165,250,0.15); color: var(--blue); font-size: 12px; font-weight: 500; padding: 4px 10px; text-align: center; }
     .v-chip-bot { background: var(--surface); color: var(--muted); font-size: 10.5px; padding: 3px 10px; text-align: center; }
 
@@ -204,20 +212,21 @@
     .detail-price { font-size: 20px; font-weight: 600; color: var(--orange); margin-bottom: 11px; }
     .blue-cta {
       width: 100%; background: var(--blue); color: #0B1220; border: none; border-radius: 10px;
-      padding: 10px; font-size: 13.5px; font-weight: 600; cursor: pointer; margin-bottom: 12px;
+      padding: 11px; font-size: 14px; font-weight: 600; cursor: pointer; margin-bottom: 12px;
     }
 
-    /* INTERNAL SECTION TABS (Idealo style) */
+    /* INTERNAL SECTION TABS */
     .sub-tabs {
       display: flex; border-bottom: 1px solid var(--border); margin: 4px -14px 12px; padding: 0 14px;
-      overflow-x: auto; gap: 18px; scrollbar-width: none; position: sticky; top: 52px; background: var(--bg); z-index: 8;
+      overflow-x: auto; gap: 18px; scrollbar-width: none; position: sticky; top: 56px; background: var(--bg); z-index: 10;
     }
     .sub-tabs::-webkit-scrollbar { display: none; }
     .sub-tab {
-      background: none; border: none; color: var(--muted); font-size: 12.5px; padding: 9px 2px;
+      background: none; border: none; color: var(--muted); font-size: 13px; padding: 10px 2px;
       border-bottom: 2px solid transparent; white-space: nowrap; cursor: pointer;
     }
     .sub-tab.active { color: var(--blue); border-bottom-color: var(--blue); font-weight: 500; }
+    .scroll-anchor { scroll-margin-top: 106px; }
 
     .offer-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 11px 12px; margin-bottom: 9px; }
     .offer-badge { display: inline-block; background: var(--orange); color: #fff; font-size: 10.5px; font-weight: 500; padding: 2px 7px; border-radius: 4px; margin-bottom: 6px; }
@@ -233,24 +242,24 @@
     .spec-k { color: var(--muted); }
     .spec-v { color: var(--text); font-weight: 500; text-align: right; }
 
-    /* PRICE ALERT MODAL & CAMERA MODAL */
+    /* PRICE ALERT MODAL */
     .alert-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 13px; margin: 12px 14px; }
     .alert-input-box { display: flex; align-items: center; background: #14191F; border: 1px solid var(--border); border-radius: 9px; padding: 8px 12px; margin-bottom: 5px; }
     .alert-input { background: transparent; border: none; color: var(--text); font-size: 19px; font-weight: 500; width: 100%; outline: none; }
     .alert-slider { width: 100%; accent-color: var(--blue); margin: 10px 0 14px; }
 
-    .rate-row { display: flex; align-items: center; justify-content: space-between; padding: 11px 13px; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); margin-bottom: 8px; }
     .skeleton { height: 96px; border-radius: var(--radius); margin-bottom: 10px; background: linear-gradient(90deg, #1B2027 25%, #242B35 50%, #1B2027 75%); background-size: 200% 100%; animation: shimmer 1.2s infinite; }
     @keyframes shimmer { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
-    .empty-box { text-align: center; padding: 26px 14px; color: var(--muted); font-size: 13px; line-height: 1.5; }
+    .empty-box { text-align: center; padding: 28px 14px; color: var(--muted); font-size: 13.5px; line-height: 1.5; }
 
-    /* 5-TAB BOTTOM BAR */
+    /* 5-TAB BOTTOM BAR (Kattaroq va qulayroq) */
     .tabbar {
-      position: fixed; bottom: 0; left: 0; right: 0; height: 58px; background: #161B22;
+      position: fixed; bottom: 0; left: 0; right: 0; height: 66px; background: #161B22;
       border-top: 1px solid var(--border); display: grid; grid-template-columns: repeat(5, 1fr); z-index: 45;
+      padding-bottom: 4px;
     }
-    .tab { background: none; border: none; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px; font-size: 10px; color: var(--muted); cursor: pointer; }
-    .tab svg { width: 19px; height: 19px; stroke: currentColor; fill: none; stroke-width: 1.8; }
+    .tab { background: none; border: none; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; font-size: 11px; color: var(--muted); cursor: pointer; }
+    .tab svg { width: 22px; height: 22px; stroke: currentColor; fill: none; stroke-width: 1.85; }
     .tab.active { color: var(--orange); font-weight: 500; }
 
     .hidden { display: none !important; }
@@ -258,35 +267,38 @@
 </head>
 <body>
 
-  <header class="header">
-    <div class="brand-row">
-      <div class="brand" onclick="goHomeClean()">Arzoni<span>Bor</span></div>
-      <div class="live-badge">Jonli narxlar</div>
-    </div>
-    <form class="search-wrap" id="searchForm">
-      <input id="searchInput" class="search-input" type="search" placeholder="Mahsulot qidirish (iPhone, Redmi...)" autocomplete="off" />
-      <div class="search-actions">
-        <button class="icon-btn" type="button" onclick="openCameraSearch()" aria-label="Rasm orqali qidirish">
-          <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" fill="none" stroke-width="1.9">
-            <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/>
-            <circle cx="12" cy="13" r="4"/>
-          </svg>
-        </button>
-        <button class="icon-btn" type="submit" aria-label="Qidirish">
-          <svg viewBox="0 0 24 24" width="17" height="17" stroke="currentColor" fill="none" stroke-width="2">
-            <circle cx="11" cy="11" r="7"></circle><line x1="20" y1="20" x2="16.65" y2="16.65"></line>
-          </svg>
-        </button>
+  <!-- FAQAT ASOSIY SAHIFADA KO'RINADIGAN HEADER VA KURSLAR -->
+  <div id="homeTopArea">
+    <header class="header">
+      <div class="brand-row">
+        <div class="brand" onclick="goHomeClean()">Arzoni<span>Bor</span></div>
+        <div class="live-badge">Jonli narxlar</div>
       </div>
-      <input id="cameraFileInput" type="file" accept="image/*" capture="environment" class="hidden" />
-    </form>
-  </header>
+      <form class="search-wrap" id="searchForm">
+        <input id="searchInput" class="search-input" type="search" placeholder="Mahsulot qidirish (iPhone, Redmi...)" autocomplete="off" />
+        <div class="search-actions">
+          <button class="icon-btn" type="button" onclick="openCameraSearch()" aria-label="Rasm orqali qidirish">
+            <svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" fill="none" stroke-width="1.9">
+              <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/>
+              <circle cx="12" cy="13" r="4"/>
+            </svg>
+          </button>
+          <button class="icon-btn" type="submit" aria-label="Qidirish">
+            <svg viewBox="0 0 24 24" width="19" height="19" stroke="currentColor" fill="none" stroke-width="2">
+              <circle cx="11" cy="11" r="7"></circle><line x1="20" y1="20" x2="16.65" y2="16.65"></line>
+            </svg>
+          </button>
+        </div>
+        <input id="cameraFileInput" type="file" accept="image/*" capture="environment" class="hidden" />
+      </form>
+    </header>
 
-  <div class="ticker-bar" onclick="switchTab('profile')">
-    <div class="ticker-pill">USD <b id="t-usd">...</b></div>
-    <div class="ticker-pill">EUR <b id="t-eur">...</b></div>
-    <div class="ticker-pill">RUB <b id="t-rub">...</b></div>
-    <div class="ticker-pill btc">BTC <b id="t-btc">...</b></div>
+    <div class="ticker-bar">
+      <div class="ticker-pill">USD <b id="t-usd">...</b></div>
+      <div class="ticker-pill">EUR <b id="t-eur">...</b></div>
+      <div class="ticker-pill">RUB <b id="t-rub">...</b></div>
+      <div class="ticker-pill btc">BTC <b id="t-btc">...</b></div>
+    </div>
   </div>
 
   <!-- TAB 1: HOME -->
@@ -296,7 +308,7 @@
         <div class="story" onclick="runSearch('iPhone 16 Pro')"><div class="story-ring"><div class="story-inner st-deal">%</div></div><div class="story-label">Kun narxi</div></div>
         <div class="story" onclick="runSearch('Redmi Note 13')"><div class="story-ring"><div class="story-inner st-phone">📱</div></div><div class="story-label">Top Redmi</div></div>
         <div class="story" onclick="runSearch('PlayStation 5')"><div class="story-ring"><div class="story-inner st-game">🎮</div></div><div class="story-label">O'yinlar</div></div>
-        <div class="story" onclick="switchTab('profile')"><div class="story-ring"><div class="story-inner st-btc">₿</div></div><div class="story-label">Kurslar</div></div>
+        <div class="story" onclick="runSearch('Samsung S24 Ultra')"><div class="story-ring"><div class="story-inner st-btc">🔥</div></div><div class="story-label">Top 2026</div></div>
       </div>
 
       <div class="container">
@@ -334,47 +346,56 @@
   </section>
 
   <!-- TAB 2: CATALOGUE -->
-  <section id="tab-products" class="container hidden">
-    <div class="sec-head"><span class="sec-title">Top bo'limlar</span></div>
-    <div class="top-cats">
-      <div class="top-cat" onclick="runSearch('iPhone 16 Pro')"><div class="top-cat-circle">📱</div><div class="top-cat-name">Smartfonlar</div></div>
-      <div class="top-cat" onclick="runSearch('PlayStation 5')"><div class="top-cat-circle">🎮</div><div class="top-cat-name">Konsollar</div></div>
-      <div class="top-cat" onclick="runSearch('Apple Watch')"><div class="top-cat-circle">⌚</div><div class="top-cat-name">Soatlar</div></div>
-      <div class="top-cat" onclick="runSearch('MacBook Air M2')"><div class="top-cat-circle">💻</div><div class="top-cat-name">Noutbuklar</div></div>
-    </div>
+  <section id="tab-products" class="hidden">
+    <div class="page-top">Katalog</div>
+    <div class="container">
+      <div class="sec-head"><span class="sec-title">Top bo'limlar</span></div>
+      <div class="top-cats">
+        <div class="top-cat" onclick="runSearch('iPhone 16 Pro')"><div class="top-cat-circle">📱</div><div class="top-cat-name">Smartfonlar</div></div>
+        <div class="top-cat" onclick="runSearch('PlayStation 5')"><div class="top-cat-circle">🎮</div><div class="top-cat-name">Konsollar</div></div>
+        <div class="top-cat" onclick="runSearch('Apple Watch')"><div class="top-cat-circle">⌚</div><div class="top-cat-name">Soatlar</div></div>
+        <div class="top-cat" onclick="runSearch('MacBook Air M2')"><div class="top-cat-circle">💻</div><div class="top-cat-name">Noutbuklar</div></div>
+      </div>
 
-    <div class="sec-head"><span class="sec-title">To'liq katalog</span></div>
-    <div class="cat-list">
-      <div class="cat-row" onclick="runSearch('Samsung A55')"><span>📱</span><span>Smartfonlar va gadjetlar</span></div>
-      <div class="cat-row" onclick="runSearch('MacBook Air M2')"><span>💻</span><span>Noutbuk va kompyuterlar</span></div>
-      <div class="cat-row" onclick="runSearch('Artel 43')"><span>📺</span><span>Televizorlar</span></div>
-      <div class="cat-row" onclick="runSearch('Konditsioner')"><span>❄️</span><span>Maishiy texnika</span></div>
-      <div class="cat-row" onclick="runSearch('AirPods Pro 2')"><span>🎧</span><span>Quloqchin va aksessuarlar</span></div>
-      <div class="cat-row" onclick="runSearch('PlayStation 5')"><span>🎮</span><span>O'yin pristavkalari</span></div>
+      <div class="sec-head"><span class="sec-title">To'liq katalog</span></div>
+      <div class="cat-list">
+        <div class="cat-row" onclick="runSearch('Samsung A55')"><span>📱</span><span>Smartfonlar va gadjetlar</span></div>
+        <div class="cat-row" onclick="runSearch('MacBook Air M2')"><span>💻</span><span>Noutbuk va kompyuterlar</span></div>
+        <div class="cat-row" onclick="runSearch('Artel 43')"><span>📺</span><span>Televizorlar</span></div>
+        <div class="cat-row" onclick="runSearch('Konditsioner')"><span>❄️</span><span>Maishiy texnika</span></div>
+        <div class="cat-row" onclick="runSearch('AirPods Pro 2')"><span>🎧</span><span>Quloqchin va aksessuarlar</span></div>
+        <div class="cat-row" onclick="runSearch('PlayStation 5')"><span>🎮</span><span>O'yin pristavkalari</span></div>
+      </div>
     </div>
   </section>
 
   <!-- TAB 3: FAVOURITES -->
-  <section id="tab-favs" class="container hidden">
-    <div class="sec-head"><span class="sec-title">Sevimlilar</span></div>
-    <div id="favsList"></div>
+  <section id="tab-favs" class="hidden">
+    <div class="page-top">Sevimlilar</div>
+    <div class="container">
+      <div id="favsList"></div>
+    </div>
   </section>
 
   <!-- TAB 4: PRICE ALERTS -->
-  <section id="tab-alerts" class="container hidden">
-    <div class="sec-head"><span class="sec-title">Narx kuzatuvlari</span></div>
-    <div id="alertsList"></div>
+  <section id="tab-alerts" class="hidden">
+    <div class="page-top">Narx kuzatuvlari</div>
+    <div class="container">
+      <div id="alertsList"></div>
+    </div>
   </section>
 
-  <!-- TAB 5: PROFILE & RATES -->
-  <section id="tab-profile" class="container hidden">
-    <div class="sec-head"><span class="sec-title">Valyuta va Bitcoin kurslari</span></div>
-    <div id="ratesArea"><div class="skeleton"></div></div>
-    <div class="sec-head"><span class="sec-title">Mening profilim</span></div>
-    <div class="cat-list">
-      <div class="cat-row" id="profileUserRow"><span>👤</span><span>Telegram foydalanuvchisi</span></div>
-      <div class="cat-row" onclick="openExternal('https://t.me/arzoniboragent')"><span>📢</span><span>Arzoni Bor kanali</span></div>
-      <div class="cat-row" onclick="openExternal('https://t.me/mrtexnoai')"><span>🤖</span><span>Mr Texno AI kanali</span></div>
+  <!-- TAB 5: PROFILE (Toza, qidiruv va kurslarsiz) -->
+  <section id="tab-profile" class="hidden">
+    <div class="page-top">Mening profilim</div>
+    <div class="container">
+      <div class="cat-list" style="margin-top:8px;">
+        <div class="cat-row" id="profileUserRow"><span>👤</span><span>Telegram foydalanuvchisi</span></div>
+        <div class="cat-row" onclick="switchTab('alerts')"><span>🔔</span><span>Narx kuzatuvlarim</span></div>
+        <div class="cat-row" onclick="switchTab('favs')"><span>❤️</span><span>Sevimli mahsulotlar</span></div>
+        <div class="cat-row" onclick="openExternal('https://t.me/arzoniboragent')"><span>📢</span><span>Arzoni Bor kanali</span></div>
+        <div class="cat-row" onclick="openExternal('https://t.me/mrtexnoai')"><span>🤖</span><span>Mr Texno AI kanali</span></div>
+      </div>
     </div>
   </section>
 
@@ -413,13 +434,13 @@
       </div>
 
       <!-- 1. OFFERS -->
-      <div id="sec-offers">
+      <div id="sec-offers" class="scroll-anchor">
         <div class="sec-head"><span class="sec-title" id="offersCountTitle">Do'konlar takliflari</span></div>
         <div id="offersList"></div>
       </div>
 
-      <!-- 2. PRICE HISTORY (Sahifa ichida) -->
-      <div id="sec-history" style="margin-top:16px;">
+      <!-- 2. PRICE HISTORY -->
+      <div id="sec-history" class="scroll-anchor" style="margin-top:16px;">
         <div class="sec-head">
           <span class="sec-title">Narx tarixi</span>
           <button class="sec-link" onclick="openAlertModal()">Kuzatuv qo'yish</button>
@@ -444,13 +465,13 @@
       </div>
 
       <!-- 3. SPECS -->
-      <div id="sec-specs" style="margin-top:16px;">
+      <div id="sec-specs" class="scroll-anchor" style="margin-top:16px;">
         <div class="sec-head"><span class="sec-title">Asosiy xususiyatlar</span></div>
         <div class="spec-box" id="specsList"></div>
       </div>
 
       <!-- 4. ALTERNATIVES -->
-      <div id="sec-alt" style="margin-top:16px;">
+      <div id="sec-alt" class="scroll-anchor" style="margin-top:16px;">
         <div class="sec-head"><span class="sec-title">O'xshash mashhur modellar</span></div>
         <div class="grid-2" id="altList"></div>
       </div>
@@ -462,7 +483,7 @@
     <div class="ov-top">
       <button class="ov-btn" onclick="closeAlertModal()">✕</button>
       <span style="font-size:15px;font-weight:500;">Narx kuzatish</span>
-      <span style="width:34px;"></span>
+      <span style="width:36px;"></span>
     </div>
     <div class="alert-card">
       <div style="font-size:12.5px;color:var(--muted);margin-bottom:8px;" id="alertProdName"></div>
@@ -519,7 +540,6 @@
     const FALLBACK_IMG = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120' viewBox='0 0 24 24' fill='none' stroke='%2394A3B8' stroke-width='1.5'%3E%3Crect x='3' y='3' width='18' height='18' rx='2'/%3E%3Ccircle cx='8.5' cy='8.5' r='1.5'/%3E%3Cpath d='M21 15l-5-5L5 21'/%3E%3C/svg%3E";
     let currentQuery = "";
     let currentResults = [];
-    let ratesData = null;
 
     function escapeHtml(s) { return String(s || "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c])); }
     function formatPrice(n) { return Number(n).toLocaleString("ru-RU") + " so'm"; }
@@ -527,9 +547,7 @@
     function getUserId() { return tg && tg.initDataUnsafe && tg.initDataUnsafe.user ? tg.initDataUnsafe.user.id : 0; }
 
     // CAMERA SEARCH
-    function openCameraSearch() {
-      document.getElementById("cameraFileInput").click();
-    }
+    function openCameraSearch() { document.getElementById("cameraFileInput").click(); }
     document.getElementById("cameraFileInput").addEventListener("change", function(e) {
       if (e.target.files && e.target.files[0]) {
         const msg = "Rasm qabul qilindi! Rasm orqali avtomatik AI-aniqlash keyingi yangilanishda ulanadi. Hozircha model nomini yozib qidiring.";
@@ -538,7 +556,7 @@
       }
     });
 
-    // TABS (Asosiy bosilganda qidiruvdan darrov bosh sahifaga qaytadi)
+    // TABS (Qidiruv va kurslar faqat Asosiy tabda ko'rinadi)
     const tabs = document.querySelectorAll(".tab");
     const sections = {
       home: document.getElementById("tab-home"),
@@ -548,20 +566,17 @@
       profile: document.getElementById("tab-profile"),
     };
     function goHomeClean() {
-      closeDetail();
-      closeAlertModal();
-      backToHome();
-      switchTab("home", false);
+      closeDetail(); closeAlertModal(); backToHome(); switchTab("home", false);
     }
     function switchTab(name, resetHome = true) {
       closeDetail();
       closeAlertModal();
+      document.getElementById("homeTopArea").classList.toggle("hidden", name !== "home");
       tabs.forEach(t => t.classList.toggle("active", t.dataset.tab === name));
       Object.entries(sections).forEach(([k, el]) => el.classList.toggle("hidden", k !== name));
       if (name === "home" && resetHome) backToHome();
       if (name === "favs") renderFavs();
       if (name === "alerts") loadAlerts();
-      if (name === "profile") renderRates();
     }
     tabs.forEach(t => t.addEventListener("click", () => switchTab(t.dataset.tab, true)));
 
@@ -696,8 +711,7 @@
       if (!currentResults.length) return;
       const b = currentResults[0];
       const text = `${b.title || currentQuery} — eng arzon narx: ${formatPrice(b.price)} (${b.store})`;
-      const shareUrl = `https://t.me/share/url?url=${encodeURIComponent(b.url)}&text=${encodeURIComponent(text)}`;
-      openExternal(shareUrl);
+      openExternal(`https://t.me/share/url?url=${encodeURIComponent(b.url)}&text=${encodeURIComponent(text)}`);
     }
 
     function updateDetailHeart() { document.getElementById("detailHeartBtn").textContent = isFav(currentQuery) ? "♥" : "♡"; }
@@ -717,7 +731,6 @@
       document.getElementById("detailOffersBtn").textContent = `${currentResults.length} ta taklifni solishtirish`;
       document.getElementById("offersCountTitle").textContent = `${currentResults.length} ta do'kon taklifi`;
 
-      // Variant chips (Xotira)
       const baseModel = currentQuery.replace(/\b(64|128|256|512)\s*gb\b/gi, "").trim();
       document.getElementById("variantRow").innerHTML = ["128GB", "256GB", "512GB"].map(v => `
         <div class="v-chip" onclick="closeDetail(); runSearch('${escapeHtml(baseModel + ' ' + v)}')">
@@ -726,7 +739,6 @@
         </div>
       `).join("");
 
-      // Offers list
       document.getElementById("offersList").innerHTML = currentResults.map((r, i) => `
         <div class="offer-card">
           ${i === 0 ? '<div class="offer-badge">Eng arzon narx</div>' : ''}
@@ -744,7 +756,6 @@
         </div>
       `).join("");
 
-      // Specs list
       const maxPrice = currentResults[currentResults.length - 1].price;
       const memMatch = (best.title || "").match(/(\d+\s*\/\s*\d+\s*GB|\d+\s*GB)/i);
       document.getElementById("specsList").innerHTML = `
@@ -756,7 +767,6 @@
         <div class="spec-row"><span class="spec-k">Yetkazib berish</span><span class="spec-v">${escapeHtml(best.delivery || "Mavjud")}</span></div>
       `;
 
-      // Alternatives
       const alts = ["iPhone 16 Pro", "Samsung S24 Ultra", "Redmi Note 13 Pro", "Samsung A55"].filter(a => a.toLowerCase() !== currentQuery.toLowerCase()).slice(0, 4);
       document.getElementById("altList").innerHTML = alts.map(a => `
         <div class="pop-card" onclick="closeDetail(); runSearch('${escapeHtml(a)}')">
@@ -766,9 +776,10 @@
       `).join("");
 
       updateDetailHeart();
-      document.getElementById("detailOverlay").classList.remove("hidden");
+      const ov = document.getElementById("detailOverlay");
+      ov.classList.remove("hidden");
+      ov.scrollTop = 0;
 
-      // Load inline price history chart
       const wrap = document.getElementById("inlineChartWrap");
       wrap.textContent = "Yuklanmoqda...";
       try {
@@ -858,33 +869,16 @@
       loadAlerts();
     }
 
-    // RATES
+    // RATES (Faqat Asosiy sahifa lentasiga)
     async function fetchRates() {
       try {
         const res = await fetch("/api/rates");
-        ratesData = await res.json();
-        if (ratesData.usd) document.getElementById("t-usd").textContent = Math.round(ratesData.usd.rate).toLocaleString("ru-RU");
-        if (ratesData.eur) document.getElementById("t-eur").textContent = Math.round(ratesData.eur.rate).toLocaleString("ru-RU");
-        if (ratesData.rub) document.getElementById("t-rub").textContent = Number(ratesData.rub.rate).toFixed(1);
-        if (ratesData.btc) document.getElementById("t-btc").textContent = "$" + Math.round(ratesData.btc.usd).toLocaleString("ru-RU");
-        renderRates();
+        const r = await res.json();
+        if (r.usd) document.getElementById("t-usd").textContent = Math.round(r.usd.rate).toLocaleString("ru-RU");
+        if (r.eur) document.getElementById("t-eur").textContent = Math.round(r.eur.rate).toLocaleString("ru-RU");
+        if (r.rub) document.getElementById("t-rub").textContent = Number(r.rub.rate).toFixed(1);
+        if (r.btc) document.getElementById("t-btc").textContent = "$" + Math.round(r.btc.usd).toLocaleString("ru-RU");
       } catch {}
-    }
-    function renderRates() {
-      const box = document.getElementById("ratesArea");
-      if (!ratesData) return;
-      const list = [
-        { k: "Bitcoin (BTC)", v: ratesData.btc ? "$" + Math.round(ratesData.btc.usd).toLocaleString("ru-RU") : "—", d: "Jonli" },
-        { k: "AQSh dollari (USD)", v: ratesData.usd ? Number(ratesData.usd.rate).toLocaleString("ru-RU") + " so'm" : "—", d: ratesData.usd ? ratesData.usd.diff : "" },
-        { k: "Yevro (EUR)", v: ratesData.eur ? Number(ratesData.eur.rate).toLocaleString("ru-RU") + " so'm" : "—", d: ratesData.eur ? ratesData.eur.diff : "" },
-        { k: "Rossiya rubli (RUB)", v: ratesData.rub ? Number(ratesData.rub.rate).toLocaleString("ru-RU") + " so'm" : "—", d: ratesData.rub ? ratesData.rub.diff : "" },
-      ];
-      box.innerHTML = list.map(i => `
-        <div class="rate-row">
-          <span style="font-size:13.5px;font-weight:500;">${escapeHtml(i.k)}</span>
-          <div style="text-align:right;"><div style="font-size:14px;font-weight:600;">${escapeHtml(i.v)}</div><div style="font-size:11px;color:var(--muted);">${escapeHtml(i.d)}</div></div>
-        </div>
-      `).join("");
     }
 
     document.getElementById("searchForm").addEventListener("submit", e => { e.preventDefault(); runSearch(document.getElementById("searchInput").value); });
@@ -895,4 +889,4 @@
     if (urlQ) runSearch(urlQ);
   </script>
 </body>
-</html>
+  </html>
