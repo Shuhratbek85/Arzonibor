@@ -42,23 +42,25 @@
       z-index: 20;
     }
     .brand-row { display: flex; align-items: center; justify-content: space-between; margin-bottom: 9px; }
-    .brand { font-size: 17px; font-weight: 600; letter-spacing: -0.2px; color: #fff; }
+    .brand { font-size: 17px; font-weight: 600; letter-spacing: -0.2px; color: #fff; cursor: pointer; }
     .brand span { color: var(--orange); }
     .live-badge { font-size: 11px; color: #CBD5E1; display: flex; align-items: center; gap: 5px; }
     .live-badge::before { content: ""; width: 6px; height: 6px; border-radius: 50%; background: var(--green); }
 
     .search-wrap { position: relative; display: flex; align-items: center; }
     .search-input {
-      width: 100%; height: 39px; border: 1px solid rgba(255,255,255,0.12);
-      border-radius: 9px; padding: 0 38px 0 12px; font-size: 13.5px;
+      width: 100%; height: 40px; border: 1px solid rgba(255,255,255,0.12);
+      border-radius: 9px; padding: 0 74px 0 12px; font-size: 13.5px;
       outline: none; color: var(--text); background: #1A212B;
     }
     .search-input::placeholder { color: var(--muted); }
     .search-input:focus { border-color: var(--orange); }
-    .search-btn {
-      position: absolute; right: 3px; width: 34px; height: 34px; border: none;
-      background: transparent; color: var(--muted); display: flex; align-items: center; justify-content: center; cursor: pointer;
+    .search-actions { position: absolute; right: 4px; display: flex; align-items: center; gap: 2px; }
+    .icon-btn {
+      width: 34px; height: 34px; border: none; background: transparent;
+      color: var(--muted); display: flex; align-items: center; justify-content: center; cursor: pointer;
     }
+    .icon-btn:active { color: var(--text); }
 
     /* TICKER */
     .ticker-bar { display: flex; gap: 7px; overflow-x: auto; padding: 2px 14px 10px; scrollbar-width: none; }
@@ -71,20 +73,24 @@
     .ticker-pill b { color: var(--text); font-weight: 500; }
     .ticker-pill.btc b { color: var(--orange); }
 
-    /* STORIES (Compact Idealo style) */
-    .stories { display: flex; gap: 12px; overflow-x: auto; padding: 4px 14px 12px; scrollbar-width: none; }
+    /* STORIES (Kattaroq va aniqroq) */
+    .stories { display: flex; gap: 13px; overflow-x: auto; padding: 4px 14px 14px; scrollbar-width: none; }
     .stories::-webkit-scrollbar { display: none; }
-    .story { display: flex; flex-direction: column; align-items: center; gap: 5px; width: 68px; flex-shrink: 0; cursor: pointer; }
+    .story { display: flex; flex-direction: column; align-items: center; gap: 6px; width: 78px; flex-shrink: 0; cursor: pointer; }
     .story-ring {
-      width: 58px; height: 58px; border-radius: 50%; padding: 2px;
+      width: 72px; height: 72px; border-radius: 50%; padding: 2.5px;
       background: linear-gradient(135deg, #FF6600, #F59E0B);
     }
     .story-inner {
-      width: 100%; height: 100%; border-radius: 50%; background: var(--navy);
-      border: 2px solid var(--bg); display: flex; align-items: center; justify-content: center;
-      font-size: 20px; font-weight: 600; color: #fff;
+      width: 100%; height: 100%; border-radius: 50%; border: 2.5px solid var(--bg);
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      color: #fff; font-weight: 700; text-align: center;
     }
-    .story-label { font-size: 11px; color: var(--text); text-align: center; line-height: 1.2; }
+    .st-deal { background: linear-gradient(145deg, #0E4D8A, #072747); font-size: 26px; color: #FF7A1A; }
+    .st-phone { background: linear-gradient(145deg, #1E293B, #0F172A); font-size: 26px; }
+    .st-game { background: linear-gradient(145deg, #3B1D60, #180C2E); font-size: 26px; }
+    .st-btc { background: linear-gradient(145deg, #7C2D12, #431407); font-size: 26px; color: #FBBF24; }
+    .story-label { font-size: 11.5px; color: var(--text); text-align: center; line-height: 1.2; }
 
     /* CONTAINER & TITLES */
     .container { padding: 4px 14px 20px; }
@@ -92,16 +98,14 @@
     .sec-title { font-size: 15px; font-weight: 500; color: var(--text); }
     .sec-link { font-size: 12.5px; color: var(--blue); background: none; border: none; cursor: pointer; }
 
-    /* HORIZONTAL CARDS (Last Viewed) */
+    /* HORIZONTAL CARDS */
     .h-scroll { display: flex; gap: 10px; overflow-x: auto; padding-bottom: 4px; scrollbar-width: none; }
     .h-scroll::-webkit-scrollbar { display: none; }
     .mini-card {
       width: 142px; flex-shrink: 0; background: var(--surface); border: 1px solid var(--border);
       border-radius: var(--radius); overflow: hidden; cursor: pointer;
     }
-    .mini-img-box {
-      height: 115px; background: #fff; display: flex; align-items: center; justify-content: center; padding: 8px;
-    }
+    .mini-img-box { height: 112px; background: #fff; display: flex; align-items: center; justify-content: center; padding: 8px; }
     .mini-img-box img { max-width: 100%; max-height: 100%; object-fit: contain; }
     .mini-body { padding: 8px 9px; }
     .mini-title {
@@ -110,7 +114,7 @@
     }
     .mini-price { font-size: 12.5px; font-weight: 500; color: var(--orange); }
 
-    /* 2-COLUMN POPULAR GRID */
+    /* POPULAR GRID */
     .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 9px; }
     .pop-card {
       background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius);
@@ -120,7 +124,7 @@
     .pop-name { font-size: 13px; font-weight: 500; color: var(--text); }
     .pop-sub { font-size: 11.5px; color: var(--muted); }
 
-    /* SEARCH RESULT CARD (Idealo Horizontal Product Card) */
+    /* SEARCH RESULT CARD */
     .sort-row { display: flex; gap: 7px; margin-bottom: 10px; }
     .pill-btn {
       background: var(--surface); border: 1px solid var(--border); color: var(--text);
@@ -157,10 +161,7 @@
     .top-cats { display: flex; gap: 14px; overflow-x: auto; padding-bottom: 8px; scrollbar-width: none; }
     .top-cats::-webkit-scrollbar { display: none; }
     .top-cat { display: flex; flex-direction: column; align-items: center; gap: 6px; width: 76px; flex-shrink: 0; cursor: pointer; }
-    .top-cat-circle {
-      width: 64px; height: 64px; border-radius: 50%; background: #fff;
-      display: flex; align-items: center; justify-content: center; font-size: 26px;
-    }
+    .top-cat-circle { width: 64px; height: 64px; border-radius: 50%; background: #fff; display: flex; align-items: center; justify-content: center; font-size: 26px; }
     .top-cat-name { font-size: 11.5px; color: var(--text); text-align: center; }
 
     .cat-list { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; }
@@ -169,82 +170,86 @@
       border-bottom: 1px solid var(--border); cursor: pointer; font-size: 13.5px; color: var(--text);
     }
     .cat-row:last-child { border-bottom: none; }
-    .cat-row:active { background: var(--surface-2); }
 
-    /* PRODUCT DETAIL OVERLAY */
-    .overlay { position: fixed; inset: 0; background: var(--bg); z-index: 40; overflow-y: auto; padding-bottom: 28px; }
+    /* PRODUCT DETAIL OVERLAY (Idealo Full Structure, Medium Sizing) */
+    .overlay { position: fixed; inset: 0; background: var(--bg); z-index: 40; overflow-y: auto; padding-bottom: 72px; }
     .ov-top {
-      display: flex; align-items: center; justify-content: space-between; padding: 10px 14px;
-      position: sticky; top: 0; background: rgba(18,22,26,0.95); z-index: 5; border-bottom: 1px solid var(--border);
+      display: flex; align-items: center; justify-content: space-between; padding: 9px 14px;
+      position: sticky; top: 0; background: rgba(18,22,26,0.96); z-index: 10; border-bottom: 1px solid var(--border);
     }
     .ov-btn {
       width: 34px; height: 34px; border-radius: 50%; background: var(--surface); border: 1px solid var(--border);
-      color: var(--text); display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 16px;
+      color: var(--text); display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 15px;
     }
     .ov-btn.blue { background: var(--blue); color: #0B1220; border-color: var(--blue); }
 
     .detail-img-wrap {
-      background: #fff; margin: 12px 14px; border-radius: var(--radius); height: 210px;
+      background: #fff; margin: 12px 14px; border-radius: var(--radius); height: 205px;
       display: flex; align-items: center; justify-content: center; padding: 14px;
     }
     .detail-img-wrap img { max-width: 100%; max-height: 100%; object-fit: contain; }
     .detail-body { padding: 0 14px; }
-    .detail-title { font-size: 16px; font-weight: 500; line-height: 1.35; margin-bottom: 8px; }
+    .detail-title { font-size: 16px; font-weight: 500; line-height: 1.35; margin-bottom: 9px; }
+
+    /* VARIANT CHIPS */
+    .variant-row { display: flex; gap: 7px; overflow-x: auto; margin-bottom: 12px; scrollbar-width: none; }
+    .variant-row::-webkit-scrollbar { display: none; }
+    .v-chip {
+      border: 1px solid var(--border); border-radius: 8px; overflow: hidden; flex-shrink: 0; cursor: pointer; min-width: 78px;
+    }
+    .v-chip-top { background: rgba(96,165,250,0.15); color: var(--blue); font-size: 12px; font-weight: 500; padding: 4px 10px; text-align: center; }
+    .v-chip-bot { background: var(--surface); color: var(--muted); font-size: 10.5px; padding: 3px 10px; text-align: center; }
+
     .detail-from { font-size: 12px; color: var(--muted); }
-    .detail-price { font-size: 20px; font-weight: 600; color: var(--orange); margin-bottom: 12px; }
+    .detail-price { font-size: 20px; font-weight: 600; color: var(--orange); margin-bottom: 11px; }
     .blue-cta {
       width: 100%; background: var(--blue); color: #0B1220; border: none; border-radius: 10px;
-      padding: 11px; font-size: 14px; font-weight: 600; cursor: pointer; margin-bottom: 14px;
+      padding: 10px; font-size: 13.5px; font-weight: 600; cursor: pointer; margin-bottom: 12px;
     }
 
-    .offer-card {
-      background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius);
-      padding: 11px 12px; margin-bottom: 9px;
+    /* INTERNAL SECTION TABS (Idealo style) */
+    .sub-tabs {
+      display: flex; border-bottom: 1px solid var(--border); margin: 4px -14px 12px; padding: 0 14px;
+      overflow-x: auto; gap: 18px; scrollbar-width: none; position: sticky; top: 52px; background: var(--bg); z-index: 8;
     }
-    .offer-badge {
-      display: inline-block; background: var(--orange); color: #fff; font-size: 10.5px;
-      font-weight: 500; padding: 2px 7px; border-radius: 4px; margin-bottom: 6px;
+    .sub-tabs::-webkit-scrollbar { display: none; }
+    .sub-tab {
+      background: none; border: none; color: var(--muted); font-size: 12.5px; padding: 9px 2px;
+      border-bottom: 2px solid transparent; white-space: nowrap; cursor: pointer;
     }
+    .sub-tab.active { color: var(--blue); border-bottom-color: var(--blue); font-weight: 500; }
+
+    .offer-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 11px 12px; margin-bottom: 9px; }
+    .offer-badge { display: inline-block; background: var(--orange); color: #fff; font-size: 10.5px; font-weight: 500; padding: 2px 7px; border-radius: 4px; margin-bottom: 6px; }
     .offer-row { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
-    .offer-p { font-size: 16px; font-weight: 600; color: var(--text); }
+    .offer-p { font-size: 15.5px; font-weight: 600; color: var(--text); }
     .offer-m { font-size: 11.5px; color: var(--muted); margin-top: 2px; }
     .offer-del { font-size: 11.5px; color: var(--green); margin-top: 4px; }
-    .shop-btn {
-      background: var(--surface-2); border: 1px solid var(--border); color: var(--text);
-      padding: 7px 12px; border-radius: 8px; font-size: 12.5px; font-weight: 500; cursor: pointer; white-space: nowrap;
-    }
+    .shop-btn { background: var(--surface-2); border: 1px solid var(--border); color: var(--text); padding: 7px 12px; border-radius: 8px; font-size: 12.5px; font-weight: 500; cursor: pointer; white-space: nowrap; }
 
-    /* PRICE ALERT MODAL */
+    .spec-box { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 12px 14px; margin-bottom: 14px; }
+    .spec-row { display: flex; justify-content: space-between; padding: 7px 0; border-bottom: 1px solid var(--border); font-size: 12.5px; gap: 10px; }
+    .spec-row:last-child { border-bottom: none; }
+    .spec-k { color: var(--muted); }
+    .spec-v { color: var(--text); font-weight: 500; text-align: right; }
+
+    /* PRICE ALERT MODAL & CAMERA MODAL */
     .alert-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 13px; margin: 12px 14px; }
-    .alert-input-box {
-      display: flex; align-items: center; background: #14191F; border: 1px solid var(--border);
-      border-radius: 9px; padding: 8px 12px; margin-bottom: 5px;
-    }
-    .alert-input { background: transparent; border: none; color: var(--text); font-size: 20px; font-weight: 500; width: 100%; outline: none; }
+    .alert-input-box { display: flex; align-items: center; background: #14191F; border: 1px solid var(--border); border-radius: 9px; padding: 8px 12px; margin-bottom: 5px; }
+    .alert-input { background: transparent; border: none; color: var(--text); font-size: 19px; font-weight: 500; width: 100%; outline: none; }
     .alert-slider { width: 100%; accent-color: var(--blue); margin: 10px 0 14px; }
 
-    /* ALERTS & PROFILE CARDS */
-    .rate-row {
-      display: flex; align-items: center; justify-content: space-between; padding: 11px 13px;
-      background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); margin-bottom: 8px;
-    }
-    .skeleton {
-      height: 96px; border-radius: var(--radius); margin-bottom: 10px;
-      background: linear-gradient(90deg, #1B2027 25%, #242B35 50%, #1B2027 75%);
-      background-size: 200% 100%; animation: shimmer 1.2s infinite;
-    }
+    .rate-row { display: flex; align-items: center; justify-content: space-between; padding: 11px 13px; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); margin-bottom: 8px; }
+    .skeleton { height: 96px; border-radius: var(--radius); margin-bottom: 10px; background: linear-gradient(90deg, #1B2027 25%, #242B35 50%, #1B2027 75%); background-size: 200% 100%; animation: shimmer 1.2s infinite; }
     @keyframes shimmer { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
     .empty-box { text-align: center; padding: 26px 14px; color: var(--muted); font-size: 13px; line-height: 1.5; }
 
-    /* 5-TAB BOTTOM BAR (Idealo style) */
+    /* 5-TAB BOTTOM BAR */
     .tabbar {
       position: fixed; bottom: 0; left: 0; right: 0; height: 58px; background: #161B22;
-      border-top: 1px solid var(--border); display: grid; grid-template-columns: repeat(5, 1fr); z-index: 30;
+      border-top: 1px solid var(--border); display: grid; grid-template-columns: repeat(5, 1fr); z-index: 45;
     }
-    .tab {
-      background: none; border: none; display: flex; flex-direction: column; align-items: center;
-      justify-content: center; gap: 3px; font-size: 10px; color: var(--muted); cursor: pointer;
-    }
+    .tab { background: none; border: none; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px; font-size: 10px; color: var(--muted); cursor: pointer; }
     .tab svg { width: 19px; height: 19px; stroke: currentColor; fill: none; stroke-width: 1.8; }
     .tab.active { color: var(--orange); font-weight: 500; }
 
@@ -255,16 +260,25 @@
 
   <header class="header">
     <div class="brand-row">
-      <div class="brand">Arzoni<span>Bor</span></div>
+      <div class="brand" onclick="goHomeClean()">Arzoni<span>Bor</span></div>
       <div class="live-badge">Jonli narxlar</div>
     </div>
     <form class="search-wrap" id="searchForm">
       <input id="searchInput" class="search-input" type="search" placeholder="Mahsulot qidirish (iPhone, Redmi...)" autocomplete="off" />
-      <button class="search-btn" type="submit" aria-label="Qidirish">
-        <svg viewBox="0 0 24 24" width="17" height="17" stroke="currentColor" fill="none" stroke-width="2">
-          <circle cx="11" cy="11" r="7"></circle><line x1="20" y1="20" x2="16.65" y2="16.65"></line>
-        </svg>
-      </button>
+      <div class="search-actions">
+        <button class="icon-btn" type="button" onclick="openCameraSearch()" aria-label="Rasm orqali qidirish">
+          <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" fill="none" stroke-width="1.9">
+            <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/>
+            <circle cx="12" cy="13" r="4"/>
+          </svg>
+        </button>
+        <button class="icon-btn" type="submit" aria-label="Qidirish">
+          <svg viewBox="0 0 24 24" width="17" height="17" stroke="currentColor" fill="none" stroke-width="2">
+            <circle cx="11" cy="11" r="7"></circle><line x1="20" y1="20" x2="16.65" y2="16.65"></line>
+          </svg>
+        </button>
+      </div>
+      <input id="cameraFileInput" type="file" accept="image/*" capture="environment" class="hidden" />
     </form>
   </header>
 
@@ -279,10 +293,10 @@
   <section id="tab-home">
     <div id="homeDashboard">
       <div class="stories">
-        <div class="story" onclick="runSearch('iPhone 16 Pro')"><div class="story-ring"><div class="story-inner">%</div></div><div class="story-label">Kun narxi</div></div>
-        <div class="story" onclick="runSearch('Redmi Note 13')"><div class="story-ring"><div class="story-inner">📱</div></div><div class="story-label">Top Redmi</div></div>
-        <div class="story" onclick="runSearch('PlayStation 5')"><div class="story-ring"><div class="story-inner">🎮</div></div><div class="story-label">O'yinlar</div></div>
-        <div class="story" onclick="switchTab('profile')"><div class="story-ring"><div class="story-inner">₿</div></div><div class="story-label">Kurslar</div></div>
+        <div class="story" onclick="runSearch('iPhone 16 Pro')"><div class="story-ring"><div class="story-inner st-deal">%</div></div><div class="story-label">Kun narxi</div></div>
+        <div class="story" onclick="runSearch('Redmi Note 13')"><div class="story-ring"><div class="story-inner st-phone">📱</div></div><div class="story-label">Top Redmi</div></div>
+        <div class="story" onclick="runSearch('PlayStation 5')"><div class="story-ring"><div class="story-inner st-game">🎮</div></div><div class="story-label">O'yinlar</div></div>
+        <div class="story" onclick="switchTab('profile')"><div class="story-ring"><div class="story-inner st-btc">₿</div></div><div class="story-label">Kurslar</div></div>
       </div>
 
       <div class="container">
@@ -309,7 +323,7 @@
     <div id="searchResultsWrap" class="container hidden">
       <div class="sec-head">
         <span class="sec-title" id="searchHeading">Natijalar</span>
-        <button class="sec-link" onclick="backToHome()">Yopish</button>
+        <button class="sec-link" onclick="backToHome()">Orqaga</button>
       </div>
       <div class="sort-row">
         <button class="pill-btn active" id="sortAsc" onclick="sortResults('asc')">Arzonidan</button>
@@ -369,23 +383,82 @@
     <div class="ov-top">
       <button class="ov-btn" onclick="closeDetail()">✕</button>
       <div style="display:flex;gap:8px;">
+        <button class="ov-btn" onclick="shareProduct()" title="Ulashish">
+          <svg viewBox="0 0 24 24" width="15" height="15" stroke="currentColor" fill="none" stroke-width="2">
+            <circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/>
+            <line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/>
+          </svg>
+        </button>
         <button class="ov-btn blue" onclick="openAlertModal()" title="Narx kuzatish">🔔</button>
         <button class="ov-btn" id="detailHeartBtn" onclick="toggleDetailFav()">♡</button>
       </div>
     </div>
+
     <div class="detail-img-wrap"><img id="detailImg" src="" alt="" /></div>
     <div class="detail-body">
       <div class="detail-title" id="detailTitle"></div>
+
+      <div class="variant-row" id="variantRow"></div>
+
       <div class="detail-from">Eng arzon narx</div>
       <div class="detail-price" id="detailPrice"></div>
-      <button class="blue-cta" id="detailOffersBtn" onclick="document.getElementById('offersList').scrollIntoView({behavior:'smooth'})">Takliflarni solishtirish</button>
-      <div class="sec-head"><span class="sec-title" id="offersCountTitle">Do'konlar takliflari</span></div>
-      <div id="offersList"></div>
+      <button class="blue-cta" id="detailOffersBtn" onclick="scrollToSec('sec-offers')">Takliflarni solishtirish</button>
+
+      <!-- INTERNAL TABS -->
+      <div class="sub-tabs">
+        <button class="sub-tab active" onclick="scrollToSec('sec-offers', this)">Takliflar</button>
+        <button class="sub-tab" onclick="scrollToSec('sec-history', this)">Narx tarixi</button>
+        <button class="sub-tab" onclick="scrollToSec('sec-specs', this)">Xususiyatlar</button>
+        <button class="sub-tab" onclick="scrollToSec('sec-alt', this)">O'xshashlar</button>
+      </div>
+
+      <!-- 1. OFFERS -->
+      <div id="sec-offers">
+        <div class="sec-head"><span class="sec-title" id="offersCountTitle">Do'konlar takliflari</span></div>
+        <div id="offersList"></div>
+      </div>
+
+      <!-- 2. PRICE HISTORY (Sahifa ichida) -->
+      <div id="sec-history" style="margin-top:16px;">
+        <div class="sec-head">
+          <span class="sec-title">Narx tarixi</span>
+          <button class="sec-link" onclick="openAlertModal()">Kuzatuv qo'yish</button>
+        </div>
+        <div class="spec-box">
+          <div style="display:flex;justify-content:space-between;margin-bottom:10px;">
+            <div>
+              <div style="font-size:11.5px;color:var(--muted);">Hozirgi narx</div>
+              <div style="font-size:16px;font-weight:600;color:var(--orange);" id="inlineCurPrice"></div>
+            </div>
+            <div style="text-align:right;">
+              <div style="font-size:11.5px;color:var(--muted);">Dinamika</div>
+              <div style="font-size:12px;color:var(--green);">Jonli kuzatuv ↘</div>
+            </div>
+          </div>
+          <div id="inlineChartWrap" style="height:90px;display:flex;align-items:center;justify-content:center;color:var(--muted);font-size:12px;"></div>
+          <div style="margin-top:10px;padding-top:9px;border-top:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;">
+            <span style="font-size:12px;color:var(--muted);">Narx tushsa xabar olish</span>
+            <button class="pill-btn active" onclick="openAlertModal()">🔔 Sozlash</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- 3. SPECS -->
+      <div id="sec-specs" style="margin-top:16px;">
+        <div class="sec-head"><span class="sec-title">Asosiy xususiyatlar</span></div>
+        <div class="spec-box" id="specsList"></div>
+      </div>
+
+      <!-- 4. ALTERNATIVES -->
+      <div id="sec-alt" style="margin-top:16px;">
+        <div class="sec-head"><span class="sec-title">O'xshash mashhur modellar</span></div>
+        <div class="grid-2" id="altList"></div>
+      </div>
     </div>
   </div>
 
   <!-- PRICE ALERT MODAL -->
-  <div id="alertOverlay" class="overlay hidden" style="z-index:50;">
+  <div id="alertOverlay" class="overlay hidden" style="z-index:55;">
     <div class="ov-top">
       <button class="ov-btn" onclick="closeAlertModal()">✕</button>
       <span style="font-size:15px;font-weight:500;">Narx kuzatish</span>
@@ -404,19 +477,6 @@
         <input type="checkbox" checked style="width:17px;height:17px;accent-color:var(--blue);" />
       </div>
       <button id="confirmAlertBtn" class="blue-cta" style="margin-bottom:0;" onclick="submitAlert()">🔔 Kuzatuvni yoqish</button>
-    </div>
-    <div class="alert-card">
-      <div style="display:flex;justify-content:space-between;margin-bottom:10px;">
-        <div>
-          <div style="font-size:11.5px;color:var(--muted);">Hozirgi narx</div>
-          <div style="font-size:17px;font-weight:600;color:var(--orange);" id="alertCurPrice"></div>
-        </div>
-        <div style="text-align:right;">
-          <div style="font-size:11.5px;color:var(--muted);">Holat</div>
-          <div style="font-size:12.5px;color:var(--green);">Jonli kuzatuv ↘</div>
-        </div>
-      </div>
-      <div id="alertChartWrap" style="height:100px;display:flex;align-items:center;justify-content:center;color:var(--muted);font-size:12px;"></div>
     </div>
   </div>
 
@@ -466,7 +526,19 @@
     function openExternal(u) { if (tg && tg.openLink) tg.openLink(u); else window.open(u, "_blank"); }
     function getUserId() { return tg && tg.initDataUnsafe && tg.initDataUnsafe.user ? tg.initDataUnsafe.user.id : 0; }
 
-    // TABS
+    // CAMERA SEARCH
+    function openCameraSearch() {
+      document.getElementById("cameraFileInput").click();
+    }
+    document.getElementById("cameraFileInput").addEventListener("change", function(e) {
+      if (e.target.files && e.target.files[0]) {
+        const msg = "Rasm qabul qilindi! Rasm orqali avtomatik AI-aniqlash keyingi yangilanishda ulanadi. Hozircha model nomini yozib qidiring.";
+        if (tg && tg.showAlert) tg.showAlert(msg); else alert(msg);
+        e.target.value = "";
+      }
+    });
+
+    // TABS (Asosiy bosilganda qidiruvdan darrov bosh sahifaga qaytadi)
     const tabs = document.querySelectorAll(".tab");
     const sections = {
       home: document.getElementById("tab-home"),
@@ -475,14 +547,23 @@
       alerts: document.getElementById("tab-alerts"),
       profile: document.getElementById("tab-profile"),
     };
-    function switchTab(name) {
+    function goHomeClean() {
+      closeDetail();
+      closeAlertModal();
+      backToHome();
+      switchTab("home", false);
+    }
+    function switchTab(name, resetHome = true) {
+      closeDetail();
+      closeAlertModal();
       tabs.forEach(t => t.classList.toggle("active", t.dataset.tab === name));
       Object.entries(sections).forEach(([k, el]) => el.classList.toggle("hidden", k !== name));
+      if (name === "home" && resetHome) backToHome();
       if (name === "favs") renderFavs();
       if (name === "alerts") loadAlerts();
       if (name === "profile") renderRates();
     }
-    tabs.forEach(t => t.addEventListener("click", () => switchTab(t.dataset.tab)));
+    tabs.forEach(t => t.addEventListener("click", () => switchTab(t.dataset.tab, true)));
 
     // LAST VIEWED
     function getHistory() { try { return JSON.parse(localStorage.getItem("ab_hist") || "[]"); } catch { return []; } }
@@ -518,9 +599,7 @@
       if (isFav(item.query)) f = f.filter(x => x.query.toLowerCase() !== item.query.toLowerCase());
       else f.unshift(item);
       localStorage.setItem("ab_favs", JSON.stringify(f.slice(0, 30)));
-      renderResults();
-      renderFavs();
-      updateDetailHeart();
+      renderResults(); renderFavs(); updateDetailHeart();
     }
     function renderFavs() {
       const f = getFavs();
@@ -547,7 +626,7 @@
     async function runSearch(query) {
       query = (query || "").trim();
       if (query.length < 2) return;
-      switchTab("home");
+      switchTab("home", false);
       currentQuery = query;
       document.getElementById("searchInput").value = query;
       document.getElementById("homeDashboard").classList.add("hidden");
@@ -603,23 +682,51 @@
       `).join("");
     }
 
-    // DETAIL OVERLAY
-    function updateDetailHeart() {
-      document.getElementById("detailHeartBtn").textContent = isFav(currentQuery) ? "♥" : "♡";
+    // PRODUCT DETAIL OVERLAY
+    function scrollToSec(id, btn) {
+      if (btn) {
+        document.querySelectorAll(".sub-tab").forEach(b => b.classList.remove("active"));
+        btn.classList.add("active");
+      }
+      const el = document.getElementById(id);
+      if (el) el.scrollIntoView({ behavior: "smooth", block: "start" });
     }
+
+    function shareProduct() {
+      if (!currentResults.length) return;
+      const b = currentResults[0];
+      const text = `${b.title || currentQuery} — eng arzon narx: ${formatPrice(b.price)} (${b.store})`;
+      const shareUrl = `https://t.me/share/url?url=${encodeURIComponent(b.url)}&text=${encodeURIComponent(text)}`;
+      openExternal(shareUrl);
+    }
+
+    function updateDetailHeart() { document.getElementById("detailHeartBtn").textContent = isFav(currentQuery) ? "♥" : "♡"; }
     function toggleDetailFav() {
       if (!currentResults.length) return;
       const b = currentResults[0];
       toggleFav({ query: currentQuery, title: b.title, price: b.price, image: b.image });
     }
-    function openDetail() {
+
+    async function openDetail() {
       if (!currentResults.length) return;
       const best = currentResults[0];
       document.getElementById("detailImg").src = best.image || FALLBACK_IMG;
       document.getElementById("detailTitle").textContent = best.title || currentQuery;
       document.getElementById("detailPrice").textContent = formatPrice(best.price);
+      document.getElementById("inlineCurPrice").textContent = formatPrice(best.price);
       document.getElementById("detailOffersBtn").textContent = `${currentResults.length} ta taklifni solishtirish`;
       document.getElementById("offersCountTitle").textContent = `${currentResults.length} ta do'kon taklifi`;
+
+      // Variant chips (Xotira)
+      const baseModel = currentQuery.replace(/\b(64|128|256|512)\s*gb\b/gi, "").trim();
+      document.getElementById("variantRow").innerHTML = ["128GB", "256GB", "512GB"].map(v => `
+        <div class="v-chip" onclick="closeDetail(); runSearch('${escapeHtml(baseModel + ' ' + v)}')">
+          <div class="v-chip-top">${v}</div>
+          <div class="v-chip-bot">Xotira</div>
+        </div>
+      `).join("");
+
+      // Offers list
       document.getElementById("offersList").innerHTML = currentResults.map((r, i) => `
         <div class="offer-card">
           ${i === 0 ? '<div class="offer-badge">Eng arzon narx</div>' : ''}
@@ -636,8 +743,45 @@
           </div>
         </div>
       `).join("");
+
+      // Specs list
+      const maxPrice = currentResults[currentResults.length - 1].price;
+      const memMatch = (best.title || "").match(/(\d+\s*\/\s*\d+\s*GB|\d+\s*GB)/i);
+      document.getElementById("specsList").innerHTML = `
+        <div class="spec-row"><span class="spec-k">Model</span><span class="spec-v">${escapeHtml(currentQuery)}</span></div>
+        <div class="spec-row"><span class="spec-k">Xotira</span><span class="spec-v">${memMatch ? escapeHtml(memMatch[0]) : "Do'konda ko'rsatilgan"}</span></div>
+        <div class="spec-row"><span class="spec-k">Eng arzon narx</span><span class="spec-v">${formatPrice(best.price)}</span></div>
+        <div class="spec-row"><span class="spec-k">Eng yuqori narx</span><span class="spec-v">${formatPrice(maxPrice)}</span></div>
+        <div class="spec-row"><span class="spec-k">Muddatli to'lov</span><span class="spec-v">Oyiga ~${formatPrice(best.monthly || Math.round(best.price / 12))}</span></div>
+        <div class="spec-row"><span class="spec-k">Yetkazib berish</span><span class="spec-v">${escapeHtml(best.delivery || "Mavjud")}</span></div>
+      `;
+
+      // Alternatives
+      const alts = ["iPhone 16 Pro", "Samsung S24 Ultra", "Redmi Note 13 Pro", "Samsung A55"].filter(a => a.toLowerCase() !== currentQuery.toLowerCase()).slice(0, 4);
+      document.getElementById("altList").innerHTML = alts.map(a => `
+        <div class="pop-card" onclick="closeDetail(); runSearch('${escapeHtml(a)}')">
+          <span class="pop-name">${escapeHtml(a)}</span>
+          <span class="pop-sub">Narxlarni ko'rish →</span>
+        </div>
+      `).join("");
+
       updateDetailHeart();
       document.getElementById("detailOverlay").classList.remove("hidden");
+
+      // Load inline price history chart
+      const wrap = document.getElementById("inlineChartWrap");
+      wrap.textContent = "Yuklanmoqda...";
+      try {
+        const res = await fetch(`/api/history?q=${encodeURIComponent(currentQuery)}`);
+        const d = await res.json();
+        const pts = (d.history || []).map(x => x.price);
+        if (pts.length < 2) { wrap.textContent = "Narx tarixi bugundan boshlab yig'ilmoqda."; }
+        else {
+          const minV = Math.min(...pts), maxV = Math.max(...pts) || 1;
+          const coords = pts.map((p, i) => `${((i/(pts.length-1))*280).toFixed(1)},${(80-((p-minV)/(maxV-minV||1))*60).toFixed(1)}`).join(" ");
+          wrap.innerHTML = `<svg viewBox="0 0 280 90" style="width:100%;height:100%;"><polyline fill="none" stroke="#FF6600" stroke-width="2.2" points="${coords}"/></svg>`;
+        }
+      } catch { wrap.textContent = ""; }
     }
     function closeDetail() { document.getElementById("detailOverlay").classList.add("hidden"); }
 
@@ -649,29 +793,14 @@
       document.getElementById("alertSlider").value = val;
       document.getElementById("alertSaveHint").textContent = "Tejaysiz: " + formatPrice(Math.max(0, maxP - val));
     }
-    async function openAlertModal() {
+    function openAlertModal() {
       if (!currentResults.length) return;
       const best = currentResults[0];
       document.getElementById("alertProdName").textContent = best.title || currentQuery;
-      document.getElementById("alertCurPrice").textContent = formatPrice(best.price);
       const slider = document.getElementById("alertSlider");
       slider.min = Math.round(best.price * 0.65); slider.max = best.price; slider.step = 10000;
       updateAlertUI(Math.round(best.price * 0.95));
       document.getElementById("alertOverlay").classList.remove("hidden");
-
-      const wrap = document.getElementById("alertChartWrap");
-      wrap.textContent = "Grafik yuklanmoqda...";
-      try {
-        const res = await fetch(`/api/history?q=${encodeURIComponent(currentQuery)}`);
-        const d = await res.json();
-        const pts = (d.history || []).map(x => x.price);
-        if (pts.length < 2) { wrap.textContent = "Narx tarixi bugundan boshlab yig'ilmoqda."; }
-        else {
-          const minV = Math.min(...pts), maxV = Math.max(...pts) || 1;
-          const coords = pts.map((p, i) => `${((i/(pts.length-1))*280).toFixed(1)},${(88-((p-minV)/(maxV-minV||1))*68).toFixed(1)}`).join(" ");
-          wrap.innerHTML = `<svg viewBox="0 0 280 96" style="width:100%;height:100%;"><polyline fill="none" stroke="#FF6600" stroke-width="2.2" points="${coords}"/></svg>`;
-        }
-      } catch { wrap.textContent = ""; }
     }
     function closeAlertModal() { document.getElementById("alertOverlay").classList.add("hidden"); }
     document.getElementById("alertSlider").addEventListener("input", e => updateAlertUI(e.target.value));
@@ -698,7 +827,7 @@
       } catch { btn.textContent = "Xatolik"; }
     }
 
-    // LOAD ALERTS TAB
+    // ALERTS TAB
     async function loadAlerts() {
       const box = document.getElementById("alertsList");
       const uid = getUserId();
@@ -760,7 +889,6 @@
 
     document.getElementById("searchForm").addEventListener("submit", e => { e.preventDefault(); runSearch(document.getElementById("searchInput").value); });
 
-    // INIT
     renderHistory();
     fetchRates();
     const urlQ = new URLSearchParams(window.location.search).get("q");
