@@ -22,6 +22,7 @@ bot = telebot.TeleBot(TOKEN, parse_mode="HTML")
 
 # --- SOZLAMALAR ---
 ADMIN_ID = 565834132
+ENV_SUPPORT_GROUP_ID = os.environ.get("SUPPORT_GROUP_ID")
 WEBAPP_URL = "https://arzonibor-ywla.onrender.com"
 CHANNELS = [
     {"name": "🤖 Mr Texno AI", "username": "@mrtexnoai", "url": "https://t.me/mrtexnoai"},
@@ -66,6 +67,11 @@ with db_lock:
     conn.commit()
 
 def get_support_chat_id():
+    if ENV_SUPPORT_GROUP_ID:
+        try:
+            return int(ENV_SUPPORT_GROUP_ID)
+        except ValueError:
+            pass
     with db_lock:
         row = conn.execute("SELECT value FROM settings WHERE key = 'support_group_id'").fetchone()
     return int(row[0]) if row else ADMIN_ID
@@ -486,9 +492,8 @@ def main_menu():
 
 def result_buttons(query, results):
     markup = types.InlineKeyboardMarkup(row_width=1)
-    for idx, r in enumerate(results, 1):
-        prefix = "🏆 " if idx == 1 else f"{idx}. "
-        btn_text = f"{prefix}{r['store']} — {format_price(r['price'])} ↗"
+    for r in results:
+        btn_text = f"🛍 {r['store']} — {format_price(r['price'])}"
         markup.add(types.InlineKeyboardButton(btn_text, url=r["url"]))
     markup.add(types.InlineKeyboardButton("❤️ Sevimlilarga saqlash", callback_data=safe_callback("fav:", query)))
     return markup
@@ -502,7 +507,12 @@ def set_group_cmd(message):
         bot.reply_to(message, "Bu buyruqni murojaatlar guruhi ichida yozing.")
         return
     set_support_chat_id(message.chat.id)
-    bot.reply_to(message, "✅ Murojaatlar guruhi ulandi! Endi barcha yordam xatlari shu yerga keladi.")
+    bot.reply_to(
+        message,
+        f"✅ Murojaatlar guruhi ulandi!\n\n"
+        f"Render qayta yonganda ham o'chib ketmasligi uchun Render → Environment Variables ga qo'shib qo'ying:\n"
+        f"<code>SUPPORT_GROUP_ID</code> = <code>{message.chat.id}</code>"
+    )
 
 # --- ADMIN JAVOBI (GURUHDA YOKI LICHKADA REPLY) ---
 @bot.message_handler(func=lambda m: m.from_user and m.from_user.id == ADMIN_ID and m.reply_to_message)
