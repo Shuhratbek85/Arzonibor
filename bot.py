@@ -57,7 +57,23 @@ with db_lock:
         user_id INTEGER
     )
     """)
+    conn.execute("""
+    CREATE TABLE IF NOT EXISTS settings (
+        key TEXT PRIMARY KEY,
+        value TEXT
+    )
+    """)
     conn.commit()
+
+def get_support_chat_id():
+    with db_lock:
+        row = conn.execute("SELECT value FROM settings WHERE key = 'support_group_id'").fetchone()
+    return int(row[0]) if row else ADMIN_ID
+
+def set_support_chat_id(chat_id):
+    with db_lock:
+        conn.execute("INSERT OR REPLACE INTO settings (key, value) VALUES ('support_group_id', ?)", (str(chat_id),))
+        conn.commit()
 
 waiting_admin_msg = set()
 waiting_lock = threading.Lock()
@@ -79,7 +95,7 @@ CACHE_TTL = 6 * 3600
 MAX_CACHE_ITEMS = 300
 
 RATES_CACHE = {"time": 0, "data": {}}
-RATES_TTL = 300  # 5 daqiqa
+RATES_TTL = 300
 
 STORES = {
     "Uzum Market": {"domain": "uzum.uz", "search_url": "https://uzum.uz/uz/search?query={q}"},
@@ -167,7 +183,6 @@ def fetch_all_rates():
     except Exception as e:
         print(f"[CBU] xato: {e}")
 
-    # Bitcoin (Binance -> CoinGecko zaxira)
     try:
         r = requests.get("https://api.binance.com/api/v3/ticker/price?symbol=BTCUSDT", timeout=5)
         if r.status_code == 200:
@@ -469,14 +484,27 @@ def main_menu():
     markup.row("❤️ Sevimlilar", "ℹ️ Yordam / Aloqa")
     return markup
 
-def store_buttons(query):
-    q = quote_plus(query)
-    markup = types.InlineKeyboardMarkup(row_width=2)
-    markup.add(*[types.InlineKeyboardButton(f"🛍 {n}", url=i["search_url"].format(q=q)) for n, i in STORES.items()])
+def result_buttons(query, results):
+    markup = types.InlineKeyboardMarkup(row_width=1)
+    for idx, r in enumerate(results, 1):
+        prefix = "🏆 " if idx == 1 else f"{idx}. "
+        btn_text = f"{prefix}{r['store']} — {format_price(r['price'])} ↗"
+        markup.add(types.InlineKeyboardButton(btn_text, url=r["url"]))
     markup.add(types.InlineKeyboardButton("❤️ Sevimlilarga saqlash", callback_data=safe_callback("fav:", query)))
     return markup
 
-# --- ADMIN JAVOBI ---
+# --- GURUHNI ULASH (/setgroup) ---
+@bot.message_handler(commands=["setgroup"])
+def set_group_cmd(message):
+    if message.from_user.id != ADMIN_ID:
+        return
+    if message.chat.type not in ("group", "supergroup"):
+        bot.reply_to(message, "Bu buyruqni murojaatlar guruhi ichida yozing.")
+        return
+    set_support_chat_id(message.chat.id)
+    bot.reply_to(message, "✅ Murojaatlar guruhi ulandi! Endi barcha yordam xatlari shu yerga keladi.")
+
+# --- ADMIN JAVOBI (GURUHDA YOKI LICHKADA REPLY) ---
 @bot.message_handler(func=lambda m: m.from_user and m.from_user.id == ADMIN_ID and m.reply_to_message)
 def admin_reply_handler(message):
     with db_lock:
@@ -488,13 +516,15 @@ def admin_reply_handler(message):
         return
     try:
         bot.send_message(row[0], f"📩 <b>Javob:</b>\n{html.escape(reply_text)}")
-        bot.reply_to(message, "✅ Javob yuborildi.")
+        bot.reply_to(message, "✅ Javob foydalanuvchiga yuborildi.")
     except Exception as e:
         bot.reply_to(message, f"❌ Xato: {html.escape(str(e))}")
 
 # --- HANDLERLAR ---
 @bot.message_handler(commands=["start"])
 def start_cmd(message):
+    if message.chat.type != "private":
+        return
     set_waiting_admin(message.from_user.id, False)
     if not require_sub(message):
         return
@@ -506,17 +536,19 @@ def start_cmd(message):
 
 @bot.message_handler(commands=["cancel"])
 def cancel_cmd(message):
+    if message.chat.type != "private":
+        return
     set_waiting_admin(message.from_user.id, False)
     bot.send_message(message.chat.id, "Asosiy menyu:", reply_markup=main_menu())
 
-@bot.message_handler(func=lambda m: m.text and "Mahsulot qidirish" in m.text)
+@bot.message_handler(func=lambda m: m.chat.type == "private" and m.text and "Mahsulot qidirish" in m.text)
 def ask_product(message):
     set_waiting_admin(message.from_user.id, False)
     if not require_sub(message):
         return
     bot.send_message(message.chat.id, "Qaysi mahsulot narxini bilmoqchisiz? Nomini yozing 👇")
 
-@bot.message_handler(func=lambda m: m.text and "Mashhur tovarlar" in m.text)
+@bot.message_handler(func=lambda m: m.chat.type == "private" and m.text and "Mashhur tovarlar" in m.text)
 def popular_products(message):
     set_waiting_admin(message.from_user.id, False)
     if not require_sub(message):
@@ -526,7 +558,7 @@ def popular_products(message):
     markup.add(*[types.InlineKeyboardButton(i, callback_data=safe_callback("search:", i)) for i in items])
     bot.send_message(message.chat.id, "🔥 Eng ko'p qidirilayotgan mahsulotlar:", reply_markup=markup)
 
-@bot.message_handler(func=lambda m: m.text and "Kategoriyalar" in m.text)
+@bot.message_handler(func=lambda m: m.chat.type == "private" and m.text and "Kategoriyalar" in m.text)
 def categories(message):
     set_waiting_admin(message.from_user.id, False)
     if not require_sub(message):
@@ -536,7 +568,7 @@ def categories(message):
     markup.add(*[types.InlineKeyboardButton(l, callback_data=safe_callback("search:", q)) for l, q in active_cats])
     bot.send_message(message.chat.id, "📁 <b>Kategoriyani tanlang:</b>", reply_markup=markup)
 
-@bot.message_handler(func=lambda m: m.text and ("Kurslar" in m.text or "Dollar kursi" in m.text))
+@bot.message_handler(func=lambda m: m.chat.type == "private" and m.text and ("Kurslar" in m.text or "Dollar kursi" in m.text))
 def dollar_cmd(message):
     set_waiting_admin(message.from_user.id, False)
     if not require_sub(message):
@@ -544,7 +576,7 @@ def dollar_cmd(message):
     text, markup = get_rates_text()
     bot.send_message(message.chat.id, text, reply_markup=markup, disable_web_page_preview=True)
 
-@bot.message_handler(func=lambda m: m.text and "Sevimlilar" in m.text)
+@bot.message_handler(func=lambda m: m.chat.type == "private" and m.text and "Sevimlilar" in m.text)
 def show_favorites(message):
     set_waiting_admin(message.from_user.id, False)
     if not require_sub(message):
@@ -559,7 +591,7 @@ def show_favorites(message):
         markup.row(types.InlineKeyboardButton(f"🔍 {q}", callback_data=safe_callback("search:", q)), types.InlineKeyboardButton("❌", callback_data=f"delfav:{row_id}"))
     bot.send_message(message.chat.id, "❤️ Saqlangan mahsulotlaringiz:", reply_markup=markup)
 
-@bot.message_handler(func=lambda m: m.text and ("Yordam / Aloqa" in m.text or "Bot haqida" in m.text))
+@bot.message_handler(func=lambda m: m.chat.type == "private" and m.text and ("Yordam / Aloqa" in m.text or "Bot haqida" in m.text))
 def help_cmd(message):
     set_waiting_admin(message.from_user.id, False)
     text = "ℹ️ <b>Yordam va Aloqa</b>\n\nSavol yoki taklifingiz bo'lsa, quyidagi tugma orqali adminga yozing 👇"
@@ -571,19 +603,18 @@ def process_search(chat_id, query):
     safe_q = html.escape(query)
     wait_msg = bot.send_message(chat_id, f"🔍 <b>{safe_q}</b> narxlari qidirilmoqda...")
     results = search_prices(query)
-    if results:
-        lines = [f"🔎 <b>{safe_q}</b> bo'yicha jonli narxlar:\n"]
-        for idx, r in enumerate(results, 1):
-            medal = "🏆 " if idx == 1 else f"{idx}. "
-            lines.append(f"{medal}<b>{html.escape(r['store'])}</b>: <a href='{html.escape(r['url'], quote=True)}'>{format_price(r['price'])}</a>")
-        text = "\n".join(lines)
-    else:
-        text = f"🔎 <b>{safe_q}</b>\n\nAvtomatik narx topilmadi. Quyidagi do'konlarda ko'ring 👇"
+
     try:
         bot.delete_message(chat_id, wait_msg.message_id)
     except Exception:
         pass
-    bot.send_message(chat_id, text, reply_markup=store_buttons(query), disable_web_page_preview=True)
+
+    if results:
+        text = f"🔎 <b>{safe_q}</b> bo'yicha topilgan narxlar:\n\n<i>Do'konga o'tish uchun tugmani bosing 👇</i>"
+        bot.send_message(chat_id, text, reply_markup=result_buttons(query, results), disable_web_page_preview=True)
+    else:
+        text = f"🔎 <b>{safe_q}</b>\n\nAfsuski, do'konlardan narx topilmadi. Mahsulot nomini aniqroq yozib ko'ring."
+        bot.send_message(chat_id, text)
 
 @bot.callback_query_handler(func=lambda call: True)
 def handle_callbacks(call):
@@ -621,7 +652,7 @@ def handle_callbacks(call):
         except Exception:
             pass
 
-@bot.message_handler(func=lambda m: True)
+@bot.message_handler(func=lambda m: m.chat.type == "private")
 def handle_text(message):
     user = message.from_user
     text = (message.text or "").strip()
@@ -631,12 +662,14 @@ def handle_text(message):
             return
         admin_text = f"👤 <b>{html.escape(user.full_name or 'Noma’lum')}</b> | <code>{user.id}</code>\n💬 {html.escape(text)}"
         try:
-            sent = bot.send_message(ADMIN_ID, admin_text)
+            target_chat = get_support_chat_id()
+            sent = bot.send_message(target_chat, admin_text)
             with db_lock:
                 conn.execute("INSERT OR REPLACE INTO support_messages (admin_msg_id, user_id) VALUES (?, ?)", (sent.message_id, user.id))
                 conn.commit()
-            bot.send_message(message.chat.id, "✅ Yuborildi!", reply_markup=main_menu())
-        except Exception:
+            bot.send_message(message.chat.id, "✅ Xabaringiz yuborildi!", reply_markup=main_menu())
+        except Exception as e:
+            print(f"[SUPPORT] xato: {e}")
             bot.send_message(message.chat.id, "❌ Xabar yuborilmadi.", reply_markup=main_menu())
         return
 
@@ -649,5 +682,5 @@ def handle_text(message):
 
 if __name__ == "__main__":
     threading.Thread(target=run_web_server, daemon=True).start()
-    print("Arzoni Bor (Bot + Idealo Dark Mini App) ishga tushdi!")
+    print("Arzoni Bor ishga tushdi!")
     bot.infinity_polling(skip_pending=True)
