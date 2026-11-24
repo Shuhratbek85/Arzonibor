@@ -1,5 +1,4 @@
 import os
-import re
 import hmac
 import html
 import json
@@ -8,14 +7,14 @@ import hashlib
 import sqlite3
 import threading
 from collections import defaultdict
-from concurrent.futures import ThreadPoolExecutor
 from urllib.parse import quote_plus, urlparse, parse_qs, parse_qsl
 from http.server import ThreadingHTTPServer, BaseHTTPRequestHandler
 import requests
-from bs4 import BeautifulSoup
 import telebot
 from telebot import types
-from ddgs import DDGS
+
+from suggest import HEADERS, normalize_query, get_suggestions
+from stores import search_prices
 
 TOKEN = os.environ.get("TELEGRAM_TOKEN")
 if not TOKEN:
@@ -27,61 +26,12 @@ bot = telebot.TeleBot(TOKEN, parse_mode="HTML")
 ADMIN_ID = 565834132
 ENV_SUPPORT_GROUP_ID = os.environ.get("SUPPORT_GROUP_ID")
 WEBAPP_URL = "https://arzonibor-ywla.onrender.com"
-MAX_POST_BYTES = 16384  # 16 KB
+MAX_POST_BYTES = 16384
 CHANNELS = [
     {"username": "@mrtexnoai", "url": "https://t.me/mrtexnoai"},
     {"username": "@arzoniboragent", "url": "https://t.me/arzoniboragent"},
 ]
 
-HEADERS = {
-    "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36",
-    "Accept-Language": "uz-UZ,uz;q=0.9,ru;q=0.8,en;q=0.7",
-}
-
-ACCESSORY_WORDS = (
-    "chexol", "чехол", "case", "g'ilof", "gilof", "oyna", "стекло", "glass",
-    "plenka", "пленка", "himoya", "защит", "kabel", "кабель", "shnur", "шнур",
-    "zaryad", "заряд", "adapter", "адаптер", "remeshok", "ремешок", "kovrik",
-    "ryukzak", "рюкзак", "sumka", "сумка", "backpack", "bag", "ushlagich",
-    "держатель", "holder", "stiker", "стикер", "stativ", "штатив", "linza",
-    "линза", "batareya", "батарея", "akkumulyator", "аккумулятор"
-)
-
-QUERY_SYNONYMS = {
-    "ayfon": "iphone", "айфон": "iphone", "ifone": "iphone",
-    "samsung": "samsung", "самсунг": "samsung",
-    "redmi": "redmi", "редми": "redmi", "xiaomi": "xiaomi", "сяоми": "xiaomi",
-    "televizor": "телевизор", "tevizor": "телевизор", "tv": "телевизор",
-    "noutbuk": "ноутбук", "laptop": "ноутбук", "makbuk": "macbook", "макбук": "macbook",
-    "konditsioner": "кондиционер", "kanditsioner": "кондиционер",
-    "muzlatgich": "холодильник", "xolodilnik": "холодильник",
-    "kir yuvish": "стиральная машина", "avtomat": "стиральная машина",
-    "changyutgich": "пылесос", "pilesos": "пылесос",
-    "quloqchin": "наушники", "naushnik": "наушники", "airpods": "airpods",
-    "soat": "смарт часы", "playstation": "playstation", "ps5": "playstation 5",
-}
-
-POPULAR_SUGGESTIONS = [
-    "iPhone 16 Pro", "iPhone 16 Pro Max", "iPhone 16", "iPhone 15 Pro", "iPhone 15", "iPhone 14", "iPhone 13",
-    "Samsung Galaxy S24 Ultra", "Samsung Galaxy S24", "Samsung Galaxy A55", "Samsung Galaxy A35", "Samsung Galaxy A15",
-    "Redmi Note 13", "Redmi Note 13 Pro", "Redmi Note 14", "Redmi 13C", "Redmi 14C", "Xiaomi 14", "Poco X6 Pro",
-    "Honor X9b", "Honor 200", "Infinix Note 40", "Tecno Camon 30",
-    "MacBook Air M2", "MacBook Air M3", "MacBook Pro M3", "Asus VivoBook", "Lenovo IdeaPad", "HP Pavilion", "Acer Aspire",
-    "AirPods Pro 2", "AirPods 4", "Apple Watch Series 9", "Apple Watch Ultra 2", "Samsung Galaxy Watch 6",
-    "PlayStation 5", "PlayStation 5 Slim", "Xbox Series S", "Nintendo Switch",
-    "Artel 43 televizor", "Samsung 55 televizor", "LG 50 televizor", "Xiaomi TV A Pro 43",
-    "Artel konditsioner 12", "Gree konditsioner 12", "Midea konditsioner 12",
-    "LG kir yuvish mashinasi", "Artel muzlatgich", "Samsung muzlatgich", "Dyson changyutgich"
-]
-
-def normalize_query(q):
-    low = re.sub(r"\s+", " ", (q or "").strip().lower())
-    for k, v in QUERY_SYNONYMS.items():
-        if k in low:
-            low = re.sub(rf"\b{re.escape(k)}\b", v, low)
-    return low.strip()
-
-# --- BOT TARJIMALARI (UZ / RU) ---
 BOT_TEXT = {
     "uz": {
         "btn_open": "📱 Ilovani ochish",
@@ -154,7 +104,10 @@ def bt(lang, key, **kwargs):
     val = d.get(key, BOT_TEXT["uz"].get(key, key))
     return val.format(**kwargs) if kwargs else val
 
-# --- RATE LIMITER ---
+def format_price(price, lang="uz"):
+    return f"{int(price):,}".replace(",", " ") + " " + bt(lang, "sum")
+
+# --- RATE LIMITER & INITDATA ---
 rate_lock = threading.Lock()
 rate_buckets = defaultdict(list)
 
@@ -169,28 +122,20 @@ def is_rate_limited(ip, limit=30, window=60):
         rate_buckets[ip] = recent
         return False
 
-# --- TELEGRAM MINI APP INITDATA TEKSHIRUVI (HMAC-SHA256) ---
 def verify_telegram_init_data(init_data):
     if not init_data or len(init_data) > 4096:
         return None
     try:
         parsed = dict(parse_qsl(init_data, strict_parsing=True))
         received_hash = parsed.pop("hash", None)
-        if not received_hash:
-            return None
-        auth_date = int(parsed.get("auth_date", 0))
-        if abs(time.time() - auth_date) > 86400:
+        if not received_hash or abs(time.time() - int(parsed.get("auth_date", 0))) > 86400:
             return None
         data_check_string = "\n".join(f"{k}={v}" for k, v in sorted(parsed.items()))
         secret_key = hmac.new(b"WebAppData", TOKEN.encode("utf-8"), hashlib.sha256).digest()
         calc_hash = hmac.new(secret_key, data_check_string.encode("utf-8"), hashlib.sha256).hexdigest()
         if not hmac.compare_digest(calc_hash, received_hash):
             return None
-        user_json = parsed.get("user")
-        if not user_json:
-            return None
-        user_obj = json.loads(user_json)
-        uid = int(user_obj.get("id", 0))
+        uid = int(json.loads(parsed.get("user", "{}")).get("id", 0))
         return uid if uid > 0 else None
     except Exception:
         return None
@@ -205,23 +150,13 @@ with db_lock:
     conn.execute("""
     CREATE TABLE IF NOT EXISTS price_alerts (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
-        user_id INTEGER,
-        query TEXT,
-        target_price INTEGER,
-        current_price INTEGER,
-        image TEXT,
-        created_at INTEGER,
-        UNIQUE(user_id, query)
-    )
-    """)
+        user_id INTEGER, query TEXT, target_price INTEGER, current_price INTEGER,
+        image TEXT, created_at INTEGER, UNIQUE(user_id, query)
+    )""")
     conn.execute("""
     CREATE TABLE IF NOT EXISTS price_history (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        query TEXT,
-        price INTEGER,
-        ts INTEGER
-    )
-    """)
+        id INTEGER PRIMARY KEY AUTOINCREMENT, query TEXT, price INTEGER, ts INTEGER
+    )""")
     try:
         conn.execute("ALTER TABLE price_alerts ADD COLUMN image TEXT")
     except Exception:
@@ -234,10 +169,8 @@ def get_user_lang(user_id):
     return row[0] if row and row[0] in ("uz", "ru") else None
 
 def set_user_lang(user_id, lang):
-    if lang not in ("uz", "ru"):
-        lang = "uz"
     with db_lock:
-        conn.execute("INSERT OR REPLACE INTO users (user_id, lang) VALUES (?, ?)", (user_id, lang))
+        conn.execute("INSERT OR REPLACE INTO users (user_id, lang) VALUES (?, ?)", (user_id, lang if lang in ("uz", "ru") else "uz"))
         conn.commit()
 
 def get_support_chat_id():
@@ -267,90 +200,35 @@ def save_price_history(query, price):
             conn.commit()
 
 def get_price_history(query):
-    key = query.lower().strip()
     with db_lock:
-        rows = conn.execute("SELECT price, ts FROM price_history WHERE query = ? ORDER BY ts ASC LIMIT 30", (key,)).fetchall()
+        rows = conn.execute("SELECT price, ts FROM price_history WHERE query = ? ORDER BY ts ASC LIMIT 30", (query.lower().strip(),)).fetchall()
     return [{"price": r[0], "ts": r[1]} for r in rows]
 
 waiting_admin_msg = set()
 waiting_lock = threading.Lock()
-
-def set_waiting_admin(user_id, state=True):
+def set_waiting_admin(uid, state=True):
     with waiting_lock:
-        if state:
-            waiting_admin_msg.add(user_id)
-        else:
-            waiting_admin_msg.discard(user_id)
-
-def is_waiting_admin(user_id):
+        waiting_admin_msg.add(uid) if state else waiting_admin_msg.discard(uid)
+def is_waiting_admin(uid):
     with waiting_lock:
-        return user_id in waiting_admin_msg
+        return uid in waiting_admin_msg
 
-# --- KESHLAR ---
-CACHE = {}
-CACHE_TTL = 6 * 3600
-MAX_CACHE_ITEMS = 300
-
-RATES_CACHE = {"time": 0, "data": {}}
-RATES_TTL = 300
-
-def format_price(price, lang="uz"):
-    return f"{int(price):,}".replace(",", " ") + " " + bt(lang, "sum")
-
-def clean_title(title):
-    t = re.sub(r"\s+", " ", (title or "").strip())
-    return t[:110] + ("..." if len(t) > 110 else "")
-
-def parse_monthly_price(raw_val, full_price):
-    if isinstance(raw_val, (int, float)) and 1000 <= raw_val < full_price:
-        return int(raw_val)
-    text = str(raw_val or "").strip()
-    m = re.search(r"(\d{1,3}(?:[\s\u00a0.,]\d{3})+|\d{4,8})", text)
-    if m:
-        val = int(re.sub(r"\D", "", m.group(1)))
-        if 1000 <= val < full_price:
-            return val
-    return round(full_price / 12)
-
-def is_relevant_product(query, title):
-    q_low = normalize_query(query)
-    t_low = (title or "").lower().strip()
-    if not t_low:
-        return False
-    if not any(w in q_low for w in ACCESSORY_WORDS):
-        if any(w in t_low for w in ACCESSORY_WORDS):
-            return False
-    q_tokens = [w for w in re.findall(r"[a-zA-Zа-яА-Я0-9]+", q_low) if len(w) > 1 or w.isdigit()]
-    if not q_tokens:
-        return True
-    matched = 0
-    for tok in q_tokens:
-        if tok.isdigit():
-            if not re.search(rf"(?<![0-9.,]){re.escape(tok)}(?![0-9.,])", t_low):
-                return False
-            matched += 1
-        else:
-            if tok in t_low or (len(tok) >= 4 and tok[:4] in t_low):
-                matched += 1
-    return matched >= max(1, len(q_tokens) - (1 if len(q_tokens) >= 3 else 0))
-
-# --- MAJBURIY OBUNA ---
+# --- OBUNA VA KURSLAR ---
 def check_subscription(user_id):
     not_joined = []
     for ch in CHANNELS:
         try:
-            member = bot.get_chat_member(ch["username"], user_id)
-            if member.status not in ["member", "administrator", "creator"]:
+            if bot.get_chat_member(ch["username"], user_id).status not in ("member", "administrator", "creator"):
                 not_joined.append(ch)
-        except Exception as e:
-            print(f"[SUB] {ch['username']} xato: {e}")
+        except Exception:
+            pass
     return not_joined
 
 def send_sub_message(chat_id, not_joined, lang="uz"):
     markup = types.InlineKeyboardMarkup(row_width=1)
     for idx, ch in enumerate(not_joined, 1):
-        btn_label = bt(lang, "sub_btn", i=idx) if len(not_joined) > 1 else bt(lang, "sub_btn_one")
-        markup.add(types.InlineKeyboardButton(btn_label, url=ch["url"]))
+        lbl = bt(lang, "sub_btn", i=idx) if len(not_joined) > 1 else bt(lang, "sub_btn_one")
+        markup.add(types.InlineKeyboardButton(lbl, url=ch["url"]))
     markup.add(types.InlineKeyboardButton(bt(lang, "sub_check"), callback_data="check_sub"))
     bot.send_message(chat_id, bt(lang, "sub_text"), reply_markup=markup)
 
@@ -361,22 +239,20 @@ def require_sub(message, lang="uz"):
         return False
     return True
 
-# --- VALYUTA VA BITCOIN KURSLARI ---
+RATES_CACHE = {"time": 0, "data": {}}
 def fetch_all_rates():
     now = time.time()
-    if RATES_CACHE["data"] and (now - RATES_CACHE["time"] < RATES_TTL):
+    if RATES_CACHE["data"] and (now - RATES_CACHE["time"] < 300):
         return RATES_CACHE["data"]
     result = {}
     try:
         r = requests.get("https://cbu.uz/uz/arkhiv-kursov-valyut/json/", headers=HEADERS, timeout=8)
         if r.status_code == 200:
             for item in r.json():
-                ccy = item.get("Ccy")
-                if ccy in ("USD", "EUR", "RUB"):
-                    result[ccy.lower()] = {"rate": float(item["Rate"]), "diff": item["Diff"], "date": item["Date"]}
+                if item.get("Ccy") in ("USD", "EUR", "RUB"):
+                    result[item["Ccy"].lower()] = {"rate": float(item["Rate"]), "diff": item["Diff"], "date": item["Date"]}
     except Exception:
         pass
-    btc_price = None
     for url, parser in [
         ("https://api.coinbase.com/v2/prices/BTC-USD/spot", lambda j: float(j["data"]["amount"])),
         ("https://api.coingecko.com/api/v3/simple/price?ids=bitcoin&vs_currencies=usd", lambda j: float(j["bitcoin"]["usd"])),
@@ -385,356 +261,27 @@ def fetch_all_rates():
         try:
             r = requests.get(url, timeout=5)
             if r.status_code == 200:
-                btc_price = parser(r.json())
+                result["btc"] = {"usd": parser(r.json())}
                 break
         except Exception:
             continue
-    if btc_price:
-        result["btc"] = {"usd": btc_price}
     if result:
-        RATES_CACHE["time"] = now
-        RATES_CACHE["data"] = result
+        RATES_CACHE["time"], RATES_CACHE["data"] = now, result
     return result
 
 def get_rates_text(lang="uz"):
-    d = fetch_all_rates()
-    s = bt(lang, "sum")
+    d, s = fetch_all_rates(), bt(lang, "sum")
     lines = [bt(lang, "rates_title")]
-    if "usd" in d:
-        lines.append(f"🇺🇸 <b>1 USD:</b> {d['usd']['rate']:,.2f} {s} ({d['usd']['diff']})".replace(",", " "))
-    if "eur" in d:
-        lines.append(f"🇪🇺 <b>1 EUR:</b> {d['eur']['rate']:,.2f} {s} ({d['eur']['diff']})".replace(",", " "))
-    if "rub" in d:
-        lines.append(f"🇷🇺 <b>1 RUB:</b> {d['rub']['rate']:,.2f} {s} ({d['rub']['diff']})".replace(",", " "))
+    for flag, code in [("🇺🇸", "usd"), ("🇪🇺", "eur"), ("🇷🇺", "rub")]:
+        if code in d:
+            lines.append(f"{flag} <b>1 {code.upper()}:</b> {d[code]['rate']:,.2f} {s} ({d[code]['diff']})".replace(",", " "))
     if "btc" in d:
         lines.append(f"₿ <b>Bitcoin (BTC):</b> ${d['btc']['usd']:,.0f}".replace(",", " "))
     markup = types.InlineKeyboardMarkup(row_width=1)
     markup.add(types.InlineKeyboardButton(bt(lang, "bank_btn"), url="https://bank.uz/uz/currency"))
     return "\n".join(lines), markup
 
-# --- 7 TA REAL DO'KONDAN QIDIRISH ---
-def fetch_olcha(query, debug=None):
-    try:
-        url = f"https://api.olcha.uz/api/v2/products?search={quote_plus(query)}&per_page=15"
-        r = requests.get(url, headers={**HEADERS, "Accept": "application/json", "Origin": "https://olcha.uz", "Referer": "https://olcha.uz/"}, timeout=7)
-        if debug is not None:
-            debug["Olcha"] = {"status": r.status_code}
-        if r.status_code != 200:
-            return None
-        products = r.json().get("data", {}).get("products", [])
-        if debug is not None:
-            debug["Olcha"]["raw_count"] = len(products)
-        best = None
-        for p in products:
-            if p.get("out_of_stock") is True or p.get("in_stock") is False:
-                continue
-            title = p.get("name_uz") or p.get("name_ru") or p.get("name", "")
-            price = p.get("total_price") or p.get("price") or 0
-            alias = p.get("alias", "")
-            if not price or not is_relevant_product(query, title):
-                continue
-            price = int(price)
-            img = p.get("main_image") or ""
-            monthly = parse_monthly_price(p.get("monthly_repayment"), price)
-            if best is None or price < best["price"]:
-                best = {
-                    "store": "Olcha", "price": price, "monthly": monthly,
-                    "delivery": "O'zbekiston bo'ylab yetkazish", "image": img, "title": clean_title(title),
-                    "url": f"https://olcha.uz/uz/product/view/{alias}" if alias else f"https://olcha.uz/uz/search?q={quote_plus(query)}"
-                }
-        return best
-    except Exception as e:
-        if debug is not None:
-            debug["Olcha"] = {"error": str(e)[:120]}
-        return None
-
-def fetch_texnomart(query, debug=None):
-    try:
-        url = f"https://gw.texnomart.uz/api/common/v1/search/result?q={quote_plus(query)}"
-        r = requests.get(url, headers={**HEADERS, "Accept": "application/json"}, timeout=7)
-        if debug is not None:
-            debug["Texnomart"] = {"status": r.status_code}
-        if r.status_code != 200:
-            return None
-        products = r.json().get("data", {}).get("products", [])
-        if debug is not None:
-            debug["Texnomart"]["raw_count"] = len(products)
-        best = None
-        for p in products:
-            if str(p.get("availability", "")).lower() in ("outofstock", "none", "0"):
-                continue
-            title = p.get("name", "")
-            price = p.get("sale_price") or p.get("price") or 0
-            pid = p.get("id", "")
-            if not price or not is_relevant_product(query, title):
-                continue
-            price = int(price)
-            img = p.get("image") or ""
-            monthly = parse_monthly_price(p.get("axiom_monthly_price"), price)
-            if best is None or price < best["price"]:
-                best = {
-                    "store": "Texnomart", "price": price, "monthly": monthly,
-                    "delivery": "Kuryer / Do'kondan olib ketish", "image": img, "title": clean_title(title),
-                    "url": f"https://texnomart.uz/uz/product/detail/{pid}" if pid else f"https://texnomart.uz/uz/search/?q={quote_plus(query)}"
-                }
-        return best
-    except Exception as e:
-        if debug is not None:
-            debug["Texnomart"] = {"error": str(e)[:120]}
-        return None
-
-def fetch_asaxiy(query, debug=None):
-    try:
-        url = f"https://asaxiy.uz/product?key={quote_plus(query)}"
-        r = requests.get(url, headers=HEADERS, timeout=8)
-        if debug is not None:
-            debug["Asaxiy"] = {"status": r.status_code}
-        if r.status_code != 200:
-            return None
-        soup = BeautifulSoup(r.text, "html.parser")
-        cards = soup.select(".product__item")[:15]
-        if debug is not None:
-            debug["Asaxiy"]["raw_count"] = len(cards)
-        best = None
-        for card in cards:
-            title_el = card.select_one(".product__item__info-title")
-            price_el = card.select_one(".product__item-price")
-            link_el = card.select_one("a[href*='/product/']")
-            img_el = card.select_one("img")
-            if not title_el or not price_el:
-                continue
-            card_text = card.get_text(" ", strip=True).lower()
-            if "sotuvda yo'q" in card_text or "нет в наличии" in card_text:
-                continue
-            title = title_el.get_text(strip=True)
-            digits = re.sub(r"\D", "", price_el.get_text())
-            if not digits or not is_relevant_product(query, title):
-                continue
-            price = int(digits)
-            if price < 10000:
-                continue
-            img = (img_el.get("data-src") or img_el.get("src") or "") if img_el else ""
-            href = link_el["href"] if link_el and link_el.get("href") else ""
-            full_url = href if href.startswith("http") else f"https://asaxiy.uz{href}"
-            if best is None or price < best["price"]:
-                best = {
-                    "store": "Asaxiy", "price": price, "monthly": round(price / 12),
-                    "delivery": "O'zbekiston bo'ylab yetkazish", "image": img, "title": clean_title(title), "url": full_url
-                }
-        return best
-    except Exception as e:
-        if debug is not None:
-            debug["Asaxiy"] = {"error": str(e)[:120]}
-        return None
-
-def fetch_uzum(query, debug=None):
-    gql_url = "https://graphql.uzum.uz/"
-    headers = {
-        **HEADERS, "Content-Type": "application/json", "Origin": "https://uzum.uz", "Referer": "https://uzum.uz/",
-        "apollographql-client-name": "web-customers", "apollographql-client-version": "1.0.0",
-    }
-    gql = "query getMakeSearch($queryInput: MakeSearchQueryInput!) { makeSearch(query: $queryInput) { items { catalogCard { productId title minSellPrice photos { key } } } } }"
-    try:
-        payload = {
-            "operationName": "getMakeSearch",
-            "variables": {"queryInput": {"text": query, "showAdultContent": "NONE", "filters": [], "sort": "BY_RELEVANCE_DESC", "pagination": {"offset": 0, "limit": 15}}},
-            "query": gql
-        }
-        r = requests.post(gql_url, json=payload, headers=headers, timeout=7)
-        if debug is not None:
-            debug["Uzum"] = {"status": r.status_code}
-        if r.status_code != 200:
-            return None
-        items = r.json().get("data", {}).get("makeSearch", {}).get("items", [])
-        if debug is not None:
-            debug["Uzum"]["raw_count"] = len(items)
-        best = None
-        for item in items:
-            card = item.get("catalogCard") or {}
-            title = card.get("title", "")
-            price = card.get("minSellPrice") or 0
-            pid = card.get("productId", "")
-            if not price or not is_relevant_product(query, title):
-                continue
-            price = int(price)
-            photos = card.get("photos") or []
-            img = f"https://images.uzum.uz/{photos[0]['key']}/t_product_540_high.jpg" if photos and photos[0].get("key") else ""
-            if best is None or price < best["price"]:
-                best = {
-                    "store": "Uzum Market", "price": price, "monthly": round(price / 12),
-                    "delivery": "1 kunda bepul (punktga)", "image": img, "title": clean_title(title),
-                    "url": f"https://uzum.uz/uz/product/{pid}" if pid else f"https://uzum.uz/uz/search?query={quote_plus(query)}"
-                }
-        return best
-    except Exception as e:
-        if debug is not None:
-            debug["Uzum"] = {"error": str(e)[:120]}
-        return None
-
-def fetch_mediapark(query, debug=None):
-    try:
-        url = f"https://api.client.mediapark.uz/v1/products/search?search={quote_plus(query)}&per_page=15"
-        r = requests.get(url, headers={**HEADERS, "Accept": "application/json", "Origin": "https://mediapark.uz", "Referer": "https://mediapark.uz/"}, timeout=7)
-        if debug is not None:
-            debug["Mediapark"] = {"status": r.status_code}
-        if r.status_code != 200:
-            return None
-        data = r.json()
-        products = data.get("data", []) if isinstance(data.get("data"), list) else data.get("data", {}).get("products", [])
-        if debug is not None:
-            debug["Mediapark"]["raw_count"] = len(products)
-        best = None
-        for p in products:
-            title = p.get("name") or p.get("title") or ""
-            price = p.get("price") or p.get("actual_price") or 0
-            if not price or not is_relevant_product(query, title):
-                continue
-            price = int(price)
-            slug = p.get("slug") or p.get("id") or ""
-            img = p.get("image") or p.get("main_image") or ""
-            if best is None or price < best["price"]:
-                best = {
-                    "store": "Mediapark", "price": price, "monthly": round(price / 12),
-                    "delivery": "Kuryer / Do'kondan olib ketish", "image": img, "title": clean_title(title),
-                    "url": f"https://mediapark.uz/products/view/{slug}" if slug else f"https://mediapark.uz/search?search={quote_plus(query)}"
-                }
-        return best
-    except Exception as e:
-        if debug is not None:
-            debug["Mediapark"] = {"error": str(e)[:120]}
-        return None
-
-def fetch_idea(query, debug=None):
-    try:
-        url = f"https://api.idea.uz/api/v2/products?q={quote_plus(query)}&per_page=15"
-        r = requests.get(url, headers={**HEADERS, "Accept": "application/json", "Origin": "https://idea.uz", "Referer": "https://idea.uz/"}, timeout=7)
-        if debug is not None:
-            debug["Idea"] = {"status": r.status_code}
-        if r.status_code != 200:
-            return None
-        products = r.json().get("data", [])
-        if debug is not None:
-            debug["Idea"]["raw_count"] = len(products)
-        best = None
-        for p in products:
-            title = p.get("title_name") or p.get("name") or ""
-            price = p.get("current_price") or p.get("price") or 0
-            if not price or not is_relevant_product(query, title):
-                continue
-            price = int(price)
-            slug = p.get("slug") or p.get("id") or ""
-            img = p.get("img") or p.get("image") or ""
-            if best is None or price < best["price"]:
-                best = {
-                    "store": "Idea.uz", "price": price, "monthly": round(price / 12),
-                    "delivery": "Kuryer / Do'kondan olib ketish", "image": img, "title": clean_title(title),
-                    "url": f"https://idea.uz/product/{slug}" if slug else f"https://idea.uz/search?q={quote_plus(query)}"
-                }
-        return best
-    except Exception as e:
-        if debug is not None:
-            debug["Idea"] = {"error": str(e)[:120]}
-        return None
-
-def fetch_alifshop(query, debug=None):
-    try:
-        url = f"https://gw.alifshop.uz/web/client/search/full-text?query={quote_plus(query)}&page=1&per_page=15"
-        r = requests.get(url, headers={**HEADERS, "Accept": "application/json", "Origin": "https://alifshop.uz", "Referer": "https://alifshop.uz/"}, timeout=7)
-        if debug is not None:
-            debug["AlifShop"] = {"status": r.status_code}
-        if r.status_code != 200:
-            return None
-        data = r.json()
-        products = data.get("offers") or data.get("data") or []
-        if debug is not None:
-            debug["AlifShop"]["raw_count"] = len(products)
-        best = None
-        for p in products:
-            title = p.get("name") or p.get("title") or ""
-            raw_price = p.get("price") or 0
-            price = int(raw_price / 100) if raw_price > 1000000000 else int(raw_price)
-            if not price or not is_relevant_product(query, title):
-                continue
-            slug = p.get("slug") or ""
-            img = p.get("image_url") or p.get("image") or ""
-            if best is None or price < best["price"]:
-                best = {
-                    "store": "AlifShop", "price": price, "monthly": round(price / 12),
-                    "delivery": "O'zbekiston bo'ylab yetkazish", "image": img, "title": clean_title(title),
-                    "url": f"https://alifshop.uz/uz/moderated-offer/{slug}" if slug else f"https://alifshop.uz/uz/search?query={quote_plus(query)}"
-                }
-        return best
-    except Exception as e:
-        if debug is not None:
-            debug["AlifShop"] = {"error": str(e)[:120]}
-        return None
-
-def fetch_fallback_image(query):
-    try:
-        with DDGS() as ddgs:
-            imgs = list(ddgs.images(f"{query} official product", max_results=3))
-            for im in imgs:
-                u = im.get("image") or im.get("thumbnail") or ""
-                if u.startswith("http"):
-                    return u
-    except Exception:
-        pass
-    return ""
-
-def search_prices(query, bypass_cache=False, debug_info=None):
-    norm_q = normalize_query(query)
-    key = norm_q.lower().strip()
-    now = time.time()
-    if not bypass_cache and debug_info is None and key in CACHE and (now - CACHE[key]["time"] < CACHE_TTL):
-        return CACHE[key]["data"]
-
-    fetchers = [fetch_olcha, fetch_texnomart, fetch_asaxiy, fetch_uzum, fetch_mediapark, fetch_idea, fetch_alifshop]
-    results = []
-    with ThreadPoolExecutor(max_workers=7) as executor:
-        futures = [executor.submit(fn, norm_q, debug_info) for fn in fetchers]
-        for f in futures:
-            res = f.result()
-            if res:
-                results.append(res)
-
-    results.sort(key=lambda x: x["price"])
-    main_img = next((r["image"] for r in results if r.get("image")), "")
-    if results and not main_img:
-        main_img = fetch_fallback_image(norm_q)
-    for r in results:
-        if not r.get("image"):
-            r["image"] = main_img
-
-    if results and debug_info is None:
-        save_price_history(query, results[0]["price"])
-        if len(CACHE) >= MAX_CACHE_ITEMS:
-            CACHE.clear()
-        CACHE[key] = {"time": now, "data": results}
-    return results
-
-def get_suggestions(q):
-    q_low = (q or "").strip().lower()
-    if not q_low:
-        return []
-    norm = normalize_query(q_low)
-    matches = []
-    for item in POPULAR_SUGGESTIONS:
-        il = item.lower()
-        if q_low in il or norm in il:
-            matches.append(item)
-    if len(matches) < 6:
-        try:
-            r = requests.get(f"https://gw.texnomart.uz/api/common/v1/search/result?q={quote_plus(norm)}", headers=HEADERS, timeout=2.5)
-            if r.status_code == 200:
-                for p in r.json().get("data", {}).get("products", [])[:6]:
-                    name = clean_title(p.get("name", ""))
-                    if name and name not in matches:
-                        matches.append(name)
-        except Exception:
-            pass
-    return matches[:8]
-
-# --- NARX KUZATISH (ORQA FONDA) ---
+# --- NARX KUZATISH WORKER ---
 def price_alert_worker():
     while True:
         time.sleep(3 * 3600)
@@ -743,10 +290,8 @@ def price_alert_worker():
                 alerts = conn.execute("SELECT id, user_id, query, target_price FROM price_alerts").fetchall()
             for alert_id, user_id, query, target_price in alerts:
                 results = search_prices(query, bypass_cache=True)
-                if not results:
-                    continue
-                best = results[0]
-                if best["price"] <= target_price:
+                if results and results[0]["price"] <= target_price:
+                    best = results[0]
                     lang = get_user_lang(user_id) or "uz"
                     text = bt(lang, "price_drop", q=html.escape(query), p=format_price(best["price"], lang), s=html.escape(best["store"]))
                     markup = types.InlineKeyboardMarkup()
@@ -785,52 +330,34 @@ class AppHandler(BaseHTTPRequestHandler):
         path = parsed.path
 
         if path == "/health":
-            self._send_json({"status": "ok"})
-            return
-
+            return self._send_json({"status": "ok"})
         if path == "/api/debug":
             q = (parse_qs(parsed.query).get("q", ["iphone 16"])[0] or "iphone 16").strip()[:60]
             dbg = {}
             res = search_prices(q, bypass_cache=True, debug_info=dbg)
-            self._send_json({"query": q, "normalized": normalize_query(q), "found_stores": [r["store"] for r in res], "debug": dbg})
-            return
-
+            return self._send_json({"query": q, "normalized": normalize_query(q), "found_stores": [r["store"] for r in res], "debug": dbg})
         if path == "/api/suggest":
             q = (parse_qs(parsed.query).get("q", [""])[0] or "").strip()[:60]
-            self._send_json({"suggestions": get_suggestions(q)})
-            return
-
+            return self._send_json({"suggestions": get_suggestions(q)})
         if path == "/api/search":
-            if is_rate_limited(self._client_ip(), limit=30, window=60):
-                self._send_json({"error": "Too many requests", "results": []}, 429)
-                return
+            if is_rate_limited(self._client_ip()):
+                return self._send_json({"error": "Too many requests", "results": []}, 429)
             q = (parse_qs(parsed.query).get("q", [""])[0] or "").strip()[:80]
             if len(q) < 2:
-                self._send_json({"query": q, "results": []})
-                return
-            self._send_json({"query": q, "results": search_prices(q)})
-            return
-
+                return self._send_json({"query": q, "results": []})
+            return self._send_json({"query": q, "results": search_prices(q, on_best_price=save_price_history)})
         if path == "/api/rates":
-            self._send_json(fetch_all_rates())
-            return
-
+            return self._send_json(fetch_all_rates())
         if path == "/api/history":
             q = (parse_qs(parsed.query).get("q", [""])[0] or "").strip()[:80]
-            self._send_json({"query": q, "history": get_price_history(q)})
-            return
-
+            return self._send_json({"query": q, "history": get_price_history(q)})
         if path == "/api/alerts":
             uid = self._auth_user_id()
             if not uid:
-                self._send_json({"error": "Auth required", "alerts": []}, 401)
-                return
+                return self._send_json({"error": "Auth required", "alerts": []}, 401)
             with db_lock:
                 rows = conn.execute("SELECT id, query, target_price, current_price, image FROM price_alerts WHERE user_id = ? ORDER BY id DESC", (uid,)).fetchall()
-            items = [{"id": r[0], "query": r[1], "target_price": r[2], "current_price": r[3], "image": r[4] or ""} for r in rows]
-            self._send_json({"alerts": items})
-            return
-
+            return self._send_json({"alerts": [{"id": r[0], "query": r[1], "target_price": r[2], "current_price": r[3], "image": r[4] or ""} for r in rows]})
         if path in ("/", "/index.html"):
             try:
                 with open("index.html", "r", encoding="utf-8") as f:
@@ -842,11 +369,9 @@ class AppHandler(BaseHTTPRequestHandler):
                 self.wfile.write(content)
             except FileNotFoundError:
                 self.send_response(200)
-                self.send_header("Content-Type", "text/plain; charset=utf-8")
                 self.end_headers()
-                self.wfile.write("Arzoni Bor ishlayapti!".encode("utf-8"))
+                self.wfile.write(b"Arzoni Bor ishlayapti!")
             return
-
         self.send_response(404)
         self.end_headers()
 
@@ -854,34 +379,24 @@ class AppHandler(BaseHTTPRequestHandler):
         parsed = urlparse(self.path)
         try:
             length = int(self.headers.get("Content-Length", 0))
-        except ValueError:
-            self._send_json({"ok": False, "error": "Bad request"}, 400)
-            return
-        if length <= 0 or length > MAX_POST_BYTES:
-            self._send_json({"ok": False, "error": "Payload too large"}, 413)
-            return
-
-        try:
+            if not (0 < length <= MAX_POST_BYTES):
+                return self._send_json({"ok": False, "error": "Payload too large"}, 413)
             data = json.loads(self.rfile.read(length).decode("utf-8"))
             if not isinstance(data, dict):
-                raise ValueError("JSON object expected")
+                raise ValueError
         except Exception:
-            self._send_json({"ok": False, "error": "Invalid JSON"}, 400)
-            return
+            return self._send_json({"ok": False, "error": "Invalid JSON"}, 400)
 
         uid = self._auth_user_id()
         if not uid:
-            self._send_json({"ok": False, "error": "Auth required"}, 401)
-            return
+            return self._send_json({"ok": False, "error": "Auth required"}, 401)
 
         if parsed.path == "/api/lang":
             new_lang = str(data.get("lang") or "").strip().lower()
             if new_lang not in ("uz", "ru"):
-                self._send_json({"ok": False, "error": "Invalid lang"}, 400)
-                return
+                return self._send_json({"ok": False, "error": "Invalid lang"}, 400)
             set_user_lang(uid, new_lang)
-            self._send_json({"ok": True, "lang": new_lang})
-            return
+            return self._send_json({"ok": True, "lang": new_lang})
 
         if parsed.path == "/api/alert":
             try:
@@ -892,8 +407,7 @@ class AppHandler(BaseHTTPRequestHandler):
                 if image and not image.startswith(("http://", "https://")):
                     image = ""
                 if len(query) < 2 or not (1000 <= target_price <= 500000000):
-                    self._send_json({"ok": False, "error": "Invalid data"}, 400)
-                    return
+                    return self._send_json({"ok": False, "error": "Invalid data"}, 400)
                 with db_lock:
                     conn.execute(
                         "INSERT OR REPLACE INTO price_alerts (user_id, query, target_price, current_price, image, created_at) VALUES (?, ?, ?, ?, ?, ?)",
@@ -905,24 +419,19 @@ class AppHandler(BaseHTTPRequestHandler):
                     bot.send_message(uid, bt(lang, "alert_set", q=html.escape(query), p=format_price(target_price, lang)))
                 except Exception:
                     pass
-                self._send_json({"ok": True})
+                return self._send_json({"ok": True})
             except Exception:
-                self._send_json({"ok": False, "error": "Server error"}, 500)
-            return
+                return self._send_json({"ok": False, "error": "Server error"}, 500)
 
         if parsed.path == "/api/alert/delete":
             try:
                 alert_id = int(data.get("id") or 0)
-                if alert_id <= 0:
-                    self._send_json({"ok": False, "error": "Invalid ID"}, 400)
-                    return
                 with db_lock:
                     conn.execute("DELETE FROM price_alerts WHERE id = ? AND user_id = ?", (alert_id, uid))
                     conn.commit()
-                self._send_json({"ok": True})
+                return self._send_json({"ok": True})
             except Exception:
-                self._send_json({"ok": False, "error": "Server error"}, 500)
-            return
+                return self._send_json({"ok": False, "error": "Server error"}, 500)
 
         self.send_response(404)
         self.end_headers()
@@ -931,10 +440,9 @@ class AppHandler(BaseHTTPRequestHandler):
         pass
 
 def run_web_server():
-    port = int(os.environ.get("PORT", 10000))
-    ThreadingHTTPServer(("0.0.0.0", port), AppHandler).serve_forever()
+    ThreadingHTTPServer(("0.0.0.0", int(os.environ.get("PORT", 10000))), AppHandler).serve_forever()
 
-# --- BOT MENYULARI ---
+# --- BOT MENYULARI VA HANDLERLAR ---
 def main_menu(lang="uz"):
     markup = types.ReplyKeyboardMarkup(resize_keyboard=True)
     markup.row(bt(lang, "btn_open"))
@@ -951,42 +459,30 @@ def open_app_inline(query=None, lang="uz"):
 
 def send_lang_picker(chat_id):
     markup = types.InlineKeyboardMarkup(row_width=2)
-    markup.add(
-        types.InlineKeyboardButton("🇺🇿 O'zbekcha", callback_data="setlang:uz"),
-        types.InlineKeyboardButton("🇷🇺 Русский", callback_data="setlang:ru")
-    )
+    markup.add(types.InlineKeyboardButton("🇺🇿 O'zbekcha", callback_data="setlang:uz"), types.InlineKeyboardButton("🇷🇺 Русский", callback_data="setlang:ru"))
     bot.send_message(chat_id, "🌐 <b>Tilni tanlang / Выберите язык:</b>", reply_markup=markup)
 
 @bot.message_handler(commands=["setgroup"])
 def set_group_cmd(message):
-    if message.from_user.id != ADMIN_ID:
-        return
-    if message.chat.type not in ("group", "supergroup"):
-        bot.reply_to(message, "Bu buyruqni murojaatlar guruhi ichida yozing.")
-        return
-    set_support_chat_id(message.chat.id)
-    bot.reply_to(message, f"✅ Murojaatlar guruhi ulandi!\n\n<code>SUPPORT_GROUP_ID</code> = <code>{message.chat.id}</code>")
+    if message.from_user.id == ADMIN_ID and message.chat.type in ("group", "supergroup"):
+        set_support_chat_id(message.chat.id)
+        bot.reply_to(message, f"✅ Murojaatlar guruhi ulandi!\n<code>SUPPORT_GROUP_ID</code> = <code>{message.chat.id}</code>")
 
 @bot.message_handler(func=lambda m: m.from_user and m.from_user.id == ADMIN_ID and m.reply_to_message)
 def admin_reply_handler(message):
     with db_lock:
         row = conn.execute("SELECT user_id FROM support_messages WHERE admin_msg_id = ?", (message.reply_to_message.message_id,)).fetchone()
-    if not row:
-        return
-    reply_text = (message.text or "").strip()
-    if not reply_text:
-        return
-    try:
-        bot.send_message(row[0], f"📩 <b>Javob:</b>\n{html.escape(reply_text)}")
-        bot.reply_to(message, "✅ Javob yuborildi.")
-    except Exception as e:
-        bot.reply_to(message, f"❌ Xato: {html.escape(str(e))}")
+    if row and (message.text or "").strip():
+        try:
+            bot.send_message(row[0], f"📩 <b>Javob:</b>\n{html.escape(message.text.strip())}")
+            bot.reply_to(message, "✅ Javob yuborildi.")
+        except Exception as e:
+            bot.reply_to(message, f"❌ Xato: {html.escape(str(e))}")
 
 @bot.message_handler(commands=["lang", "language"])
 def lang_cmd(message):
-    if message.chat.type != "private":
-        return
-    send_lang_picker(message.chat.id)
+    if message.chat.type == "private":
+        send_lang_picker(message.chat.id)
 
 @bot.message_handler(func=lambda m: m.chat.type == "private" and m.text and ("Til / Язык" in m.text or "Язык / Til" in m.text))
 def lang_btn_cmd(message):
@@ -1000,37 +496,32 @@ def start_cmd(message):
     set_waiting_admin(message.from_user.id, False)
     lang = get_user_lang(message.from_user.id)
     if not lang:
-        send_lang_picker(message.chat.id)
-        return
-    if not require_sub(message, lang):
-        return
-    bot.send_message(message.chat.id, bt(lang, "welcome"), reply_markup=main_menu(lang))
-    bot.send_message(message.chat.id, bt(lang, "open_hint"), reply_markup=open_app_inline(lang=lang))
+        return send_lang_picker(message.chat.id)
+    if require_sub(message, lang):
+        bot.send_message(message.chat.id, bt(lang, "welcome"), reply_markup=main_menu(lang))
+        bot.send_message(message.chat.id, bt(lang, "open_hint"), reply_markup=open_app_inline(lang=lang))
 
 @bot.message_handler(commands=["cancel"])
 def cancel_cmd(message):
-    if message.chat.type != "private":
-        return
-    set_waiting_admin(message.from_user.id, False)
-    lang = get_user_lang(message.from_user.id) or "uz"
-    bot.send_message(message.chat.id, bt(lang, "welcome"), reply_markup=main_menu(lang))
+    if message.chat.type == "private":
+        set_waiting_admin(message.from_user.id, False)
+        lang = get_user_lang(message.from_user.id) or "uz"
+        bot.send_message(message.chat.id, bt(lang, "welcome"), reply_markup=main_menu(lang))
 
 @bot.message_handler(func=lambda m: m.chat.type == "private" and m.text and ("Ilovani ochish" in m.text or "Открыть приложение" in m.text))
 def open_app_cmd(message):
     set_waiting_admin(message.from_user.id, False)
     lang = get_user_lang(message.from_user.id) or "uz"
-    if not require_sub(message, lang):
-        return
-    bot.send_message(message.chat.id, bt(lang, "open_hint"), reply_markup=open_app_inline(lang=lang))
+    if require_sub(message, lang):
+        bot.send_message(message.chat.id, bt(lang, "open_hint"), reply_markup=open_app_inline(lang=lang))
 
 @bot.message_handler(func=lambda m: m.chat.type == "private" and m.text and ("Kurslar" in m.text or "Курсы" in m.text))
 def rates_cmd(message):
     set_waiting_admin(message.from_user.id, False)
     lang = get_user_lang(message.from_user.id) or "uz"
-    if not require_sub(message, lang):
-        return
-    text, markup = get_rates_text(lang)
-    bot.send_message(message.chat.id, text, reply_markup=markup, disable_web_page_preview=True)
+    if require_sub(message, lang):
+        text, markup = get_rates_text(lang)
+        bot.send_message(message.chat.id, text, reply_markup=markup, disable_web_page_preview=True)
 
 @bot.message_handler(func=lambda m: m.chat.type == "private" and m.text and ("Kuzatuvlarim" in m.text or "Отслеживания" in m.text))
 def show_alerts(message):
@@ -1041,13 +532,11 @@ def show_alerts(message):
     with db_lock:
         rows = conn.execute("SELECT id, query, target_price FROM price_alerts WHERE user_id = ? ORDER BY id DESC", (message.from_user.id,)).fetchall()
     if not rows:
-        bot.send_message(message.chat.id, bt(lang, "no_alerts"), reply_markup=open_app_inline(lang=lang))
-        return
+        return bot.send_message(message.chat.id, bt(lang, "no_alerts"), reply_markup=open_app_inline(lang=lang))
     markup = types.InlineKeyboardMarkup()
     for row_id, q, target in rows:
-        app_link = f"{WEBAPP_URL}/?q={quote_plus(q)}&lang={lang}"
         markup.row(
-            types.InlineKeyboardButton(f"🔔 {q} (≤ {format_price(target, lang)})", web_app=types.WebAppInfo(url=app_link)),
+            types.InlineKeyboardButton(f"🔔 {q} (≤ {format_price(target, lang)})", web_app=types.WebAppInfo(url=f"{WEBAPP_URL}/?q={quote_plus(q)}&lang={lang}")),
             types.InlineKeyboardButton("❌", callback_data=f"delalert:{row_id}")
         )
     bot.send_message(message.chat.id, bt(lang, "my_alerts"), reply_markup=markup)
@@ -1080,8 +569,7 @@ def handle_callbacks(call):
 
     lang = get_user_lang(call.from_user.id) or "uz"
     if call.data == "check_sub":
-        not_joined = check_subscription(call.from_user.id)
-        if not_joined:
+        if check_subscription(call.from_user.id):
             bot.answer_callback_query(call.id, bt(lang, "sub_fail"), show_alert=True)
         else:
             bot.answer_callback_query(call.id, "✅")
@@ -1107,17 +595,13 @@ def handle_callbacks(call):
 
 @bot.message_handler(func=lambda m: m.chat.type == "private")
 def handle_text(message):
-    user = message.from_user
-    lang = get_user_lang(user.id) or "uz"
-    text = (message.text or "").strip()
+    user, lang, text = message.from_user, get_user_lang(message.from_user.id) or "uz", (message.text or "").strip()
     if is_waiting_admin(user.id):
         set_waiting_admin(user.id, False)
         if not text:
             return
-        admin_text = f"👤 <b>{html.escape(user.full_name or 'Noma’lum')}</b> | <code>{user.id}</code>\n💬 {html.escape(text)}"
         try:
-            target_chat = get_support_chat_id()
-            sent = bot.send_message(target_chat, admin_text)
+            sent = bot.send_message(get_support_chat_id(), f"👤 <b>{html.escape(user.full_name or 'Noma’lum')}</b> | <code>{user.id}</code>\n💬 {html.escape(text)}")
             with db_lock:
                 conn.execute("INSERT OR REPLACE INTO support_messages (admin_msg_id, user_id) VALUES (?, ?)", (sent.message_id, user.id))
                 conn.commit()
@@ -1129,14 +613,8 @@ def handle_text(message):
     if not require_sub(message, lang):
         return
     if len(text) < 2:
-        bot.send_message(message.chat.id, bt(lang, "short_q"), reply_markup=open_app_inline(lang=lang))
-        return
-
-    bot.send_message(
-        message.chat.id,
-        bt(lang, "search_hint", q=html.escape(text)),
-        reply_markup=open_app_inline(text, lang=lang)
-    )
+        return bot.send_message(message.chat.id, bt(lang, "short_q"), reply_markup=open_app_inline(lang=lang))
+    bot.send_message(message.chat.id, bt(lang, "search_hint", q=html.escape(text)), reply_markup=open_app_inline(text, lang=lang))
 
 if __name__ == "__main__":
     threading.Thread(target=run_web_server, daemon=True).start()
