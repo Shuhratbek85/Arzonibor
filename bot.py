@@ -54,6 +54,7 @@ BOT_TEXT = {
         "btn_rates": "💵 Kurslar (USD/BTC)",
         "btn_alerts": "🔔 Kuzatuvlarim",
         "btn_help": "ℹ️ Yordam / Aloqa",
+        "btn_lang": "🌐 Til / Язык",
         "inline_open": "📱 Ilovani ochish (Arzoni Bor)",
         "inline_search": "🔍 «{q}» — ilovada ko'rish",
         "sub_text": "👋 <b>Bot ishlashi uchun quyidagi kanallarga obuna bo'ling:</b>\n\nObuna bo'lgach, <b>«✅ Tekshirish»</b> tugmasini bosing 👇",
@@ -85,6 +86,7 @@ BOT_TEXT = {
         "btn_rates": "💵 Курсы (USD/BTC)",
         "btn_alerts": "🔔 Отслеживания",
         "btn_help": "ℹ️ Помощь / Связь",
+        "btn_lang": "🌐 Язык / Til",
         "inline_open": "📱 Открыть приложение (Arzoni Bor)",
         "inline_search": "🔍 «{q}» — открыть в приложении",
         "sub_text": "👋 <b>Для работы бота подпишитесь на каналы ниже:</b>\n\nПосле подписки нажмите <b>«✅ Проверить»</b> 👇",
@@ -163,24 +165,9 @@ def verify_telegram_init_data(init_data):
 db_lock = threading.Lock()
 conn = sqlite3.connect("arzonibor.db", check_same_thread=False)
 with db_lock:
-    conn.execute("""
-    CREATE TABLE IF NOT EXISTS users (
-        user_id INTEGER PRIMARY KEY,
-        lang TEXT
-    )
-    """)
-    conn.execute("""
-    CREATE TABLE IF NOT EXISTS support_messages (
-        admin_msg_id INTEGER PRIMARY KEY,
-        user_id INTEGER
-    )
-    """)
-    conn.execute("""
-    CREATE TABLE IF NOT EXISTS settings (
-        key TEXT PRIMARY KEY,
-        value TEXT
-    )
-    """)
+    conn.execute("CREATE TABLE IF NOT EXISTS users (user_id INTEGER PRIMARY KEY, lang TEXT)")
+    conn.execute("CREATE TABLE IF NOT EXISTS support_messages (admin_msg_id INTEGER PRIMARY KEY, user_id INTEGER)")
+    conn.execute("CREATE TABLE IF NOT EXISTS settings (key TEXT PRIMARY KEY, value TEXT)")
     conn.execute("""
     CREATE TABLE IF NOT EXISTS price_alerts (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -240,10 +227,7 @@ def save_price_history(query, price):
     key = query.lower().strip()
     now = int(time.time())
     with db_lock:
-        last = conn.execute(
-            "SELECT price, ts FROM price_history WHERE query = ? ORDER BY ts DESC LIMIT 1",
-            (key,)
-        ).fetchone()
+        last = conn.execute("SELECT price, ts FROM price_history WHERE query = ? ORDER BY ts DESC LIMIT 1", (key,)).fetchone()
         if not last or (now - last[1] > 3600 * 6) or last[0] != int(price):
             conn.execute("INSERT INTO price_history (query, price, ts) VALUES (?, ?, ?)", (key, int(price), now))
             conn.commit()
@@ -251,10 +235,7 @@ def save_price_history(query, price):
 def get_price_history(query):
     key = query.lower().strip()
     with db_lock:
-        rows = conn.execute(
-            "SELECT price, ts FROM price_history WHERE query = ? ORDER BY ts ASC LIMIT 30",
-            (key,)
-        ).fetchall()
+        rows = conn.execute("SELECT price, ts FROM price_history WHERE query = ? ORDER BY ts ASC LIMIT 30", (key,)).fetchall()
     return [{"price": r[0], "ts": r[1]} for r in rows]
 
 waiting_admin_msg = set()
@@ -357,7 +338,6 @@ def fetch_all_rates():
     now = time.time()
     if RATES_CACHE["data"] and (now - RATES_CACHE["time"] < RATES_TTL):
         return RATES_CACHE["data"]
-
     result = {}
     try:
         r = requests.get("https://cbu.uz/uz/arkhiv-kursov-valyut/json/", headers=HEADERS, timeout=8)
@@ -365,14 +345,9 @@ def fetch_all_rates():
             for item in r.json():
                 ccy = item.get("Ccy")
                 if ccy in ("USD", "EUR", "RUB"):
-                    result[ccy.lower()] = {
-                        "rate": float(item["Rate"]),
-                        "diff": item["Diff"],
-                        "date": item["Date"],
-                    }
-    except Exception as e:
-        print(f"[CBU] xato: {e}")
-
+                    result[ccy.lower()] = {"rate": float(item["Rate"]), "diff": item["Diff"], "date": item["Date"]}
+    except Exception:
+        pass
     btc_price = None
     for url, parser in [
         ("https://api.coinbase.com/v2/prices/BTC-USD/spot", lambda j: float(j["data"]["amount"])),
@@ -386,10 +361,8 @@ def fetch_all_rates():
                 break
         except Exception:
             continue
-
     if btc_price:
         result["btc"] = {"usd": btc_price}
-
     if result:
         RATES_CACHE["time"] = now
         RATES_CACHE["data"] = result
@@ -433,12 +406,8 @@ def fetch_olcha(query):
             monthly = parse_monthly_price(p.get("monthly_repayment"), price)
             if best is None or price < best["price"]:
                 best = {
-                    "store": "Olcha",
-                    "price": price,
-                    "monthly": monthly,
-                    "delivery": "O'zbekiston bo'ylab yetkazish",
-                    "image": img,
-                    "title": clean_title(title),
+                    "store": "Olcha", "price": price, "monthly": monthly,
+                    "delivery": "O'zbekiston bo'ylab yetkazish", "image": img, "title": clean_title(title),
                     "url": f"https://olcha.uz/uz/product/view/{alias}" if alias else STORES["Olcha"]["search_url"].format(q=quote_plus(query))
                 }
         return best
@@ -466,12 +435,8 @@ def fetch_texnomart(query):
             monthly = parse_monthly_price(p.get("axiom_monthly_price"), price)
             if best is None or price < best["price"]:
                 best = {
-                    "store": "Texnomart",
-                    "price": price,
-                    "monthly": monthly,
-                    "delivery": "Kuryer / Do'kondan olib ketish",
-                    "image": img,
-                    "title": clean_title(title),
+                    "store": "Texnomart", "price": price, "monthly": monthly,
+                    "delivery": "Kuryer / Do'kondan olib ketish", "image": img, "title": clean_title(title),
                     "url": f"https://texnomart.uz/uz/product/detail/{pid}" if pid else STORES["Texnomart"]["search_url"].format(q=quote_plus(query))
                 }
         return best
@@ -503,20 +468,13 @@ def fetch_asaxiy(query):
             price = int(digits)
             if price < 10000:
                 continue
-            img = ""
-            if img_el:
-                img = img_el.get("data-src") or img_el.get("src") or ""
+            img = (img_el.get("data-src") or img_el.get("src") or "") if img_el else ""
             href = link_el["href"] if link_el and link_el.get("href") else ""
             full_url = href if href.startswith("http") else f"https://asaxiy.uz{href}"
             if best is None or price < best["price"]:
                 best = {
-                    "store": "Asaxiy",
-                    "price": price,
-                    "monthly": round(price / 12),
-                    "delivery": "O'zbekiston bo'ylab yetkazish",
-                    "image": img,
-                    "title": clean_title(title),
-                    "url": full_url
+                    "store": "Asaxiy", "price": price, "monthly": round(price / 12),
+                    "delivery": "O'zbekiston bo'ylab yetkazish", "image": img, "title": clean_title(title), "url": full_url
                 }
         return best
     except Exception:
@@ -525,42 +483,18 @@ def fetch_asaxiy(query):
 def fetch_uzum(query):
     gql_url = "https://graphql.uzum.uz/"
     headers = {
-        **HEADERS,
-        "Content-Type": "application/json",
-        "Origin": "https://uzum.uz",
-        "Referer": "https://uzum.uz/",
-        "apollographql-client-name": "web-customers",
-        "apollographql-client-version": "1.0.0",
+        **HEADERS, "Content-Type": "application/json", "Origin": "https://uzum.uz", "Referer": "https://uzum.uz/",
+        "apollographql-client-name": "web-customers", "apollographql-client-version": "1.0.0",
     }
     queries = [
-        """
-        query getMakeSearch($queryInput: MakeSearchQueryInput!) {
-          makeSearch(query: $queryInput) {
-            items { catalogCard { productId title minSellPrice photos { key } } }
-          }
-        }
-        """,
-        """
-        query getMakeSearch($queryInput: MakeSearchQueryInput!) {
-          makeSearch(query: $queryInput) {
-            items { catalogCard { productId title minSellPrice } }
-          }
-        }
-        """
+        "query getMakeSearch($queryInput: MakeSearchQueryInput!) { makeSearch(query: $queryInput) { items { catalogCard { productId title minSellPrice photos { key } } } } }",
+        "query getMakeSearch($queryInput: MakeSearchQueryInput!) { makeSearch(query: $queryInput) { items { catalogCard { productId title minSellPrice } } } }"
     ]
     for gql in queries:
         try:
             payload = {
                 "operationName": "getMakeSearch",
-                "variables": {
-                    "queryInput": {
-                        "text": query,
-                        "showAdultContent": "NONE",
-                        "filters": [],
-                        "sort": "BY_RELEVANCE_DESC",
-                        "pagination": {"offset": 0, "limit": 15}
-                    }
-                },
+                "variables": {"queryInput": {"text": query, "showAdultContent": "NONE", "filters": [], "sort": "BY_RELEVANCE_DESC", "pagination": {"offset": 0, "limit": 15}}},
                 "query": gql
             }
             r = requests.post(gql_url, json=payload, headers=headers, timeout=7)
@@ -582,12 +516,8 @@ def fetch_uzum(query):
                 img = f"https://images.uzum.uz/{photos[0]['key']}/t_product_540_high.jpg" if photos and photos[0].get("key") else ""
                 if best is None or price < best["price"]:
                     best = {
-                        "store": "Uzum Market",
-                        "price": price,
-                        "monthly": round(price / 12),
-                        "delivery": "1 kunda bepul (punktga)",
-                        "image": img,
-                        "title": clean_title(title),
+                        "store": "Uzum Market", "price": price, "monthly": round(price / 12),
+                        "delivery": "1 kunda bepul (punktga)", "image": img, "title": clean_title(title),
                         "url": f"https://uzum.uz/uz/product/{pid}" if pid else STORES["Uzum Market"]["search_url"].format(q=quote_plus(query))
                     }
             if best:
@@ -623,7 +553,6 @@ def search_prices(query, bypass_cache=False):
                 results.append(res)
 
     results.sort(key=lambda x: x["price"])
-
     main_img = next((r["image"] for r in results if r.get("image")), "")
     if results and not main_img:
         main_img = fetch_fallback_image(query)
@@ -636,7 +565,6 @@ def search_prices(query, bypass_cache=False):
         if len(CACHE) >= MAX_CACHE_ITEMS:
             CACHE.clear()
         CACHE[key] = {"time": now, "data": results}
-
     return results
 
 # --- NARX KUZATISH (ORQA FONDA) ---
@@ -671,9 +599,7 @@ def price_alert_worker():
 class AppHandler(BaseHTTPRequestHandler):
     def _client_ip(self):
         fwd = self.headers.get("X-Forwarded-For", "")
-        if fwd:
-            return fwd.split(",")[0].strip()
-        return self.client_address[0]
+        return fwd.split(",")[0].strip() if fwd else self.client_address[0]
 
     def _send_json(self, data, status=200):
         body = json.dumps(data, ensure_ascii=False).encode("utf-8")
@@ -685,8 +611,7 @@ class AppHandler(BaseHTTPRequestHandler):
         self.wfile.write(body)
 
     def _auth_user_id(self):
-        init_data = self.headers.get("X-Telegram-Init-Data", "")
-        return verify_telegram_init_data(init_data)
+        return verify_telegram_init_data(self.headers.get("X-Telegram-Init-Data", ""))
 
     def do_GET(self):
         parsed = urlparse(self.path)
@@ -704,8 +629,7 @@ class AppHandler(BaseHTTPRequestHandler):
             if len(q) < 2:
                 self._send_json({"query": q, "results": []})
                 return
-            results = search_prices(q)
-            self._send_json({"query": q, "results": results})
+            self._send_json({"query": q, "results": search_prices(q)})
             return
 
         if path == "/api/rates":
@@ -723,10 +647,7 @@ class AppHandler(BaseHTTPRequestHandler):
                 self._send_json({"error": "Auth required", "alerts": []}, 401)
                 return
             with db_lock:
-                rows = conn.execute(
-                    "SELECT id, query, target_price, current_price, image FROM price_alerts WHERE user_id = ? ORDER BY id DESC",
-                    (uid,)
-                ).fetchall()
+                rows = conn.execute("SELECT id, query, target_price, current_price, image FROM price_alerts WHERE user_id = ? ORDER BY id DESC", (uid,)).fetchall()
             items = [{"id": r[0], "query": r[1], "target_price": r[2], "current_price": r[3], "image": r[4] or ""} for r in rows]
             self._send_json({"alerts": items})
             return
@@ -762,8 +683,7 @@ class AppHandler(BaseHTTPRequestHandler):
             return
 
         try:
-            raw = self.rfile.read(length).decode("utf-8")
-            data = json.loads(raw)
+            data = json.loads(self.rfile.read(length).decode("utf-8"))
             if not isinstance(data, dict):
                 raise ValueError("JSON object expected")
         except Exception:
@@ -773,6 +693,15 @@ class AppHandler(BaseHTTPRequestHandler):
         uid = self._auth_user_id()
         if not uid:
             self._send_json({"ok": False, "error": "Auth required"}, 401)
+            return
+
+        if parsed.path == "/api/lang":
+            new_lang = str(data.get("lang") or "").strip().lower()
+            if new_lang not in ("uz", "ru"):
+                self._send_json({"ok": False, "error": "Invalid lang"}, 400)
+                return
+            set_user_lang(uid, new_lang)
+            self._send_json({"ok": True, "lang": new_lang})
             return
 
         if parsed.path == "/api/alert":
@@ -831,7 +760,7 @@ def main_menu(lang="uz"):
     markup = types.ReplyKeyboardMarkup(resize_keyboard=True)
     markup.row(bt(lang, "btn_open"))
     markup.row(bt(lang, "btn_rates"), bt(lang, "btn_alerts"))
-    markup.row(bt(lang, "btn_help"))
+    markup.row(bt(lang, "btn_help"), bt(lang, "btn_lang"))
     return markup
 
 def open_app_inline(query=None, lang="uz"):
@@ -857,12 +786,7 @@ def set_group_cmd(message):
         bot.reply_to(message, "Bu buyruqni murojaatlar guruhi ichida yozing.")
         return
     set_support_chat_id(message.chat.id)
-    bot.reply_to(
-        message,
-        f"✅ Murojaatlar guruhi ulandi!\n\n"
-        f"Render → Environment Variables ga qo'shing:\n"
-        f"<code>SUPPORT_GROUP_ID</code> = <code>{message.chat.id}</code>"
-    )
+    bot.reply_to(message, f"✅ Murojaatlar guruhi ulandi!\n\n<code>SUPPORT_GROUP_ID</code> = <code>{message.chat.id}</code>")
 
 @bot.message_handler(func=lambda m: m.from_user and m.from_user.id == ADMIN_ID and m.reply_to_message)
 def admin_reply_handler(message):
@@ -879,10 +803,15 @@ def admin_reply_handler(message):
     except Exception as e:
         bot.reply_to(message, f"❌ Xato: {html.escape(str(e))}")
 
-@bot.message_handler(commands=["lang"])
+@bot.message_handler(commands=["lang", "language"])
 def lang_cmd(message):
     if message.chat.type != "private":
         return
+    send_lang_picker(message.chat.id)
+
+@bot.message_handler(func=lambda m: m.chat.type == "private" and m.text and ("Til / Язык" in m.text or "Язык / Til" in m.text))
+def lang_btn_cmd(message):
+    set_waiting_admin(message.from_user.id, False)
     send_lang_picker(message.chat.id)
 
 @bot.message_handler(commands=["start"])
@@ -1014,8 +943,7 @@ def handle_text(message):
                 conn.execute("INSERT OR REPLACE INTO support_messages (admin_msg_id, user_id) VALUES (?, ?)", (sent.message_id, user.id))
                 conn.commit()
             bot.send_message(message.chat.id, bt(lang, "sent_ok"), reply_markup=main_menu(lang))
-        except Exception as e:
-            print(f"[SUPPORT] xato: {e}")
+        except Exception:
             bot.send_message(message.chat.id, bt(lang, "sent_err"), reply_markup=main_menu(lang))
         return
 
