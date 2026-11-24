@@ -60,7 +60,10 @@ def is_relevant_product(query, title):
         else:
             if tok in t_low or (len(tok) >= 4 and tok[:4] in t_low):
                 matched += 1
-    return matched >= max(1, len(q_tokens) - (1 if len(q_tokens) >= 3 else 0))
+        if q_tokens[0] not in t_low:
+        return False
+    return matched == len(q_tokens)
+
 
 
 # 1. Texnomart
