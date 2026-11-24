@@ -60,10 +60,9 @@ def is_relevant_product(query, title):
         else:
             if tok in t_low or (len(tok) >= 4 and tok[:4] in t_low):
                 matched += 1
-        if q_tokens[0] not in t_low:
+    if q_tokens[0] not in t_low:
         return False
     return matched == len(q_tokens)
-
 
 
 # 1. Texnomart
@@ -102,7 +101,7 @@ def fetch_texnomart(query, debug=None):
         return None
 
 
-# 2. Idea.uz (JSON tuzilishi to'g'rilangan)
+# 2. Idea.uz
 def fetch_idea(query, debug=None):
     try:
         url = f"https://api.idea.uz/api/v2/products?q={quote_plus(query)}&per_page=15"
@@ -398,7 +397,7 @@ def fetch_elmakon(query, debug=None):
             if price < 10000 or not is_relevant_product(query, title):
                 continue
             img = (img_el.get("data-src") or img_el.get("src") or "") if img_el else ""
-            href = title_el.get("href") or f"https://elmakon.uz/"
+            href = title_el.get("href") or "https://elmakon.uz/"
             if best is None or price < best["price"]:
                 best = {
                     "store": "Elmakon", "price": price, "monthly": round(price / 12),
