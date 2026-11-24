@@ -7,69 +7,31 @@
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
   <style>
     :root {
-      --navy: #0A3761;
-      --bg: #12161A;
-      --surface: #1B2027;
-      --surface-2: #222831;
-      --orange: #FF6600;
-      --blue: #60A5FA;
-      --green: #22C55E;
-      --red: #F87171;
-      --text: #EEF2F6;
-      --muted: #94A3B8;
-      --border: #2A313C;
-      --radius: 12px;
+      --navy: #0A3761; --bg: #12161A; --surface: #1B2027; --surface-2: #222831;
+      --orange: #FF6600; --blue: #60A5FA; --green: #22C55E; --red: #F87171;
+      --text: #EEF2F6; --muted: #94A3B8; --border: #2A313C; --radius: 12px;
     }
-
     * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
-
-    body {
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-      background: var(--bg);
-      color: var(--text);
-      padding-bottom: 78px;
-      overflow-x: hidden;
-      font-size: 13.5px;
-      font-weight: 400;
-      -webkit-font-smoothing: antialiased;
-    }
-
-    /* HEADER */
-    .header {
-      background: linear-gradient(180deg, var(--navy) 0%, #0D2640 72%, var(--bg) 100%);
-      padding: 12px 14px 14px;
-      position: sticky;
-      top: 0;
-      z-index: 20;
-    }
+    body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background: var(--bg); color: var(--text); padding-bottom: 78px; overflow-x: hidden; font-size: 13.5px; -webkit-font-smoothing: antialiased; }
+    .header { background: linear-gradient(180deg, var(--navy) 0%, #0D2640 72%, var(--bg) 100%); padding: 12px 14px 14px; position: sticky; top: 0; z-index: 20; }
     .brand-row { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; }
     .brand { font-size: 18px; font-weight: 600; letter-spacing: -0.2px; color: #fff; cursor: pointer; }
     .brand span { color: var(--orange); }
     .live-badge { font-size: 11.5px; color: #CBD5E1; display: flex; align-items: center; gap: 5px; }
     .live-badge::before { content: ""; width: 6px; height: 6px; border-radius: 50%; background: var(--green); }
-
     .search-wrap { position: relative; display: flex; align-items: center; }
-    .search-input {
-      width: 100%; height: 46px; border: 1px solid rgba(255,255,255,0.14);
-      border-radius: 11px; padding: 0 82px 0 14px; font-size: 14.5px;
-      outline: none; color: var(--text); background: #1A212B;
-    }
+    .search-input { width: 100%; height: 46px; border: 1px solid rgba(255,255,255,0.14); border-radius: 11px; padding: 0 82px 0 14px; font-size: 14.5px; outline: none; color: var(--text); background: #1A212B; }
     .search-input::-webkit-search-cancel-button { display: none; }
     .search-input::placeholder { color: var(--muted); }
     .search-input:focus { border-color: var(--orange); }
     .search-actions { position: absolute; right: 5px; display: flex; align-items: center; gap: 2px; }
     .icon-btn { width: 38px; height: 38px; border: none; background: transparent; color: var(--muted); display: flex; align-items: center; justify-content: center; cursor: pointer; }
-
     .page-top { padding: 16px 14px 6px; font-size: 19px; font-weight: 600; color: var(--text); }
-
-    /* TICKER */
     .ticker-bar { display: flex; gap: 7px; overflow-x: auto; padding: 2px 14px 12px; scrollbar-width: none; }
     .ticker-bar::-webkit-scrollbar { display: none; }
     .ticker-pill { white-space: nowrap; background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 6px 10px; font-size: 12px; color: var(--muted); display: flex; align-items: center; gap: 5px; }
     .ticker-pill b { color: var(--text); font-weight: 500; }
     .ticker-pill.btc b { color: var(--orange); }
-
-    /* STORIES */
     .stories { display: flex; gap: 13px; overflow-x: auto; padding: 4px 14px 14px; scrollbar-width: none; }
     .stories::-webkit-scrollbar { display: none; }
     .story { display: flex; flex-direction: column; align-items: center; gap: 6px; width: 78px; flex-shrink: 0; cursor: pointer; }
@@ -80,13 +42,10 @@
     .st-game { background: linear-gradient(145deg, #3B1D60, #180C2E); font-size: 26px; }
     .st-btc { background: linear-gradient(145deg, #7C2D12, #431407); font-size: 26px; color: #FBBF24; }
     .story-label { font-size: 11.5px; color: var(--text); text-align: center; line-height: 1.2; }
-
     .container { padding: 4px 14px 20px; }
     .sec-head { display: flex; align-items: center; justify-content: space-between; margin: 12px 0 9px; }
     .sec-title { font-size: 15px; font-weight: 500; color: var(--text); }
     .sec-link { font-size: 12.5px; color: var(--blue); background: none; border: none; cursor: pointer; }
-
-    /* HORIZONTAL CARDS */
     .h-scroll { display: flex; gap: 10px; overflow-x: auto; padding-bottom: 4px; scrollbar-width: none; }
     .h-scroll::-webkit-scrollbar { display: none; }
     .mini-card { width: 142px; flex-shrink: 0; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; cursor: pointer; }
@@ -95,19 +54,14 @@
     .mini-body { padding: 8px 9px; }
     .mini-title { font-size: 12px; color: var(--text); line-height: 1.3; height: 31px; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; margin-bottom: 4px; }
     .mini-price { font-size: 12.5px; font-weight: 500; color: var(--orange); }
-
-    /* POPULAR GRID */
     .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 9px; }
     .pop-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 11px; cursor: pointer; display: flex; flex-direction: column; gap: 4px; }
     .pop-card:active { background: var(--surface-2); }
     .pop-name { font-size: 13.5px; font-weight: 500; color: var(--text); }
     .pop-sub { font-size: 11.5px; color: var(--muted); }
-
-    /* SEARCH RESULT CARD */
     .sort-row { display: flex; gap: 7px; margin-bottom: 10px; }
     .pill-btn { background: var(--surface); border: 1px solid var(--border); color: var(--text); padding: 6px 12px; border-radius: 16px; font-size: 12px; cursor: pointer; }
     .pill-btn.active { border-color: var(--blue); color: var(--blue); }
-
     .result-card { display: flex; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; margin-bottom: 10px; cursor: pointer; }
     .res-img-col { width: 112px; flex-shrink: 0; background: #fff; display: flex; align-items: center; justify-content: center; padding: 8px; position: relative; }
     .res-img-col img { max-width: 100%; max-height: 104px; object-fit: contain; }
@@ -120,14 +74,11 @@
     .res-price-row { display: flex; align-items: baseline; justify-content: space-between; gap: 6px; }
     .res-price { font-size: 15px; font-weight: 600; color: var(--orange); }
     .res-store { font-size: 11px; color: var(--muted); }
-
-    /* CATALOGUE & PROFILE */
     .top-cats { display: flex; gap: 14px; overflow-x: auto; padding-bottom: 8px; scrollbar-width: none; }
     .top-cats::-webkit-scrollbar { display: none; }
     .top-cat { display: flex; flex-direction: column; align-items: center; gap: 6px; width: 76px; flex-shrink: 0; cursor: pointer; }
     .top-cat-circle { width: 64px; height: 64px; border-radius: 50%; background: #fff; display: flex; align-items: center; justify-content: center; font-size: 26px; }
     .top-cat-name { font-size: 11.5px; color: var(--text); text-align: center; }
-
     .cat-list { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; }
     .cat-row { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 13px 14px; border-bottom: 1px solid var(--border); cursor: pointer; font-size: 14px; color: var(--text); }
     .cat-row:last-child { border-bottom: none; }
@@ -135,14 +86,11 @@
     .lang-switch { display: flex; gap: 6px; }
     .lang-btn { background: var(--surface-2); border: 1px solid var(--border); color: var(--muted); padding: 5px 10px; border-radius: 8px; font-size: 12px; cursor: pointer; }
     .lang-btn.active { background: var(--blue); color: #0B1220; border-color: var(--blue); font-weight: 600; }
-
-    /* PRODUCT DETAIL OVERLAY */
     .overlay { position: fixed; inset: 0; background: var(--bg); z-index: 40; overflow-y: auto; padding-bottom: 86px; }
     .detail-hero { position: relative; display: flex; align-items: flex-start; justify-content: center; padding: 14px 56px 10px; }
     .hero-close { position: absolute; left: 12px; top: 14px; width: 36px; height: 36px; border-radius: 50%; background: var(--surface); border: 1px solid var(--border); color: var(--text); display: flex; align-items: center; justify-content: center; cursor: pointer; z-index: 5; }
     .hero-img-box { width: 100%; max-width: 240px; height: 220px; background: #fff; border-radius: 14px; display: flex; align-items: center; justify-content: center; padding: 14px; }
     .hero-img-box img { max-width: 100%; max-height: 100%; object-fit: contain; }
-
     .hero-side-actions { position: absolute; right: 10px; top: 14px; display: flex; flex-direction: column; gap: 10px; z-index: 5; }
     .side-btn { width: 40px; height: 40px; border-radius: 50%; background: var(--surface); border: 1px solid var(--border); color: var(--text); display: flex; align-items: center; justify-content: center; cursor: pointer; }
     .side-btn svg { width: 19px; height: 19px; stroke: currentColor; fill: none; stroke-width: 1.9; }
@@ -150,32 +98,24 @@
     .side-btn.blue svg { stroke: #0B1220; }
     .side-btn.saved { background: var(--blue); border-color: var(--blue); color: #0B1220; }
     .side-btn.saved svg { fill: #0B1220; stroke: #0B1220; }
-
     .detail-center { text-align: center; padding: 4px 14px 10px; }
     .detail-cat-tag { font-size: 12px; color: var(--blue); margin-bottom: 4px; }
     .detail-title { font-size: 17px; font-weight: 600; line-height: 1.32; margin-bottom: 11px; color: var(--text); }
-
     .variant-row { display: flex; justify-content: center; gap: 7px; flex-wrap: wrap; margin-bottom: 12px; }
     .v-chip { border: 1px solid var(--border); border-radius: 8px; overflow: hidden; cursor: pointer; min-width: 76px; }
     .v-chip-top { background: rgba(96,165,250,0.16); color: var(--blue); font-size: 12px; font-weight: 500; padding: 4px 10px; }
     .v-chip-bot { background: var(--surface); color: var(--muted); font-size: 10.5px; padding: 3px 10px; }
-
     .detail-price-line { display: flex; align-items: baseline; justify-content: center; gap: 6px; margin-bottom: 12px; }
     .detail-from { font-size: 13px; color: var(--muted); }
     .detail-price { font-size: 21px; font-weight: 600; color: var(--orange); }
-
     .blue-cta { width: 100%; background: var(--blue); color: #0B1220; border: none; border-radius: 10px; padding: 11px; font-size: 14px; font-weight: 600; cursor: pointer; margin-bottom: 6px; }
-
-    /* ALL 8 IDEALO ICON + TEXT TABS */
     .sub-tabs { display: flex; border-bottom: 1px solid var(--border); background: var(--bg); overflow-x: auto; scrollbar-width: none; position: sticky; top: 0; z-index: 12; padding: 4px 6px 0; }
     .sub-tabs::-webkit-scrollbar { display: none; }
     .sub-tab { flex: 0 0 auto; min-width: 82px; background: none; border: none; color: var(--muted); display: flex; flex-direction: column; align-items: center; gap: 4px; padding: 8px 9px 9px; border-bottom: 2px solid transparent; cursor: pointer; font-size: 11px; }
     .sub-tab svg { width: 19px; height: 19px; stroke: currentColor; fill: none; stroke-width: 1.8; }
     .sub-tab.active { color: var(--blue); border-bottom-color: var(--blue); font-weight: 500; }
-
     .detail-sections { padding: 8px 14px 20px; }
     .scroll-anchor { scroll-margin-top: 66px; }
-
     .offer-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 11px 12px; margin-bottom: 9px; }
     .offer-badge { display: inline-block; background: var(--orange); color: #fff; font-size: 10.5px; font-weight: 500; padding: 2px 7px; border-radius: 4px; margin-bottom: 6px; }
     .offer-row { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
@@ -183,23 +123,19 @@
     .offer-m { font-size: 11.5px; color: var(--muted); margin-top: 2px; }
     .offer-del { font-size: 11.5px; color: var(--green); margin-top: 4px; }
     .shop-btn { background: var(--surface-2); border: 1px solid var(--border); color: var(--text); padding: 7px 12px; border-radius: 8px; font-size: 12.5px; font-weight: 500; cursor: pointer; white-space: nowrap; }
-
     .spec-box { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 12px 14px; margin-bottom: 14px; }
     .spec-row { display: flex; justify-content: space-between; padding: 7px 0; border-bottom: 1px solid var(--border); font-size: 12.5px; gap: 10px; }
     .spec-row:last-child { border-bottom: none; }
     .spec-k { color: var(--muted); }
     .spec-v { color: var(--text); font-weight: 500; text-align: right; }
-
     .pc-item { display: flex; align-items: flex-start; gap: 9px; padding: 6px 0; font-size: 13px; line-height: 1.35; }
     .pc-dot { width: 19px; height: 19px; border-radius: 50%; flex-shrink: 0; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 13px; color: #0B1220; }
     .pc-dot.plus { background: var(--green); }
     .pc-dot.minus { background: var(--red); }
-
     .faq-item { border-bottom: 1px solid var(--border); padding: 10px 0; }
     .faq-item:last-child { border-bottom: none; }
     .faq-q { font-size: 13px; font-weight: 500; color: var(--text); margin-bottom: 4px; }
     .faq-a { font-size: 12px; color: var(--muted); line-height: 1.4; }
-
     .compare-scroll { display: flex; gap: 8px; overflow-x: auto; padding-bottom: 6px; scrollbar-width: none; }
     .compare-scroll::-webkit-scrollbar { display: none; }
     .cmp-col { width: 156px; flex-shrink: 0; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; text-align: center; }
@@ -213,26 +149,21 @@
     .cmp-cell { padding: 7px 6px; font-size: 11.5px; color: var(--text); border-bottom: 1px solid var(--border); }
     .cmp-cell:last-child { border-bottom: none; }
     .cmp-cell small { display: block; color: var(--muted); font-size: 10px; margin-bottom: 1px; }
-
     .ov-top { display: flex; align-items: center; justify-content: space-between; padding: 10px 14px; position: sticky; top: 0; background: var(--bg); z-index: 12; border-bottom: 1px solid var(--border); }
     .ov-btn { width: 36px; height: 36px; border-radius: 50%; background: var(--surface); border: 1px solid var(--border); color: var(--text); display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 15px; }
     .alert-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 13px; margin: 12px 14px; }
     .alert-input-box { display: flex; align-items: center; background: #14191F; border: 1px solid var(--border); border-radius: 9px; padding: 8px 12px; margin-bottom: 5px; }
     .alert-input { background: transparent; border: none; color: var(--text); font-size: 19px; font-weight: 500; width: 100%; outline: none; }
     .alert-slider { width: 100%; accent-color: var(--blue); margin: 10px 0 14px; }
-
     .skeleton { height: 96px; border-radius: var(--radius); margin-bottom: 10px; background: linear-gradient(90deg, #1B2027 25%, #242B35 50%, #1B2027 75%); background-size: 200% 100%; animation: shimmer 1.2s infinite; }
     @keyframes shimmer { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
     .empty-box { text-align: center; padding: 28px 14px; color: var(--muted); font-size: 13.5px; line-height: 1.5; }
-
     .toast { position: fixed; bottom: 80px; left: 50%; transform: translateX(-50%); background: #1F2937; color: #fff; border: 1px solid var(--border); padding: 9px 16px; border-radius: 20px; font-size: 12.5px; z-index: 80; box-shadow: 0 6px 20px rgba(0,0,0,0.4); opacity: 0; pointer-events: none; transition: opacity 0.2s; max-width: 90%; text-align: center; }
     .toast.show { opacity: 1; }
-
     .tabbar { position: fixed; bottom: 0; left: 0; right: 0; height: 66px; background: #161B22; border-top: 1px solid var(--border); display: grid; grid-template-columns: repeat(5, 1fr); z-index: 45; padding-bottom: 4px; }
     .tab { background: none; border: none; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; font-size: 11px; color: var(--muted); cursor: pointer; }
     .tab svg { width: 22px; height: 22px; stroke: currentColor; fill: none; stroke-width: 1.85; }
     .tab.active { color: var(--orange); font-weight: 500; }
-
     .hidden { display: none !important; }
   </style>
 </head>
@@ -248,21 +179,15 @@
         <input id="searchInput" class="search-input" type="search" placeholder="Mahsulot qidirish (iPhone, Redmi...)" autocomplete="off" />
         <div class="search-actions">
           <button class="icon-btn" type="button" data-action="camera" aria-label="Kamera">
-            <svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" fill="none" stroke-width="1.9">
-              <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/>
-              <circle cx="12" cy="13" r="4"/>
-            </svg>
+            <svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" fill="none" stroke-width="1.9"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
           </button>
           <button class="icon-btn" type="submit" aria-label="Qidirish">
-            <svg viewBox="0 0 24 24" width="19" height="19" stroke="currentColor" fill="none" stroke-width="2">
-              <circle cx="11" cy="11" r="7"></circle><line x1="20" y1="20" x2="16.65" y2="16.65"></line>
-            </svg>
+            <svg viewBox="0 0 24 24" width="19" height="19" stroke="currentColor" fill="none" stroke-width="2"><circle cx="11" cy="11" r="7"></circle><line x1="20" y1="20" x2="16.65" y2="16.65"></line></svg>
           </button>
         </div>
         <input id="cameraFileInput" type="file" accept="image/*" capture="environment" class="hidden" />
       </form>
     </header>
-
     <div class="ticker-bar">
       <div class="ticker-pill">USD <b id="t-usd">...</b></div>
       <div class="ticker-pill">EUR <b id="t-eur">...</b></div>
@@ -280,7 +205,6 @@
         <div class="story" data-action="search" data-query="PlayStation 5"><div class="story-ring"><div class="story-inner st-game">🎮</div></div><div class="story-label" data-i18n="st_games">O'yinlar</div></div>
         <div class="story" data-action="search" data-query="Samsung S24 Ultra"><div class="story-ring"><div class="story-inner st-btc">🔥</div></div><div class="story-label">Top 2026</div></div>
       </div>
-
       <div class="container">
         <div id="lastViewedWrap" class="hidden">
           <div class="sec-head">
@@ -289,7 +213,6 @@
           </div>
           <div id="lastViewedList" class="h-scroll"></div>
         </div>
-
         <div class="sec-head"><span class="sec-title" data-i18n="popular">Eng ko'p qidirilganlar</span></div>
         <div class="grid-2">
           <div class="pop-card" data-action="search" data-query="iPhone 16 Pro"><span class="pop-name">iPhone 16 Pro</span><span class="pop-sub" data-i18n="cat_phones">Smartfonlar</span></div>
@@ -301,7 +224,6 @@
         </div>
       </div>
     </div>
-
     <div id="searchResultsWrap" class="container hidden">
       <div class="sec-head">
         <span class="sec-title" id="searchHeading">Natijalar</span>
@@ -326,7 +248,6 @@
         <div class="top-cat" data-action="search" data-query="Apple Watch"><div class="top-cat-circle">⌚</div><div class="top-cat-name" data-i18n="cat_watches">Soatlar</div></div>
         <div class="top-cat" data-action="search" data-query="MacBook Air M2"><div class="top-cat-circle">💻</div><div class="top-cat-name" data-i18n="cat_laptops">Noutbuklar</div></div>
       </div>
-
       <div class="sec-head"><span class="sec-title" data-i18n="full_cat">To'liq katalog</span></div>
       <div class="cat-list">
         <div class="cat-row" data-action="search" data-query="Samsung A55"><div class="cat-row-left"><span>📱</span><span data-i18n="c_1">Smartfonlar va gadjetlar</span></div></div>
@@ -351,7 +272,7 @@
     <div class="container"><div id="alertsList"></div></div>
   </section>
 
-  <!-- TAB 5: PROFILE (UZ/RU TIL TANLASH) -->
+  <!-- TAB 5: PROFILE -->
   <section id="tab-profile" class="hidden">
     <div class="page-top" data-i18n="my_profile">Mening profilim</div>
     <div class="container">
@@ -376,26 +297,14 @@
   <div id="detailOverlay" class="overlay hidden">
     <div class="detail-hero">
       <button class="hero-close" data-action="close-detail" aria-label="Yopish">
-        <svg viewBox="0 0 24 24" width="17" height="17" stroke="currentColor" fill="none" stroke-width="2.2">
-          <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
-        </svg>
+        <svg viewBox="0 0 24 24" width="17" height="17" stroke="currentColor" fill="none" stroke-width="2.2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
       </button>
-
       <div class="hero-img-box"><img id="detailImg" src="" alt="" /></div>
-
       <div class="hero-side-actions">
-        <button class="side-btn" data-action="share" aria-label="Ulashish">
-          <svg viewBox="0 0 24 24"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
-        </button>
-        <button class="side-btn" id="detailCompareBtn" data-action="toggle-compare" aria-label="Taqqoslash">
-          <svg viewBox="0 0 24 24"><polyline points="17 2 21 6 17 10"/><line x1="3" y1="6" x2="21" y2="6"/><polyline points="7 22 3 18 7 14"/><line x1="21" y1="18" x2="3" y2="18"/></svg>
-        </button>
-        <button class="side-btn blue" data-action="open-alert" aria-label="Narx kuzatish">
-          <svg viewBox="0 0 24 24"><circle cx="12" cy="13" r="8"/><polyline points="12 9 12 13 14.5 14.5"/><path d="M5 3L2 6M22 6l-3-3"/></svg>
-        </button>
-        <button class="side-btn" id="detailHeartBtn" data-action="toggle-detail-fav" aria-label="Sevimli">
-          <svg viewBox="0 0 24 24"><path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.7l-1-1.1a5.5 5.5 0 0 0-7.8 7.8l1 1.1L12 21l7.8-7.5 1-1.1a5.5 5.5 0 0 0 0-7.8z"/></svg>
-        </button>
+        <button class="side-btn" data-action="share" aria-label="Ulashish"><svg viewBox="0 0 24 24"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg></button>
+        <button class="side-btn" id="detailCompareBtn" data-action="toggle-compare" aria-label="Taqqoslash"><svg viewBox="0 0 24 24"><polyline points="17 2 21 6 17 10"/><line x1="3" y1="6" x2="21" y2="6"/><polyline points="7 22 3 18 7 14"/><line x1="21" y1="18" x2="3" y2="18"/></svg></button>
+        <button class="side-btn blue" data-action="open-alert" aria-label="Narx kuzatish"><svg viewBox="0 0 24 24"><circle cx="12" cy="13" r="8"/><polyline points="12 9 12 13 14.5 14.5"/><path d="M5 3L2 6M22 6l-3-3"/></svg></button>
+        <button class="side-btn" id="detailHeartBtn" data-action="toggle-detail-fav" aria-label="Sevimli"><svg viewBox="0 0 24 24"><path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.7l-1-1.1a5.5 5.5 0 0 0-7.8 7.8l1 1.1L12 21l7.8-7.5 1-1.1a5.5 5.5 0 0 0 0-7.8z"/></svg></button>
       </div>
     </div>
 
@@ -403,72 +312,29 @@
       <div class="detail-cat-tag" data-i18n="compare_prices">Narxlarni solishtirish</div>
       <div class="detail-title" id="detailTitle"></div>
       <div class="variant-row" id="variantRow"></div>
-      <div class="detail-price-line">
-        <span class="detail-from" data-i18n="from_word">dan</span>
-        <span class="detail-price" id="detailPrice"></span>
-      </div>
+      <div class="detail-price-line"><span class="detail-from" data-i18n="from_word">dan</span><span class="detail-price" id="detailPrice"></span></div>
       <button class="blue-cta" id="detailOffersBtn" data-action="scroll-sec" data-sec="sec-offers"></button>
     </div>
 
-    <!-- ALL 8 IDEALO TABS WITH MATCHING ICONS -->
     <div class="sub-tabs" id="detailSubTabs">
-      <button class="sub-tab active" data-action="scroll-sec" data-sec="sec-offers">
-        <svg viewBox="0 0 24 24"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7"/></svg>
-        <span data-i18n="st_offers">Takliflar</span>
-      </button>
-      <button class="sub-tab" data-action="scroll-sec" data-sec="sec-history">
-        <svg viewBox="0 0 24 24"><polyline points="3 3 3 21 21 21"/><polyline points="7 14 12 9 15 12 20 7"/></svg>
-        <span data-i18n="st_history">Narx tarixi</span>
-      </button>
-      <button class="sub-tab" data-action="scroll-sec" data-sec="sec-specs">
-        <svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="8" y1="13" x2="16" y2="13"/><line x1="8" y1="17" x2="13" y2="17"/></svg>
-        <span data-i18n="st_specs">Xususiyatlar</span>
-      </button>
-      <button class="sub-tab" data-action="scroll-sec" data-sec="sec-pros">
-        <svg viewBox="0 0 24 24"><path d="M14 9V5a3 3 0 0 0-3-3l-4 9v11h11.28a2 2 0 0 0 2-1.7l1.38-9a2 2 0 0 0-2-2.3zM7 22H4a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2h3"/></svg>
-        <span data-i18n="st_pros">Afzallik</span>
-      </button>
-      <button class="sub-tab" data-action="scroll-sec" data-sec="sec-reviews">
-        <svg viewBox="0 0 24 24"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
-        <span data-i18n="st_reviews">Sharhlar</span>
-      </button>
-      <button class="sub-tab" data-action="scroll-sec" data-sec="sec-expert">
-        <svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="5"/><path d="M20 21a8 8 0 1 0-16 0"/></svg>
-        <span data-i18n="st_expert">Ekspert</span>
-      </button>
-      <button class="sub-tab" data-action="scroll-sec" data-sec="sec-faq">
-        <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
-        <span data-i18n="st_faq">Savollar</span>
-      </button>
-      <button class="sub-tab" data-action="scroll-sec" data-sec="sec-compare">
-        <svg viewBox="0 0 24 24"><polyline points="17 2 21 6 17 10"/><line x1="3" y1="6" x2="21" y2="6"/><polyline points="7 22 3 18 7 14"/><line x1="21" y1="18" x2="3" y2="18"/></svg>
-        <span data-i18n="st_compare">Taqqoslash</span>
-      </button>
+      <button class="sub-tab active" data-action="scroll-sec" data-sec="sec-offers"><svg viewBox="0 0 24 24"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7"/></svg><span data-i18n="st_offers">Takliflar</span></button>
+      <button class="sub-tab" data-action="scroll-sec" data-sec="sec-history"><svg viewBox="0 0 24 24"><polyline points="3 3 3 21 21 21"/><polyline points="7 14 12 9 15 12 20 7"/></svg><span data-i18n="st_history">Narx tarixi</span></button>
+      <button class="sub-tab" data-action="scroll-sec" data-sec="sec-specs"><svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="8" y1="13" x2="16" y2="13"/><line x1="8" y1="17" x2="13" y2="17"/></svg><span data-i18n="st_specs">Xususiyatlar</span></button>
+      <button class="sub-tab" data-action="scroll-sec" data-sec="sec-pros"><svg viewBox="0 0 24 24"><path d="M14 9V5a3 3 0 0 0-3-3l-4 9v11h11.28a2 2 0 0 0 2-1.7l1.38-9a2 2 0 0 0-2-2.3zM7 22H4a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2h3"/></svg><span data-i18n="st_pros">Afzallik</span></button>
+      <button class="sub-tab" data-action="scroll-sec" data-sec="sec-reviews"><svg viewBox="0 0 24 24"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg><span data-i18n="st_reviews">Sharhlar</span></button>
+      <button class="sub-tab" data-action="scroll-sec" data-sec="sec-expert"><svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="5"/><path d="M20 21a8 8 0 1 0-16 0"/></svg><span data-i18n="st_expert">Ekspert</span></button>
+      <button class="sub-tab" data-action="scroll-sec" data-sec="sec-faq"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg><span data-i18n="st_faq">Savollar</span></button>
+      <button class="sub-tab" data-action="scroll-sec" data-sec="sec-compare"><svg viewBox="0 0 24 24"><polyline points="17 2 21 6 17 10"/><line x1="3" y1="6" x2="21" y2="6"/><polyline points="7 22 3 18 7 14"/><line x1="21" y1="18" x2="3" y2="18"/></svg><span data-i18n="st_compare">Taqqoslash</span></button>
     </div>
 
     <div class="detail-sections">
-      <!-- 1. OFFERS -->
-      <div id="sec-offers" class="scroll-anchor">
-        <div class="sec-head"><span class="sec-title" id="offersCountTitle"></span></div>
-        <div id="offersList"></div>
-      </div>
-
-      <!-- 2. PRICE HISTORY -->
+      <div id="sec-offers" class="scroll-anchor"><div class="sec-head"><span class="sec-title" id="offersCountTitle"></span></div><div id="offersList"></div></div>
       <div id="sec-history" class="scroll-anchor" style="margin-top:16px;">
-        <div class="sec-head">
-          <span class="sec-title" data-i18n="st_history">Narx tarixi</span>
-          <button class="sec-link" data-action="open-alert" data-i18n="set_alert">Kuzatuv qo'yish</button>
-        </div>
+        <div class="sec-head"><span class="sec-title" data-i18n="st_history">Narx tarixi</span><button class="sec-link" data-action="open-alert" data-i18n="set_alert">Kuzatuv qo'yish</button></div>
         <div class="spec-box">
           <div style="display:flex;justify-content:space-between;margin-bottom:10px;">
-            <div>
-              <div style="font-size:11.5px;color:var(--muted);" data-i18n="cur_price">Hozirgi narx</div>
-              <div style="font-size:16px;font-weight:600;color:var(--orange);" id="inlineCurPrice"></div>
-            </div>
-            <div style="text-align:right;">
-              <div style="font-size:11.5px;color:var(--muted);" data-i18n="trend">Dinamika</div>
-              <div style="font-size:12px;color:var(--green);" data-i18n="live_track">Jonli kuzatuv ↘</div>
-            </div>
+            <div><div style="font-size:11.5px;color:var(--muted);" data-i18n="cur_price">Hozirgi narx</div><div style="font-size:16px;font-weight:600;color:var(--orange);" id="inlineCurPrice"></div></div>
+            <div style="text-align:right;"><div style="font-size:11.5px;color:var(--muted);" data-i18n="trend">Dinamika</div><div style="font-size:12px;color:var(--green);" data-i18n="live_track">Jonli kuzatuv ↘</div></div>
           </div>
           <div id="inlineChartWrap" style="height:90px;display:flex;align-items:center;justify-content:center;color:var(--muted);font-size:12px;"></div>
           <div style="margin-top:10px;padding-top:9px;border-top:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;">
@@ -477,45 +343,12 @@
           </div>
         </div>
       </div>
-
-      <!-- 3. SPECS -->
-      <div id="sec-specs" class="scroll-anchor" style="margin-top:16px;">
-        <div class="sec-head"><span class="sec-title" data-i18n="main_specs">Asosiy xususiyatlar</span></div>
-        <div class="spec-box" id="specsList"></div>
-      </div>
-
-      <!-- 4. PROS & CONS -->
-      <div id="sec-pros" class="scroll-anchor" style="margin-top:16px;">
-        <div class="sec-head"><span class="sec-title" data-i18n="pros_title">Afzallik va kamchiliklar</span></div>
-        <div class="spec-box" id="prosBox"></div>
-      </div>
-
-      <!-- 5. USER REVIEWS -->
-      <div id="sec-reviews" class="scroll-anchor" style="margin-top:16px;">
-        <div class="sec-head"><span class="sec-title" data-i18n="reviews_title">Foydalanuvchi sharhlari</span></div>
-        <div class="spec-box" style="color:var(--muted);font-size:12.5px;" data-i18n="reviews_soon">Do'konlardagi xaridorlar sharhlari tez kunda qo'shiladi.</div>
-      </div>
-
-      <!-- 6. EXPERT REVIEWS -->
-      <div id="sec-expert" class="scroll-anchor" style="margin-top:16px;">
-        <div class="sec-head"><span class="sec-title" data-i18n="expert_title">Ekspert fikri</span></div>
-        <div class="spec-box" style="color:var(--muted);font-size:12.5px;" data-i18n="expert_soon">AI ekspert tahlili keyingi yangilanishda ishga tushadi.</div>
-      </div>
-
-      <!-- 7. FAQ -->
-      <div id="sec-faq" class="scroll-anchor" style="margin-top:16px;">
-        <div class="sec-head"><span class="sec-title" data-i18n="faq_title">Savol-javoblar</span></div>
-        <div class="spec-box" id="faqBox"></div>
-      </div>
-
-      <!-- 8. COMPARE -->
-      <div id="sec-compare" class="scroll-anchor" style="margin-top:16px;">
-        <div class="sec-head">
-          <span class="sec-title" data-i18n="st_compare">Taqqoslash</span>
-          <button class="sec-link" data-action="clear-compare" data-i18n="clear">Tozalash</button>
-        </div>
-        <div id="compareArea"></div>
-      </div>
+      <div id="sec-specs" class="scroll-anchor" style="margin-top:16px;"><div class="sec-head"><span class="sec-title" data-i18n="main_specs">Asosiy xususiyatlar</span></div><div class="spec-box" id="specsList"></div></div>
+      <div id="sec-pros" class="scroll-anchor" style="margin-top:16px;"><div class="sec-head"><span class="sec-title" data-i18n="pros_title">Afzallik va kamchiliklar</span></div><div class="spec-box" id="prosBox"></div></div>
+      <div id="sec-reviews" class="scroll-anchor" style="margin-top:16px;"><div class="sec-head"><span class="sec-title" data-i18n="reviews_title">Foydalanuvchi sharhlari</span></div><div class="spec-box" style="color:var(--muted);font-size:12.5px;" data-i18n="reviews_soon">Do'konlardagi xaridorlar sharhlari tez kunda qo'shiladi.</div></div>
+      <div id="sec-expert" class="scroll-anchor" style="margin-top:16px;"><div class="sec-head"><span class="sec-title" data-i18n="expert_title">Ekspert fikri</span></div><div class="spec-box" style="color:var(--muted);font-size:12.5px;" data-i18n="expert_soon">AI ekspert tahlili keyingi yangilanishda ishga tushadi.</div></div>
+      <div id="sec-faq" class="scroll-anchor" style="margin-top:16px;"><div class="sec-head"><span class="sec-title" data-i18n="faq_title">Savol-javoblar</span></div><div class="spec-box" id="faqBox"></div></div>
+      <div id="sec-compare" class="scroll-anchor" style="margin-top:16px;"><div class="sec-head"><span class="sec-title" data-i18n="st_compare">Taqqoslash</span><button class="sec-link" data-action="clear-compare" data-i18n="clear">Tozalash</button></div><div id="compareArea"></div></div>
     </div>
   </div>
 
@@ -528,10 +361,7 @@
     </div>
     <div class="alert-card">
       <div style="font-size:12.5px;color:var(--muted);margin-bottom:8px;" id="alertProdName"></div>
-      <div class="alert-input-box">
-        <input id="alertPriceInput" class="alert-input" type="number" />
-        <span style="color:var(--muted);font-size:13px;" data-i18n="sum">so'm</span>
-      </div>
+      <div class="alert-input-box"><input id="alertPriceInput" class="alert-input" type="number" /><span style="color:var(--muted);font-size:13px;" data-i18n="sum">so'm</span></div>
       <div style="text-align:right;font-size:12px;color:var(--muted);" id="alertSaveHint"></div>
       <input id="alertSlider" class="alert-slider" type="range" />
       <div style="display:flex;justify-content:space-between;align-items:center;font-size:13px;margin-bottom:12px;">
@@ -544,28 +374,12 @@
 
   <div id="toast" class="toast"></div>
 
-  <!-- 5-TAB BOTTOM BAR -->
   <nav class="tabbar">
-    <button class="tab active" data-tab="home">
-      <svg viewBox="0 0 24 24"><path d="M3 10l9-7 9 7v11a1 1 0 0 1-1 1h-5v-7H9v7H4a1 1 0 0 1-1-1z"/></svg>
-      <span data-i18n="tab_home">Asosiy</span>
-    </button>
-    <button class="tab" data-tab="products">
-      <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><line x1="20" y1="20" x2="16.65" y2="16.65"/></svg>
-      <span data-i18n="tab_cat">Katalog</span>
-    </button>
-    <button class="tab" data-tab="favs">
-      <svg viewBox="0 0 24 24"><path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.7l-1-1.1a5.5 5.5 0 0 0-7.8 7.8l1 1.1L12 21l7.8-7.5 1-1.1a5.5 5.5 0 0 0 0-7.8z"/></svg>
-      <span data-i18n="tab_favs">Sevimli</span>
-    </button>
-    <button class="tab" data-tab="alerts">
-      <svg viewBox="0 0 24 24"><circle cx="12" cy="13" r="8"/><polyline points="12 9 12 13 14.5 14.5"/><path d="M5 3L2 6M22 6l-3-3"/></svg>
-      <span data-i18n="tab_alerts">Kuzatuv</span>
-    </button>
-    <button class="tab" data-tab="profile">
-      <svg viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
-      <span data-i18n="tab_profile">Profil</span>
-    </button>
+    <button class="tab active" data-tab="home"><svg viewBox="0 0 24 24"><path d="M3 10l9-7 9 7v11a1 1 0 0 1-1 1h-5v-7H9v7H4a1 1 0 0 1-1-1z"/></svg><span data-i18n="tab_home">Asosiy</span></button>
+    <button class="tab" data-tab="products"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><line x1="20" y1="20" x2="16.65" y2="16.65"/></svg><span data-i18n="tab_cat">Katalog</span></button>
+    <button class="tab" data-tab="favs"><svg viewBox="0 0 24 24"><path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.7l-1-1.1a5.5 5.5 0 0 0-7.8 7.8l1 1.1L12 21l7.8-7.5 1-1.1a5.5 5.5 0 0 0 0-7.8z"/></svg><span data-i18n="tab_favs">Sevimli</span></button>
+    <button class="tab" data-tab="alerts"><svg viewBox="0 0 24 24"><circle cx="12" cy="13" r="8"/><polyline points="12 9 12 13 14.5 14.5"/><path d="M5 3L2 6M22 6l-3-3"/></svg><span data-i18n="tab_alerts">Kuzatuv</span></button>
+    <button class="tab" data-tab="profile"><svg viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg><span data-i18n="tab_profile">Profil</span></button>
   </nav>
 
   <script>
@@ -580,7 +394,6 @@
       }
     }
 
-    // UZ / RU TRANSLATIONS
     const I18N = {
       uz: {
         live: "Jonli narxlar", search_ph: "Mahsulot qidirish (iPhone, Redmi...)",
@@ -639,7 +452,6 @@
     if (urlLang === "uz" || urlLang === "ru") localStorage.setItem("ab_lang", urlLang);
 
     function t(k) { return (I18N[lang] && I18N[lang][k]) || I18N.uz[k] || k; }
-
     function applyLang() {
       document.querySelectorAll("[data-i18n]").forEach(el => { el.textContent = t(el.dataset.i18n); });
       document.getElementById("searchInput").placeholder = t("search_ph");
@@ -658,6 +470,8 @@
     function formatPrice(n) { return Number(n || 0).toLocaleString("ru-RU") + " " + t("sum"); }
     function openExternal(u) { if (!u) return; if (tg && tg.openLink) tg.openLink(u); else window.open(u, "_blank", "noopener,noreferrer"); }
     function authHeaders() { return { "Content-Type": "application/json", "X-Telegram-Init-Data": tg ? (tg.initData || "") : "" }; }
+    function getSortedOffers() { return [...currentResults].sort((a, b) => a.price - b.price); }
+    function getBestOffer() { return getSortedOffers()[0] || null; }
     function showToast(msg) {
       const el = document.getElementById("toast");
       el.textContent = msg; el.classList.add("show");
@@ -665,13 +479,21 @@
       toastTimer = setTimeout(() => el.classList.remove("show"), 2600);
     }
 
-    // GLOBAL SAFE EVENT DELEGATION
     document.addEventListener("click", (e) => {
       const el = e.target.closest("[data-action]");
       if (!el) return;
       const act = el.dataset.action;
 
-      if (act === "set-lang") { lang = el.dataset.lang; localStorage.setItem("ab_lang", lang); applyLang(); showToast(lang === "ru" ? "Язык: Русский" : "Til: O'zbekcha"); return; }
+      if (act === "set-lang") {
+        lang = el.dataset.lang;
+        localStorage.setItem("ab_lang", lang);
+        applyLang();
+        showToast(lang === "ru" ? "Язык: Русский" : "Til: O'zbekcha");
+        if (tg && tg.initData) {
+          fetch("/api/lang", { method: "POST", headers: authHeaders(), body: JSON.stringify({ lang }) }).catch(() => {});
+        }
+        return;
+      }
       if (act === "home-clean") { goHomeClean(); return; }
       if (act === "back-home") { backToHome(); return; }
       if (act === "camera") { document.getElementById("cameraFileInput").click(); return; }
@@ -692,10 +514,7 @@
       if (act === "scroll-sec") { scrollToSec(el.dataset.sec, el.classList.contains("sub-tab") ? el : null); return; }
       if (act === "toggle-fav") {
         e.stopPropagation();
-        toggleFav({
-          query: el.dataset.query, title: el.dataset.title || el.dataset.query,
-          price: Number(el.dataset.price || 0), image: el.dataset.image || ""
-        });
+        toggleFav({ query: el.dataset.query, title: el.dataset.title || el.dataset.query, price: Number(el.dataset.price || 0), image: el.dataset.image || "" });
         return;
       }
       if (act === "delete-alert") { e.stopPropagation(); deleteAlert(Number(el.dataset.id)); return; }
@@ -708,7 +527,6 @@
       }
     });
 
-    // TABS
     const tabs = document.querySelectorAll(".tab");
     const sections = {
       home: document.getElementById("tab-home"), products: document.getElementById("tab-products"),
@@ -726,7 +544,6 @@
     }
     tabs.forEach(t => t.addEventListener("click", () => switchTab(t.dataset.tab, true)));
 
-    // LAST VIEWED
     function getHistory() { try { return JSON.parse(localStorage.getItem("ab_hist") || "[]"); } catch { return []; } }
     function addHistory(item) {
       let h = getHistory().filter(x => x.query.toLowerCase() !== item.query.toLowerCase());
@@ -743,26 +560,17 @@
       document.getElementById("lastViewedList").innerHTML = h.map(x => `
         <div class="mini-card" data-action="search" data-query="${escapeHtml(x.query)}">
           <div class="mini-img-box"><img src="${escapeHtml(x.image || FALLBACK_IMG)}" onerror="this.src='${FALLBACK_IMG}'" /></div>
-          <div class="mini-body">
-            <div class="mini-title">${escapeHtml(x.title || x.query)}</div>
-            <div class="mini-price">${formatPrice(x.price)}</div>
-          </div>
+          <div class="mini-body"><div class="mini-title">${escapeHtml(x.title || x.query)}</div><div class="mini-price">${formatPrice(x.price)}</div></div>
         </div>
       `).join("");
     }
 
-    // FAVOURITES
     function getFavs() { try { return JSON.parse(localStorage.getItem("ab_favs") || "[]"); } catch { return []; } }
     function isFav(q) { return getFavs().some(x => x.query.toLowerCase() === q.toLowerCase()); }
     function toggleFav(item) {
       let f = getFavs();
-      if (isFav(item.query)) {
-        f = f.filter(x => x.query.toLowerCase() !== item.query.toLowerCase());
-        showToast(lang === "ru" ? "Удалено из избранного" : "Sevimlilardan o'chirildi");
-      } else {
-        f.unshift(item);
-        showToast(lang === "ru" ? "Добавлено в избранное" : "Sevimlilarga saqlandi");
-      }
+      if (isFav(item.query)) { f = f.filter(x => x.query.toLowerCase() !== item.query.toLowerCase()); showToast(lang === "ru" ? "Удалено из избранного" : "Sevimlilardan o'chirildi"); }
+      else { f.unshift(item); showToast(lang === "ru" ? "Добавлено в избранное" : "Sevimlilarga saqlandi"); }
       localStorage.setItem("ab_favs", JSON.stringify(f.slice(0, 30)));
       renderResults(); renderFavs(); updateDetailButtons();
     }
@@ -782,18 +590,13 @@
       `).join("");
     }
 
-    // COMPARE
     function getCompare() { try { return JSON.parse(localStorage.getItem("ab_cmp") || "[]"); } catch { return []; } }
     function isCompared(q) { return getCompare().some(x => x.query.toLowerCase() === q.toLowerCase()); }
     function toggleCompareCurrent() {
-      if (!currentResults.length) return;
-      const b = currentResults[0];
+      const b = getBestOffer();
+      if (!b) return;
       const memMatch = (b.title || "").match(/(\d+\s*\/\s*\d+\s*GB|\d+\s*GB)/i);
-      const item = {
-        query: currentQuery, title: b.title || currentQuery, price: b.price,
-        monthly: b.monthly || Math.round(b.price / 12), store: b.store,
-        memory: memMatch ? memMatch[0] : "—", image: b.image || ""
-      };
+      const item = { query: currentQuery, title: b.title || currentQuery, price: b.price, monthly: b.monthly || Math.round(b.price / 12), store: b.store, memory: memMatch ? memMatch[0] : "—", image: b.image || "" };
       let list = getCompare();
       if (isCompared(currentQuery)) list = list.filter(x => x.query.toLowerCase() !== currentQuery.toLowerCase());
       else list.unshift(item);
@@ -804,17 +607,12 @@
 
     function renderCompareSection() {
       const box = document.getElementById("compareArea");
-      if (!currentResults.length) return;
-      const b = currentResults[0];
+      const b = getBestOffer();
+      if (!b) return;
       const memMatch = (b.title || "").match(/(\d+\s*\/\s*\d+\s*GB|\d+\s*GB)/i);
-      const curItem = {
-        query: currentQuery, title: b.title || currentQuery, price: b.price,
-        monthly: b.monthly || Math.round(b.price / 12), store: b.store,
-        memory: memMatch ? memMatch[0] : "—", image: b.image || ""
-      };
+      const curItem = { query: currentQuery, title: b.title || currentQuery, price: b.price, monthly: b.monthly || Math.round(b.price / 12), store: b.store, memory: memMatch ? memMatch[0] : "—", image: b.image || "" };
       const others = getCompare().filter(x => x.query.toLowerCase() !== currentQuery.toLowerCase());
       const cols = [curItem, ...others];
-
       let html = `<div class="compare-scroll">` + cols.map((c, idx) => `
         <div class="cmp-col ${idx === 0 ? 'current' : ''}">
           <div class="cmp-head">${idx === 0 ? t("this_prod") : t("comparing")}</div>
@@ -826,12 +624,10 @@
           <div class="cmp-cell"><small>${t("best_store")}</small>${escapeHtml(c.store)}</div>
         </div>
       `).join("") + `</div>`;
-
       if (!others.length) html += `<div style="font-size:12px;color:var(--muted);margin-top:8px;">${t("compare_hint")}</div>`;
       box.innerHTML = html;
     }
 
-    // SEARCH
     function backToHome() {
       document.getElementById("searchResultsWrap").classList.add("hidden");
       document.getElementById("homeDashboard").classList.remove("hidden");
@@ -846,26 +642,22 @@
       document.getElementById("homeDashboard").classList.add("hidden");
       document.getElementById("searchResultsWrap").classList.remove("hidden");
       document.getElementById("searchHeading").textContent = `«${query}»`;
+      document.getElementById("sortAsc").classList.add("active");
+      document.getElementById("sortDesc").classList.remove("active");
       document.getElementById("resultsArea").innerHTML = `<div class="skeleton"></div><div class="skeleton"></div>`;
 
       try {
         const res = await fetch(`/api/search?q=${encodeURIComponent(query)}`);
-        if (res.status === 429) {
-          document.getElementById("resultsArea").innerHTML = `<div class="empty-box">429 — Biroz kutib qayta urining.</div>`;
-          return;
-        }
+        if (res.status === 429) { document.getElementById("resultsArea").innerHTML = `<div class="empty-box">429 — Biroz kutib qayta urining.</div>`; return; }
         const data = await res.json();
         currentResults = data.results || [];
         if (currentResults.length) {
-          addHistory({ query, title: currentResults[0].title, price: currentResults[0].price, image: currentResults[0].image });
+          const best = getBestOffer();
+          addHistory({ query, title: best.title, price: best.price, image: best.image });
         }
         renderResults();
       } catch {
-        document.getElementById("resultsArea").innerHTML = `
-          <div class="empty-box">
-            Tarmoq xatosi.<br/><br/>
-            <button class="pill-btn active" data-action="search" data-query="${escapeHtml(query)}">${t("retry")}</button>
-          </div>`;
+        document.getElementById("resultsArea").innerHTML = `<div class="empty-box">Tarmoq xatosi.<br/><br/><button class="pill-btn active" data-action="search" data-query="${escapeHtml(query)}">${t("retry")}</button></div>`;
       }
     }
 
@@ -901,12 +693,8 @@
       `).join("");
     }
 
-    // DETAIL OVERLAY
     function scrollToSec(id, btn) {
-      if (btn) {
-        document.querySelectorAll(".sub-tab").forEach(b => b.classList.remove("active"));
-        btn.classList.add("active");
-      }
+      if (btn) { document.querySelectorAll(".sub-tab").forEach(b => b.classList.remove("active")); btn.classList.add("active"); }
       const el = document.getElementById(id);
       if (el) el.scrollIntoView({ behavior: "smooth", block: "start" });
     }
@@ -915,16 +703,13 @@
     detailOverlayEl.addEventListener("scroll", () => {
       const ids = ["sec-offers", "sec-history", "sec-specs", "sec-pros", "sec-reviews", "sec-expert", "sec-faq", "sec-compare"];
       let activeId = ids[0];
-      for (const id of ids) {
-        const el = document.getElementById(id);
-        if (el && el.getBoundingClientRect().top <= 130) activeId = id;
-      }
+      for (const id of ids) { const el = document.getElementById(id); if (el && el.getBoundingClientRect().top <= 130) activeId = id; }
       document.querySelectorAll(".sub-tab").forEach(b => b.classList.toggle("active", b.dataset.sec === activeId));
     });
 
     function shareProduct() {
-      if (!currentResults.length) return;
-      const b = currentResults[0];
+      const b = getBestOffer();
+      if (!b) return;
       const text = `${b.title || currentQuery} — ${formatPrice(b.price)} (${b.store})`;
       openExternal(`https://t.me/share/url?url=${encodeURIComponent(b.url)}&text=${encodeURIComponent(text)}`);
     }
@@ -934,31 +719,29 @@
       document.getElementById("detailCompareBtn").classList.toggle("blue", isCompared(currentQuery));
     }
     function toggleDetailFav() {
-      if (!currentResults.length) return;
-      const b = currentResults[0];
+      const b = getBestOffer();
+      if (!b) return;
       toggleFav({ query: currentQuery, title: b.title, price: b.price, image: b.image });
     }
 
     async function openDetail() {
-      if (!currentResults.length) return;
-      const best = currentResults[0];
-      const maxPrice = currentResults[currentResults.length - 1].price;
+      const sorted = getSortedOffers();
+      if (!sorted.length) return;
+      const best = sorted[0];
+      const maxPrice = sorted[sorted.length - 1].price;
       document.getElementById("detailImg").src = best.image || FALLBACK_IMG;
       document.getElementById("detailTitle").textContent = best.title || currentQuery;
       document.getElementById("detailPrice").textContent = formatPrice(best.price);
       document.getElementById("inlineCurPrice").textContent = formatPrice(best.price);
-      document.getElementById("detailOffersBtn").textContent = lang === "ru" ? `Сравнить ${currentResults.length} предложений` : `${currentResults.length} ta taklifni solishtirish`;
-      document.getElementById("offersCountTitle").textContent = lang === "ru" ? `${currentResults.length} предложений магазинов` : `${currentResults.length} ta do'kon taklifi`;
+      document.getElementById("detailOffersBtn").textContent = lang === "ru" ? `Сравнить ${sorted.length} предложений` : `${sorted.length} ta taklifni solishtirish`;
+      document.getElementById("offersCountTitle").textContent = lang === "ru" ? `${sorted.length} предложений магазинов` : `${sorted.length} ta do'kon taklifi`;
 
       const baseModel = currentQuery.replace(/\b(64|128|256|512)\s*gb\b/gi, "").trim();
       document.getElementById("variantRow").innerHTML = ["128GB", "256GB", "512GB"].map(v => `
-        <div class="v-chip" data-action="search" data-query="${escapeHtml(baseModel + ' ' + v)}">
-          <div class="v-chip-top">${v}</div>
-          <div class="v-chip-bot">${t("memory")}</div>
-        </div>
+        <div class="v-chip" data-action="search" data-query="${escapeHtml(baseModel + ' ' + v)}"><div class="v-chip-top">${v}</div><div class="v-chip-bot">${t("memory")}</div></div>
       `).join("");
 
-      document.getElementById("offersList").innerHTML = currentResults.map((r, i) => `
+      document.getElementById("offersList").innerHTML = sorted.map((r, i) => `
         <div class="offer-card">
           ${i === 0 ? `<div class="offer-badge">${t("best_price")}</div>` : ''}
           <div class="offer-row">
@@ -985,12 +768,12 @@
 
       const diff = maxPrice - best.price;
       document.getElementById("prosBox").innerHTML = lang === "ru" ? `
-        <div class="pc-item"><span class="pc-dot plus">+</span><span>В наличии в ${currentResults.length} официальных магазинах</span></div>
+        <div class="pc-item"><span class="pc-dot plus">+</span><span>В наличии в ${sorted.length} официальных магазинах</span></div>
         <div class="pc-item"><span class="pc-dot plus">+</span><span>Доступна рассрочка от ${formatPrice(best.monthly || Math.round(best.price / 12))}/мес</span></div>
         ${diff > 0 ? `<div class="pc-item"><span class="pc-dot plus">+</span><span>Экономия до ${formatPrice(diff)} при выборе лучшей цены</span></div>` : ''}
         <div class="pc-item"><span class="pc-dot minus">−</span><span>Цены могут меняться в зависимости от цвета и памяти</span></div>
       ` : `
-        <div class="pc-item"><span class="pc-dot plus">+</span><span>${currentResults.length} ta rasmiy do'konda sotuvda mavjud</span></div>
+        <div class="pc-item"><span class="pc-dot plus">+</span><span>${sorted.length} ta rasmiy do'konda sotuvda mavjud</span></div>
         <div class="pc-item"><span class="pc-dot plus">+</span><span>Oyiga ~${formatPrice(best.monthly || Math.round(best.price / 12))} dan muddatli to'lov bor</span></div>
         ${diff > 0 ? `<div class="pc-item"><span class="pc-dot plus">+</span><span>Eng arzon do'konni tanlab ${formatPrice(diff)} tejash mumkin</span></div>` : ''}
         <div class="pc-item"><span class="pc-dot minus">−</span><span>Narx rang va xotira hajmiga qarab farq qilishi mumkin</span></div>
@@ -1025,17 +808,17 @@
     }
     function closeDetail() { detailOverlayEl.classList.add("hidden"); }
 
-    // PRICE ALERT MODAL
     function updateAlertUI(val) {
-      const maxP = currentResults.length ? currentResults[0].price : 0;
+      const best = getBestOffer();
+      const maxP = best ? best.price : 0;
       val = Math.max(1000, Math.min(maxP, Number(val) || 0));
       document.getElementById("alertPriceInput").value = val;
       document.getElementById("alertSlider").value = val;
       document.getElementById("alertSaveHint").textContent = t("save_hint") + formatPrice(Math.max(0, maxP - val));
     }
     function openAlertModal() {
-      if (!currentResults.length) return;
-      const best = currentResults[0];
+      const best = getBestOffer();
+      if (!best) return;
       document.getElementById("alertProdName").textContent = best.title || currentQuery;
       const slider = document.getElementById("alertSlider");
       slider.min = Math.round(best.price * 0.65); slider.max = best.price; slider.step = 10000;
@@ -1048,7 +831,8 @@
 
     async function submitAlert() {
       if (!tg || !tg.initData) { showToast(t("open_from_bot")); return; }
-      const best = currentResults[0];
+      const best = getBestOffer();
+      if (!best) return;
       const targetPrice = Number(document.getElementById("alertPriceInput").value);
       const btn = document.getElementById("confirmAlertBtn");
       btn.textContent = "...";
@@ -1058,21 +842,11 @@
           body: JSON.stringify({ query: currentQuery, target_price: targetPrice, current_price: best.price, image: best.image })
         });
         const d = await res.json();
-        if (d.ok) {
-          showToast(lang === "ru" ? "Отслеживание включено!" : "Narx kuzatuvi yoqildi!");
-          btn.textContent = t("enable_alert");
-          closeAlertModal();
-        } else {
-          showToast(d.error || "Xato");
-          btn.textContent = t("enable_alert");
-        }
-      } catch {
-        showToast("Xato");
-        btn.textContent = t("enable_alert");
-      }
+        if (d.ok) { showToast(lang === "ru" ? "Отслеживание включено!" : "Narx kuzatuvi yoqildi!"); btn.textContent = t("enable_alert"); closeAlertModal(); }
+        else { showToast(d.error || "Xato"); btn.textContent = t("enable_alert"); }
+      } catch { showToast("Xato"); btn.textContent = t("enable_alert"); }
     }
 
-    // ALERTS TAB
     async function loadAlerts() {
       const box = document.getElementById("alertsList");
       if (!tg || !tg.initData) { box.innerHTML = `<div class="empty-box">${t("open_from_bot")}</div>`; return; }
@@ -1104,7 +878,6 @@
       } catch { showToast("Xato"); }
     }
 
-    // RATES
     async function fetchRates() {
       try {
         const res = await fetch("/api/rates");
