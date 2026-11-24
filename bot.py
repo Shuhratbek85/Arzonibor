@@ -47,7 +47,78 @@ ACCESSORY_WORDS = (
     "линза", "batareya", "батарея", "akkumulyator", "аккумулятор"
 )
 
-# --- RATE LIMITER (IP bo'yicha) ---
+# --- BOT TARJIMALARI (UZ / RU) ---
+BOT_TEXT = {
+    "uz": {
+        "btn_open": "📱 Ilovani ochish",
+        "btn_rates": "💵 Kurslar (USD/BTC)",
+        "btn_alerts": "🔔 Kuzatuvlarim",
+        "btn_help": "ℹ️ Yordam / Aloqa",
+        "inline_open": "📱 Ilovani ochish (Arzoni Bor)",
+        "inline_search": "🔍 «{q}» — ilovada ko'rish",
+        "sub_text": "👋 <b>Bot ishlashi uchun quyidagi kanallarga obuna bo'ling:</b>\n\nObuna bo'lgach, <b>«✅ Tekshirish»</b> tugmasini bosing 👇",
+        "sub_btn": "➕ {i}-kanalga obuna",
+        "sub_btn_one": "➕ Obuna bo'lish",
+        "sub_check": "✅ Tekshirish",
+        "sub_fail": "❌ Hali barcha kanallarga obuna bo'lmadingiz!",
+        "sub_ok": "✅ Obuna tasdiqlandi!",
+        "welcome": "👋 <b>Arzoni Bor</b> — O'zbekiston do'konlari narxlarini solishtiring!",
+        "open_hint": "📱 Ilovani ochish va narx kuzatuvini yoqish uchun pastdagi tugmani bosing 👇",
+        "no_alerts": "🔔 Hozircha faol kuzatuvlaringiz yo'q.\n\nIlovani ochib istalgan mahsulotda <b>«Kuzatish»</b> tugmasini bosing 👇",
+        "my_alerts": "🔔 <b>Faol narx kuzatuvlaringiz:</b>",
+        "help_text": "ℹ️ <b>Yordam va Aloqa</b>\n\nSavol yoki taklifingiz bo'lsa, quyidagi tugma orqali adminga yozing 👇",
+        "contact_btn": "✍️ Adminga yozish",
+        "write_msg": "✍️ Xabaringizni yozing (bekor qilish: /cancel):",
+        "sent_ok": "✅ Xabaringiz yuborildi!",
+        "sent_err": "❌ Xabar yuborilmadi.",
+        "short_q": "Mahsulot nomini to'liqroq yozing yoki ilovani oching 👇",
+        "search_hint": "📦 <b>{q}</b>\n\nRasmi, narxlari va muddatli to'lovini ko'rish uchun tugmani bosing 👇",
+        "alert_set": "🔔 <b>Narx kuzatish yoqildi!</b>\n\n📦 <b>{q}</b>\n🎯 Maqsad narx: <b>{p}</b>\n\nNarx shu summaga tushishi bilan sizga xabar beraman.",
+        "price_drop": "🔔 <b>Narx tushdi!</b>\n\n📦 <b>{q}</b>\n💰 Yangi eng arzon narx: <b>{p}</b>\n🛍 Do'kon: <b>{s}</b>",
+        "go_shop": "🛍 {s} ga o'tish",
+        "rates_title": "💵 <b>Bugungi valyuta va Bitcoin kurslari:</b>\n",
+        "bank_btn": "🏦 Banklar kursi (Bank.uz)",
+        "sum": "so'm",
+    },
+    "ru": {
+        "btn_open": "📱 Открыть приложение",
+        "btn_rates": "💵 Курсы (USD/BTC)",
+        "btn_alerts": "🔔 Отслеживания",
+        "btn_help": "ℹ️ Помощь / Связь",
+        "inline_open": "📱 Открыть приложение (Arzoni Bor)",
+        "inline_search": "🔍 «{q}» — открыть в приложении",
+        "sub_text": "👋 <b>Для работы бота подпишитесь на каналы ниже:</b>\n\nПосле подписки нажмите <b>«✅ Проверить»</b> 👇",
+        "sub_btn": "➕ Подписаться на канал {i}",
+        "sub_btn_one": "➕ Подписаться",
+        "sub_check": "✅ Проверить",
+        "sub_fail": "❌ Вы ещё не подписались на все каналы!",
+        "sub_ok": "✅ Подписка подтверждена!",
+        "welcome": "👋 <b>Arzoni Bor</b> — сравнивайте цены магазинов Узбекистана!",
+        "open_hint": "📱 Нажмите кнопку ниже, чтобы открыть приложение и отслеживать цены 👇",
+        "no_alerts": "🔔 У вас пока нет активных отслеживаний.\n\nОткройте приложение и нажмите <b>«Отслеживать»</b> на любом товаре 👇",
+        "my_alerts": "🔔 <b>Ваши активные отслеживания цен:</b>",
+        "help_text": "ℹ️ <b>Помощь и связь</b>\n\nЕсли есть вопрос или предложение, напишите админу 👇",
+        "contact_btn": "✍️ Написать админу",
+        "write_msg": "✍️ Напишите ваше сообщение (отмена: /cancel):",
+        "sent_ok": "✅ Сообщение отправлено!",
+        "sent_err": "❌ Не удалось отправить.",
+        "short_q": "Напишите название товара подробнее или откройте приложение 👇",
+        "search_hint": "📦 <b>{q}</b>\n\nНажмите кнопку ниже, чтобы увидеть фото, цены и рассрочку 👇",
+        "alert_set": "🔔 <b>Отслеживание включено!</b>\n\n📦 <b>{q}</b>\n🎯 Целевая цена: <b>{p}</b>\n\nКак только цена снизится, я сразу сообщу вам.",
+        "price_drop": "🔔 <b>Цена снизилась!</b>\n\n📦 <b>{q}</b>\n💰 Новая лучшая цена: <b>{p}</b>\n🛍 Магазин: <b>{s}</b>",
+        "go_shop": "🛍 Перейти в {s}",
+        "rates_title": "💵 <b>Курсы валют и Bitcoin на сегодня:</b>\n",
+        "bank_btn": "🏦 Курсы банков (Bank.uz)",
+        "sum": "сум",
+    }
+}
+
+def bt(lang, key, **kwargs):
+    d = BOT_TEXT.get(lang or "uz", BOT_TEXT["uz"])
+    val = d.get(key, BOT_TEXT["uz"].get(key, key))
+    return val.format(**kwargs) if kwargs else val
+
+# --- RATE LIMITER ---
 rate_lock = threading.Lock()
 rate_buckets = defaultdict(list)
 
@@ -93,6 +164,12 @@ db_lock = threading.Lock()
 conn = sqlite3.connect("arzonibor.db", check_same_thread=False)
 with db_lock:
     conn.execute("""
+    CREATE TABLE IF NOT EXISTS users (
+        user_id INTEGER PRIMARY KEY,
+        lang TEXT
+    )
+    """)
+    conn.execute("""
     CREATE TABLE IF NOT EXISTS support_messages (
         admin_msg_id INTEGER PRIMARY KEY,
         user_id INTEGER
@@ -129,6 +206,18 @@ with db_lock:
     except Exception:
         pass
     conn.commit()
+
+def get_user_lang(user_id):
+    with db_lock:
+        row = conn.execute("SELECT lang FROM users WHERE user_id = ?", (user_id,)).fetchone()
+    return row[0] if row and row[0] in ("uz", "ru") else None
+
+def set_user_lang(user_id, lang):
+    if lang not in ("uz", "ru"):
+        lang = "uz"
+    with db_lock:
+        conn.execute("INSERT OR REPLACE INTO users (user_id, lang) VALUES (?, ?)", (user_id, lang))
+        conn.commit()
 
 def get_support_chat_id():
     if ENV_SUPPORT_GROUP_ID:
@@ -195,12 +284,10 @@ STORES = {
     "Olcha": {"domain": "olcha.uz", "search_url": "https://olcha.uz/uz/search?q={q}"},
     "Texnomart": {"domain": "texnomart.uz", "search_url": "https://texnomart.uz/uz/search/?q={q}"},
     "Asaxiy": {"domain": "asaxiy.uz", "search_url": "https://asaxiy.uz/product?key={q}"},
-    "Mediapark": {"domain": "mediapark.uz", "search_url": "https://mediapark.uz/search?query={q}"},
-    "Idea": {"domain": "idea.uz", "search_url": "https://idea.uz/search?q={q}"}
 }
 
-def format_price(price):
-    return f"{int(price):,}".replace(",", " ") + " so'm"
+def format_price(price, lang="uz"):
+    return f"{int(price):,}".replace(",", " ") + " " + bt(lang, "sum")
 
 def clean_title(title):
     t = re.sub(r"\s+", " ", (title or "").strip())
@@ -250,22 +337,18 @@ def check_subscription(user_id):
             print(f"[SUB] {ch['username']} xato: {e}")
     return not_joined
 
-def send_sub_message(chat_id, not_joined):
+def send_sub_message(chat_id, not_joined, lang="uz"):
     markup = types.InlineKeyboardMarkup(row_width=1)
     for idx, ch in enumerate(not_joined, 1):
-        btn_label = f"➕ {idx}-kanalga obuna" if len(not_joined) > 1 else "➕ Obuna bo'lish"
+        btn_label = bt(lang, "sub_btn", i=idx) if len(not_joined) > 1 else bt(lang, "sub_btn_one")
         markup.add(types.InlineKeyboardButton(btn_label, url=ch["url"]))
-    markup.add(types.InlineKeyboardButton("✅ Tekshirish", callback_data="check_sub"))
-    text = (
-        "👋 <b>Bot ishlashi uchun quyidagi kanallarga obuna bo'ling:</b>\n\n"
-        "Obuna bo'lgach, <b>«✅ Tekshirish»</b> tugmasini bosing 👇"
-    )
-    bot.send_message(chat_id, text, reply_markup=markup)
+    markup.add(types.InlineKeyboardButton(bt(lang, "sub_check"), callback_data="check_sub"))
+    bot.send_message(chat_id, bt(lang, "sub_text"), reply_markup=markup)
 
-def require_sub(message):
+def require_sub(message, lang="uz"):
     not_joined = check_subscription(message.from_user.id)
     if not_joined:
-        send_sub_message(message.chat.id, not_joined)
+        send_sub_message(message.chat.id, not_joined, lang)
         return False
     return True
 
@@ -312,24 +395,23 @@ def fetch_all_rates():
         RATES_CACHE["data"] = result
     return result
 
-def get_rates_text():
+def get_rates_text(lang="uz"):
     d = fetch_all_rates()
-    lines = ["💵 <b>Bugungi valyuta va Bitcoin kurslari:</b>\n"]
+    s = bt(lang, "sum")
+    lines = [bt(lang, "rates_title")]
     if "usd" in d:
-        lines.append(f"🇺🇸 <b>1 USD:</b> {d['usd']['rate']:,.2f} so'm ({d['usd']['diff']})".replace(",", " "))
+        lines.append(f"🇺🇸 <b>1 USD:</b> {d['usd']['rate']:,.2f} {s} ({d['usd']['diff']})".replace(",", " "))
     if "eur" in d:
-        lines.append(f"🇪🇺 <b>1 EUR:</b> {d['eur']['rate']:,.2f} so'm ({d['eur']['diff']})".replace(",", " "))
+        lines.append(f"🇪🇺 <b>1 EUR:</b> {d['eur']['rate']:,.2f} {s} ({d['eur']['diff']})".replace(",", " "))
     if "rub" in d:
-        lines.append(f"🇷🇺 <b>1 RUB:</b> {d['rub']['rate']:,.2f} so'm ({d['rub']['diff']})".replace(",", " "))
+        lines.append(f"🇷🇺 <b>1 RUB:</b> {d['rub']['rate']:,.2f} {s} ({d['rub']['diff']})".replace(",", " "))
     if "btc" in d:
         lines.append(f"₿ <b>Bitcoin (BTC):</b> ${d['btc']['usd']:,.0f}".replace(",", " "))
-    if len(lines) == 1:
-        lines.append("Kurslarni yuklab bo'lmadi, birozdan so'ng qayta urinib ko'ring.")
     markup = types.InlineKeyboardMarkup(row_width=1)
-    markup.add(types.InlineKeyboardButton("🏦 Banklar kursi (Bank.uz)", url="https://bank.uz/uz/currency"))
+    markup.add(types.InlineKeyboardButton(bt(lang, "bank_btn"), url="https://bank.uz/uz/currency"))
     return "\n".join(lines), markup
 
-# --- DO'KONLARDAN QIDIRISH ---
+# --- FAQAT REAL DO'KONLARDAN QIDIRISH ---
 def fetch_olcha(query):
     try:
         url = f"https://api.olcha.uz/api/v2/products?search={quote_plus(query)}&per_page=15"
@@ -339,6 +421,8 @@ def fetch_olcha(query):
         products = r.json().get("data", {}).get("products", [])
         best = None
         for p in products:
+            if p.get("out_of_stock") is True or p.get("in_stock") is False:
+                continue
             title = p.get("name_uz") or p.get("name_ru") or p.get("name", "")
             price = p.get("total_price") or p.get("price") or 0
             alias = p.get("alias", "")
@@ -370,6 +454,8 @@ def fetch_texnomart(query):
         products = r.json().get("data", {}).get("products", [])
         best = None
         for p in products:
+            if str(p.get("availability", "")).lower() in ("outofstock", "none", "0"):
+                continue
             title = p.get("name", "")
             price = p.get("sale_price") or p.get("price") or 0
             pid = p.get("id", "")
@@ -406,6 +492,9 @@ def fetch_asaxiy(query):
             link_el = card.select_one("a[href*='/product/']")
             img_el = card.select_one("img")
             if not title_el or not price_el:
+                continue
+            card_text = card.get_text(" ", strip=True).lower()
+            if "sotuvda yo'q" in card_text or "нет в наличии" in card_text:
                 continue
             title = title_el.get_text(strip=True)
             digits = re.sub(r"\D", "", price_el.get_text())
@@ -507,19 +596,6 @@ def fetch_uzum(query):
             continue
     return None
 
-def extract_price_fallback(text):
-    if not text:
-        return None
-    cleaned = re.sub(
-        r'(?:oyiga|в\s*месяц)?\s*(\d{1,3}(?:[\s\u00a0.,]\d{3})+)\s*(?:so[\'‘’`]?m|сум|uzs|сўм)?\s*(?:/|dan)?\s*(?:oyiga|oy|в\s*месяц|мес)',
-        '',
-        text,
-        flags=re.IGNORECASE
-    )
-    matches = re.findall(r'(\d{1,3}(?:[\s\u00a0.,]\d{3})+)\s*(?:so[\'‘’`]?m|сум|uzs|сўм)', cleaned, re.IGNORECASE)
-    found = [int(re.sub(r'\D', '', m)) for m in matches if 100000 <= int(re.sub(r'\D', '', m)) <= 200000000]
-    return min(found) if found else None
-
 def fetch_fallback_image(query):
     try:
         with DDGS() as ddgs:
@@ -531,40 +607,6 @@ def fetch_fallback_image(query):
     except Exception:
         pass
     return ""
-
-def search_ddg_fallback(query):
-    results = []
-    seen = set()
-    try:
-        with DDGS() as ddgs:
-            res = list(ddgs.text(f"{query} narxi so'm uz", region="wt-wt", max_results=10))
-            for item in res:
-                url = item.get("href", "")
-                domain = urlparse(url).netloc.lower().replace("www.", "")
-                if not domain.endswith(".uz") or "olx.uz" in domain:
-                    continue
-                store = next((n for n, i in STORES.items() if i["domain"] in domain), domain.split(".")[0].capitalize() + " (.uz)")
-                if store in seen:
-                    continue
-                title = clean_title(item.get("title", ""))
-                body = item.get("body", "")
-                if not is_relevant_product(query, title):
-                    continue
-                price = extract_price_fallback(f"{title} {body}")
-                if price:
-                    seen.add(store)
-                    results.append({
-                        "store": store,
-                        "price": price,
-                        "monthly": round(price / 12),
-                        "delivery": "Do'kon shartlari bo'yicha",
-                        "image": "",
-                        "title": title,
-                        "url": url
-                    })
-    except Exception:
-        pass
-    return results
 
 def search_prices(query, bypass_cache=False):
     key = query.lower().strip()
@@ -580,15 +622,7 @@ def search_prices(query, bypass_cache=False):
             if res:
                 results.append(res)
 
-    if len(results) < 2:
-        existing = {r["store"] for r in results}
-        for item in search_ddg_fallback(query):
-            if item["store"] not in existing:
-                results.append(item)
-                existing.add(item["store"])
-
     results.sort(key=lambda x: x["price"])
-    results = results[:8]
 
     main_img = next((r["image"] for r in results if r.get("image")), "")
     if results and not main_img:
@@ -618,14 +652,10 @@ def price_alert_worker():
                     continue
                 best = results[0]
                 if best["price"] <= target_price:
-                    text = (
-                        f"🔔 <b>Narx tushdi!</b>\n\n"
-                        f"📦 <b>{html.escape(query)}</b>\n"
-                        f"💰 Yangi eng arzon narx: <b>{format_price(best['price'])}</b>\n"
-                        f"🛍 Do'kon: <b>{html.escape(best['store'])}</b>"
-                    )
+                    lang = get_user_lang(user_id) or "uz"
+                    text = bt(lang, "price_drop", q=html.escape(query), p=format_price(best["price"], lang), s=html.escape(best["store"]))
                     markup = types.InlineKeyboardMarkup()
-                    markup.add(types.InlineKeyboardButton(f"🛍 {best['store']} ga o'tish", url=best["url"]))
+                    markup.add(types.InlineKeyboardButton(bt(lang, "go_shop", s=best["store"]), url=best["url"]))
                     try:
                         bot.send_message(user_id, text, reply_markup=markup)
                         with db_lock:
@@ -637,7 +667,7 @@ def price_alert_worker():
         except Exception as e:
             print(f"[ALERT WORKER] xato: {e}")
 
-# --- WEB SERVER (MINI APP + XAVFSIZ API) ---
+# --- WEB SERVER ---
 class AppHandler(BaseHTTPRequestHandler):
     def _client_ip(self):
         fwd = self.headers.get("X-Forwarded-For", "")
@@ -668,7 +698,7 @@ class AppHandler(BaseHTTPRequestHandler):
 
         if path == "/api/search":
             if is_rate_limited(self._client_ip(), limit=20, window=60):
-                self._send_json({"error": "Juda ko'p so'rov. Biroz kuting.", "results": []}, 429)
+                self._send_json({"error": "Too many requests", "results": []}, 429)
                 return
             q = (parse_qs(parsed.query).get("q", [""])[0] or "").strip()[:80]
             if len(q) < 2:
@@ -690,7 +720,7 @@ class AppHandler(BaseHTTPRequestHandler):
         if path == "/api/alerts":
             uid = self._auth_user_id()
             if not uid:
-                self._send_json({"error": "Telegram autentifikatsiyasi talab qilinadi", "alerts": []}, 401)
+                self._send_json({"error": "Auth required", "alerts": []}, 401)
                 return
             with db_lock:
                 rows = conn.execute(
@@ -725,24 +755,24 @@ class AppHandler(BaseHTTPRequestHandler):
         try:
             length = int(self.headers.get("Content-Length", 0))
         except ValueError:
-            self._send_json({"ok": False, "error": "Noto'g'ri so'rov"}, 400)
+            self._send_json({"ok": False, "error": "Bad request"}, 400)
             return
         if length <= 0 or length > MAX_POST_BYTES:
-            self._send_json({"ok": False, "error": "So'rov hajmi ruxsat etilmagan"}, 413)
+            self._send_json({"ok": False, "error": "Payload too large"}, 413)
             return
 
         try:
             raw = self.rfile.read(length).decode("utf-8")
             data = json.loads(raw)
             if not isinstance(data, dict):
-                raise ValueError("JSON object kutilgan")
+                raise ValueError("JSON object expected")
         except Exception:
-            self._send_json({"ok": False, "error": "Noto'g'ri JSON"}, 400)
+            self._send_json({"ok": False, "error": "Invalid JSON"}, 400)
             return
 
         uid = self._auth_user_id()
         if not uid:
-            self._send_json({"ok": False, "error": "Telegram autentifikatsiyasi talab qilinadi"}, 401)
+            self._send_json({"ok": False, "error": "Auth required"}, 401)
             return
 
         if parsed.path == "/api/alert":
@@ -754,7 +784,7 @@ class AppHandler(BaseHTTPRequestHandler):
                 if image and not image.startswith(("http://", "https://")):
                     image = ""
                 if len(query) < 2 or not (1000 <= target_price <= 500000000):
-                    self._send_json({"ok": False, "error": "Narx yoki nom noto'g'ri"}, 400)
+                    self._send_json({"ok": False, "error": "Invalid data"}, 400)
                     return
                 with db_lock:
                     conn.execute(
@@ -762,33 +792,28 @@ class AppHandler(BaseHTTPRequestHandler):
                         (uid, query, target_price, max(0, current_price), image, int(time.time()))
                     )
                     conn.commit()
+                lang = get_user_lang(uid) or "uz"
                 try:
-                    bot.send_message(
-                        uid,
-                        f"🔔 <b>Narx kuzatish yoqildi!</b>\n\n"
-                        f"📦 <b>{html.escape(query)}</b>\n"
-                        f"🎯 Maqsad narx: <b>{format_price(target_price)}</b>\n\n"
-                        f"Narx shu summaga tushishi bilan sizga xabar beraman."
-                    )
+                    bot.send_message(uid, bt(lang, "alert_set", q=html.escape(query), p=format_price(target_price, lang)))
                 except Exception:
                     pass
                 self._send_json({"ok": True})
             except Exception:
-                self._send_json({"ok": False, "error": "Server xatosi"}, 500)
+                self._send_json({"ok": False, "error": "Server error"}, 500)
             return
 
         if parsed.path == "/api/alert/delete":
             try:
                 alert_id = int(data.get("id") or 0)
                 if alert_id <= 0:
-                    self._send_json({"ok": False, "error": "ID noto'g'ri"}, 400)
+                    self._send_json({"ok": False, "error": "Invalid ID"}, 400)
                     return
                 with db_lock:
                     conn.execute("DELETE FROM price_alerts WHERE id = ? AND user_id = ?", (alert_id, uid))
                     conn.commit()
                 self._send_json({"ok": True})
             except Exception:
-                self._send_json({"ok": False, "error": "Server xatosi"}, 500)
+                self._send_json({"ok": False, "error": "Server error"}, 500)
             return
 
         self.send_response(404)
@@ -801,13 +826,28 @@ def run_web_server():
     port = int(os.environ.get("PORT", 10000))
     ThreadingHTTPServer(("0.0.0.0", port), AppHandler).serve_forever()
 
-# --- IXCHAM BOT MENYUSI ---
-def main_menu():
+# --- BOT MENYULARI ---
+def main_menu(lang="uz"):
     markup = types.ReplyKeyboardMarkup(resize_keyboard=True)
-    markup.row(types.KeyboardButton("📱 Ilovani ochish (Arzoni Bor)", web_app=types.WebAppInfo(url=WEBAPP_URL)))
-    markup.row("💵 Kurslar (USD/BTC)", "🔔 Kuzatuvlarim")
-    markup.row("ℹ️ Yordam / Aloqa")
+    markup.row(bt(lang, "btn_open"))
+    markup.row(bt(lang, "btn_rates"), bt(lang, "btn_alerts"))
+    markup.row(bt(lang, "btn_help"))
     return markup
+
+def open_app_inline(query=None, lang="uz"):
+    url = f"{WEBAPP_URL}/?q={quote_plus(query)}&lang={lang}" if query else f"{WEBAPP_URL}/?lang={lang}"
+    label = bt(lang, "inline_search", q=query[:25]) if query else bt(lang, "inline_open")
+    markup = types.InlineKeyboardMarkup()
+    markup.add(types.InlineKeyboardButton(label, web_app=types.WebAppInfo(url=url)))
+    return markup
+
+def send_lang_picker(chat_id):
+    markup = types.InlineKeyboardMarkup(row_width=2)
+    markup.add(
+        types.InlineKeyboardButton("🇺🇿 O'zbekcha", callback_data="setlang:uz"),
+        types.InlineKeyboardButton("🇷🇺 Русский", callback_data="setlang:ru")
+    )
+    bot.send_message(chat_id, "🌐 <b>Tilni tanlang / Выберите язык:</b>", reply_markup=markup)
 
 @bot.message_handler(commands=["setgroup"])
 def set_group_cmd(message):
@@ -839,84 +879,119 @@ def admin_reply_handler(message):
     except Exception as e:
         bot.reply_to(message, f"❌ Xato: {html.escape(str(e))}")
 
+@bot.message_handler(commands=["lang"])
+def lang_cmd(message):
+    if message.chat.type != "private":
+        return
+    send_lang_picker(message.chat.id)
+
 @bot.message_handler(commands=["start"])
 def start_cmd(message):
     if message.chat.type != "private":
         return
     set_waiting_admin(message.from_user.id, False)
-    if not require_sub(message):
+    lang = get_user_lang(message.from_user.id)
+    if not lang:
+        send_lang_picker(message.chat.id)
         return
-    text = (
-        "👋 <b>Arzoni Bor</b> ilovasiga xush kelibsiz!\n\n"
-        "O'zbekiston do'konlaridagi mahsulotlarning <b>rasmi, narxi, muddatli to'lovi va yetkazib berish shartlarini</b> bir joyda solishtiring.\n\n"
-        "📱 Boshlash uchun pastdagi <b>«Ilovani ochish»</b> tugmasini bosing 👇"
-    )
-    bot.send_message(message.chat.id, text, reply_markup=main_menu())
+    if not require_sub(message, lang):
+        return
+    bot.send_message(message.chat.id, bt(lang, "welcome"), reply_markup=main_menu(lang))
+    bot.send_message(message.chat.id, bt(lang, "open_hint"), reply_markup=open_app_inline(lang=lang))
 
 @bot.message_handler(commands=["cancel"])
 def cancel_cmd(message):
     if message.chat.type != "private":
         return
     set_waiting_admin(message.from_user.id, False)
-    bot.send_message(message.chat.id, "Asosiy menyu:", reply_markup=main_menu())
+    lang = get_user_lang(message.from_user.id) or "uz"
+    bot.send_message(message.chat.id, bt(lang, "welcome"), reply_markup=main_menu(lang))
 
-@bot.message_handler(func=lambda m: m.chat.type == "private" and m.text and "Kurslar" in m.text)
+@bot.message_handler(func=lambda m: m.chat.type == "private" and m.text and ("Ilovani ochish" in m.text or "Открыть приложение" in m.text))
+def open_app_cmd(message):
+    set_waiting_admin(message.from_user.id, False)
+    lang = get_user_lang(message.from_user.id) or "uz"
+    if not require_sub(message, lang):
+        return
+    bot.send_message(message.chat.id, bt(lang, "open_hint"), reply_markup=open_app_inline(lang=lang))
+
+@bot.message_handler(func=lambda m: m.chat.type == "private" and m.text and ("Kurslar" in m.text or "Курсы" in m.text))
 def rates_cmd(message):
     set_waiting_admin(message.from_user.id, False)
-    if not require_sub(message):
+    lang = get_user_lang(message.from_user.id) or "uz"
+    if not require_sub(message, lang):
         return
-    text, markup = get_rates_text()
+    text, markup = get_rates_text(lang)
     bot.send_message(message.chat.id, text, reply_markup=markup, disable_web_page_preview=True)
 
-@bot.message_handler(func=lambda m: m.chat.type == "private" and m.text and "Kuzatuvlarim" in m.text)
+@bot.message_handler(func=lambda m: m.chat.type == "private" and m.text and ("Kuzatuvlarim" in m.text or "Отслеживания" in m.text))
 def show_alerts(message):
     set_waiting_admin(message.from_user.id, False)
-    if not require_sub(message):
+    lang = get_user_lang(message.from_user.id) or "uz"
+    if not require_sub(message, lang):
         return
     with db_lock:
         rows = conn.execute("SELECT id, query, target_price FROM price_alerts WHERE user_id = ? ORDER BY id DESC", (message.from_user.id,)).fetchall()
     if not rows:
-        bot.send_message(message.chat.id, "🔔 Hozircha faol kuzatuvlaringiz yo'q.\n\nIlovani ochib istalgan mahsulotda <b>«Kuzatish»</b> tugmasini bosing.")
+        bot.send_message(message.chat.id, bt(lang, "no_alerts"), reply_markup=open_app_inline(lang=lang))
         return
     markup = types.InlineKeyboardMarkup()
     for row_id, q, target in rows:
-        app_link = f"{WEBAPP_URL}/?q={quote_plus(q)}"
+        app_link = f"{WEBAPP_URL}/?q={quote_plus(q)}&lang={lang}"
         markup.row(
-            types.InlineKeyboardButton(f"🔔 {q} (≤ {format_price(target)})", web_app=types.WebAppInfo(url=app_link)),
+            types.InlineKeyboardButton(f"🔔 {q} (≤ {format_price(target, lang)})", web_app=types.WebAppInfo(url=app_link)),
             types.InlineKeyboardButton("❌", callback_data=f"delalert:{row_id}")
         )
-    bot.send_message(message.chat.id, "🔔 <b>Faol narx kuzatuvlaringiz:</b>", reply_markup=markup)
+    bot.send_message(message.chat.id, bt(lang, "my_alerts"), reply_markup=markup)
 
-@bot.message_handler(func=lambda m: m.chat.type == "private" and m.text and "Yordam / Aloqa" in m.text)
+@bot.message_handler(func=lambda m: m.chat.type == "private" and m.text and ("Yordam" in m.text or "Помощь" in m.text))
 def help_cmd(message):
     set_waiting_admin(message.from_user.id, False)
-    text = "ℹ️ <b>Yordam va Aloqa</b>\n\nSavol yoki taklifingiz bo'lsa, quyidagi tugma orqali adminga yozing 👇"
+    lang = get_user_lang(message.from_user.id) or "uz"
     markup = types.InlineKeyboardMarkup()
-    markup.add(types.InlineKeyboardButton("✍️ Adminga yozish", callback_data="contact_admin"))
-    bot.send_message(message.chat.id, text, reply_markup=markup)
+    markup.add(types.InlineKeyboardButton(bt(lang, "contact_btn"), callback_data="contact_admin"))
+    bot.send_message(message.chat.id, bt(lang, "help_text"), reply_markup=markup)
 
 @bot.callback_query_handler(func=lambda call: True)
 def handle_callbacks(call):
+    if call.data.startswith("setlang:"):
+        lang = call.data.split(":", 1)[1]
+        set_user_lang(call.from_user.id, lang)
+        bot.answer_callback_query(call.id, "✅")
+        try:
+            bot.delete_message(call.message.chat.id, call.message.message_id)
+        except Exception:
+            pass
+        not_joined = check_subscription(call.from_user.id)
+        if not_joined:
+            send_sub_message(call.message.chat.id, not_joined, lang)
+        else:
+            bot.send_message(call.message.chat.id, bt(lang, "welcome"), reply_markup=main_menu(lang))
+            bot.send_message(call.message.chat.id, bt(lang, "open_hint"), reply_markup=open_app_inline(lang=lang))
+        return
+
+    lang = get_user_lang(call.from_user.id) or "uz"
     if call.data == "check_sub":
         not_joined = check_subscription(call.from_user.id)
         if not_joined:
-            bot.answer_callback_query(call.id, "❌ Hali barcha kanallarga obuna bo'lmadingiz!", show_alert=True)
+            bot.answer_callback_query(call.id, bt(lang, "sub_fail"), show_alert=True)
         else:
-            bot.answer_callback_query(call.id, "✅ Rahmat!")
+            bot.answer_callback_query(call.id, "✅")
             try:
                 bot.delete_message(call.message.chat.id, call.message.message_id)
             except Exception:
                 pass
-            bot.send_message(call.message.chat.id, "Xush kelibsiz! Pastdagi tugma orqali ilovani oching 👇", reply_markup=main_menu())
+            bot.send_message(call.message.chat.id, bt(lang, "sub_ok"), reply_markup=main_menu(lang))
+            bot.send_message(call.message.chat.id, bt(lang, "open_hint"), reply_markup=open_app_inline(lang=lang))
     elif call.data == "contact_admin":
         bot.answer_callback_query(call.id)
         set_waiting_admin(call.from_user.id, True)
-        bot.send_message(call.message.chat.id, "✍️ Xabaringizni yozing (bekor qilish: /cancel):")
+        bot.send_message(call.message.chat.id, bt(lang, "write_msg"))
     elif call.data.startswith("delalert:"):
         with db_lock:
             conn.execute("DELETE FROM price_alerts WHERE id = ? AND user_id = ?", (int(call.data.split("delalert:", 1)[1]), call.from_user.id))
             conn.commit()
-        bot.answer_callback_query(call.id, "🗑 O'chirildi")
+        bot.answer_callback_query(call.id, "🗑")
         try:
             bot.delete_message(call.message.chat.id, call.message.message_id)
         except Exception:
@@ -925,6 +1000,7 @@ def handle_callbacks(call):
 @bot.message_handler(func=lambda m: m.chat.type == "private")
 def handle_text(message):
     user = message.from_user
+    lang = get_user_lang(user.id) or "uz"
     text = (message.text or "").strip()
     if is_waiting_admin(user.id):
         set_waiting_admin(user.id, False)
@@ -937,25 +1013,22 @@ def handle_text(message):
             with db_lock:
                 conn.execute("INSERT OR REPLACE INTO support_messages (admin_msg_id, user_id) VALUES (?, ?)", (sent.message_id, user.id))
                 conn.commit()
-            bot.send_message(message.chat.id, "✅ Xabaringiz yuborildi!", reply_markup=main_menu())
+            bot.send_message(message.chat.id, bt(lang, "sent_ok"), reply_markup=main_menu(lang))
         except Exception as e:
             print(f"[SUPPORT] xato: {e}")
-            bot.send_message(message.chat.id, "❌ Xabar yuborilmadi.", reply_markup=main_menu())
+            bot.send_message(message.chat.id, bt(lang, "sent_err"), reply_markup=main_menu(lang))
         return
 
-    if not require_sub(message):
+    if not require_sub(message, lang):
         return
     if len(text) < 2:
-        bot.send_message(message.chat.id, "Mahsulot nomini to'liqroq yozing yoki ilovani oching 👇", reply_markup=main_menu())
+        bot.send_message(message.chat.id, bt(lang, "short_q"), reply_markup=open_app_inline(lang=lang))
         return
 
-    app_link = f"{WEBAPP_URL}/?q={quote_plus(text)}"
-    markup = types.InlineKeyboardMarkup()
-    markup.add(types.InlineKeyboardButton(f"🔍 «{text[:25]}» — ilovada ko'rish", web_app=types.WebAppInfo(url=app_link)))
     bot.send_message(
         message.chat.id,
-        f"📦 <b>{html.escape(text)}</b>\n\nRasmi, narxlari va muddatli to'lovini ko'rish uchun tugmani bosing 👇",
-        reply_markup=markup
+        bt(lang, "search_hint", q=html.escape(text)),
+        reply_markup=open_app_inline(text, lang=lang)
     )
 
 if __name__ == "__main__":
