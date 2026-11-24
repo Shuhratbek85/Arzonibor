@@ -1,5 +1,6 @@
 import re
 import time
+import threading
 from concurrent.futures import ThreadPoolExecutor
 from urllib.parse import quote_plus
 import requests
@@ -17,8 +18,19 @@ ACCESSORY_WORDS = (
 )
 
 CACHE = {}
-CACHE_TTL = 6 * 3600
+CACHE_TTL = 2 * 3600  # 2 soat
 MAX_CACHE_ITEMS = 300
+debug_lock = threading.Lock()
+cache_lock = threading.Lock()
+
+
+def set_debug(debug, store, key, val):
+    if debug is None:
+        return
+    with debug_lock:
+        if store not in debug:
+            debug[store] = {}
+        debug[store][key] = val
 
 
 def parse_monthly_price(raw_val, full_price):
@@ -70,13 +82,11 @@ def fetch_texnomart(query, debug=None):
     try:
         url = f"https://gw.texnomart.uz/api/common/v1/search/result?q={quote_plus(query)}"
         r = requests.get(url, headers={**HEADERS, "Accept": "application/json"}, timeout=7)
-        if debug is not None:
-            debug["Texnomart"] = {"status": r.status_code}
+        set_debug(debug, "Texnomart", "status", r.status_code)
         if r.status_code != 200:
             return None
         products = r.json().get("data", {}).get("products", [])
-        if debug is not None:
-            debug["Texnomart"]["raw_count"] = len(products)
+        set_debug(debug, "Texnomart", "raw_count", len(products))
         best = None
         for p in products:
             if str(p.get("availability", "")).lower() in ("outofstock", "none", "0"):
@@ -96,8 +106,7 @@ def fetch_texnomart(query, debug=None):
                 }
         return best
     except Exception as e:
-        if debug is not None:
-            debug["Texnomart"] = {"error": str(e)[:100]}
+        set_debug(debug, "Texnomart", "error", str(e)[:100])
         return None
 
 
@@ -106,14 +115,12 @@ def fetch_idea(query, debug=None):
     try:
         url = f"https://api.idea.uz/api/v2/products?q={quote_plus(query)}&per_page=15"
         r = requests.get(url, headers={**HEADERS, "Accept": "application/json", "Origin": "https://idea.uz", "Referer": "https://idea.uz/"}, timeout=7)
-        if debug is not None:
-            debug["Idea"] = {"status": r.status_code}
+        set_debug(debug, "Idea", "status", r.status_code)
         if r.status_code != 200:
             return None
         raw = r.json().get("data", [])
         products = raw if isinstance(raw, list) else raw.get("data", [])
-        if debug is not None:
-            debug["Idea"]["raw_count"] = len(products)
+        set_debug(debug, "Idea", "raw_count", len(products))
         best = None
         for p in products:
             title = p.get("title_name") or p.get("name") or p.get("title") or ""
@@ -132,8 +139,7 @@ def fetch_idea(query, debug=None):
                 }
         return best
     except Exception as e:
-        if debug is not None:
-            debug["Idea"] = {"error": str(e)[:100]}
+        set_debug(debug, "Idea", "error", str(e)[:100])
         return None
 
 
@@ -142,13 +148,11 @@ def fetch_olcha(query, debug=None):
     try:
         url = f"https://api.olcha.uz/api/v2/products?search={quote_plus(query)}&per_page=15"
         r = requests.get(url, headers={**HEADERS, "Accept": "application/json", "Origin": "https://olcha.uz", "Referer": "https://olcha.uz/"}, timeout=7)
-        if debug is not None:
-            debug["Olcha"] = {"status": r.status_code}
+        set_debug(debug, "Olcha", "status", r.status_code)
         if r.status_code != 200:
             return None
         products = r.json().get("data", {}).get("products", [])
-        if debug is not None:
-            debug["Olcha"]["raw_count"] = len(products)
+        set_debug(debug, "Olcha", "raw_count", len(products))
         best = None
         for p in products:
             if p.get("out_of_stock") is True or p.get("in_stock") is False:
@@ -168,8 +172,7 @@ def fetch_olcha(query, debug=None):
                 }
         return best
     except Exception as e:
-        if debug is not None:
-            debug["Olcha"] = {"error": str(e)[:100]}
+        set_debug(debug, "Olcha", "error", str(e)[:100])
         return None
 
 
@@ -178,14 +181,12 @@ def fetch_asaxiy(query, debug=None):
     try:
         url = f"https://asaxiy.uz/product?key={quote_plus(query)}"
         r = requests.get(url, headers=HEADERS, timeout=8)
-        if debug is not None:
-            debug["Asaxiy"] = {"status": r.status_code}
+        set_debug(debug, "Asaxiy", "status", r.status_code)
         if r.status_code != 200:
             return None
         soup = BeautifulSoup(r.text, "html.parser")
         cards = soup.select(".product__item")[:15]
-        if debug is not None:
-            debug["Asaxiy"]["raw_count"] = len(cards)
+        set_debug(debug, "Asaxiy", "raw_count", len(cards))
         best = None
         for card in cards:
             title_el = card.select_one(".product__item__info-title")
@@ -211,8 +212,7 @@ def fetch_asaxiy(query, debug=None):
                 }
         return best
     except Exception as e:
-        if debug is not None:
-            debug["Asaxiy"] = {"error": str(e)[:100]}
+        set_debug(debug, "Asaxiy", "error", str(e)[:100])
         return None
 
 
@@ -231,13 +231,11 @@ def fetch_uzum(query, debug=None):
             "query": gql
         }
         r = requests.post(gql_url, json=payload, headers=headers, timeout=7)
-        if debug is not None:
-            debug["Uzum"] = {"status": r.status_code}
+        set_debug(debug, "Uzum", "status", r.status_code)
         if r.status_code != 200:
             return None
         items = r.json().get("data", {}).get("makeSearch", {}).get("items", [])
-        if debug is not None:
-            debug["Uzum"]["raw_count"] = len(items)
+        set_debug(debug, "Uzum", "raw_count", len(items))
         best = None
         for item in items:
             card = item.get("catalogCard") or {}
@@ -256,8 +254,7 @@ def fetch_uzum(query, debug=None):
                 }
         return best
     except Exception as e:
-        if debug is not None:
-            debug["Uzum"] = {"error": str(e)[:100]}
+        set_debug(debug, "Uzum", "error", str(e)[:100])
         return None
 
 
@@ -266,14 +263,12 @@ def fetch_mediapark(query, debug=None):
     try:
         url = f"https://api.client.mediapark.uz/v1/products/search?search={quote_plus(query)}&per_page=15"
         r = requests.get(url, headers={**HEADERS, "Accept": "application/json", "Origin": "https://mediapark.uz", "Referer": "https://mediapark.uz/"}, timeout=7)
-        if debug is not None:
-            debug["Mediapark"] = {"status": r.status_code}
+        set_debug(debug, "Mediapark", "status", r.status_code)
         if r.status_code != 200:
             return None
         data = r.json()
         products = data.get("data", []) if isinstance(data.get("data"), list) else data.get("data", {}).get("products", [])
-        if debug is not None:
-            debug["Mediapark"]["raw_count"] = len(products)
+        set_debug(debug, "Mediapark", "raw_count", len(products))
         best = None
         for p in products:
             title = p.get("name") or p.get("title") or ""
@@ -290,8 +285,7 @@ def fetch_mediapark(query, debug=None):
                 }
         return best
     except Exception as e:
-        if debug is not None:
-            debug["Mediapark"] = {"error": str(e)[:100]}
+        set_debug(debug, "Mediapark", "error", str(e)[:100])
         return None
 
 
@@ -300,14 +294,12 @@ def fetch_alifshop(query, debug=None):
     try:
         url = f"https://gw.alifshop.uz/web/client/search/full-text?query={quote_plus(query)}&page=1&per_page=15"
         r = requests.get(url, headers={**HEADERS, "Accept": "application/json", "Origin": "https://alifshop.uz", "Referer": "https://alifshop.uz/"}, timeout=7)
-        if debug is not None:
-            debug["AlifShop"] = {"status": r.status_code}
+        set_debug(debug, "AlifShop", "status", r.status_code)
         if r.status_code != 200:
             return None
         data = r.json()
         products = data.get("offers") or data.get("data") or []
-        if debug is not None:
-            debug["AlifShop"]["raw_count"] = len(products)
+        set_debug(debug, "AlifShop", "raw_count", len(products))
         best = None
         for p in products:
             title = p.get("name") or p.get("title") or ""
@@ -325,8 +317,7 @@ def fetch_alifshop(query, debug=None):
                 }
         return best
     except Exception as e:
-        if debug is not None:
-            debug["AlifShop"] = {"error": str(e)[:100]}
+        set_debug(debug, "AlifShop", "error", str(e)[:100])
         return None
 
 
@@ -335,14 +326,12 @@ def fetch_openshop(query, debug=None):
     try:
         url = f"https://openshop.uz/search?search={quote_plus(query)}"
         r = requests.get(url, headers=HEADERS, timeout=7)
-        if debug is not None:
-            debug["Openshop"] = {"status": r.status_code}
+        set_debug(debug, "Openshop", "status", r.status_code)
         if r.status_code != 200:
             return None
         soup = BeautifulSoup(r.text, "html.parser")
         cards = soup.select(".product-card, .product-item, .product")[:15]
-        if debug is not None:
-            debug["Openshop"]["raw_count"] = len(cards)
+        set_debug(debug, "Openshop", "raw_count", len(cards))
         best = None
         for card in cards:
             title_el = card.select_one("a[title], .product-title, .title, h3, h4")
@@ -367,8 +356,7 @@ def fetch_openshop(query, debug=None):
                 }
         return best
     except Exception as e:
-        if debug is not None:
-            debug["Openshop"] = {"error": str(e)[:100]}
+        set_debug(debug, "Openshop", "error", str(e)[:100])
         return None
 
 
@@ -377,14 +365,12 @@ def fetch_elmakon(query, debug=None):
     try:
         url = f"https://elmakon.uz/?subcats=Y&pcode_from_q=Y&pshort=Y&pfull=Y&pname=Y&pkeywords=Y&search_performed=Y&q={quote_plus(query)}&dispatch=products.search"
         r = requests.get(url, headers=HEADERS, timeout=7)
-        if debug is not None:
-            debug["Elmakon"] = {"status": r.status_code}
+        set_debug(debug, "Elmakon", "status", r.status_code)
         if r.status_code != 200:
             return None
         soup = BeautifulSoup(r.text, "html.parser")
         cards = soup.select(".ty-grid-list__item")[:15]
-        if debug is not None:
-            debug["Elmakon"]["raw_count"] = len(cards)
+        set_debug(debug, "Elmakon", "raw_count", len(cards))
         best = None
         for card in cards:
             title_el = card.select_one(".product-title")
@@ -405,8 +391,7 @@ def fetch_elmakon(query, debug=None):
                 }
         return best
     except Exception as e:
-        if debug is not None:
-            debug["Elmakon"] = {"error": str(e)[:100]}
+        set_debug(debug, "Elmakon", "error", str(e)[:100])
         return None
 
 
@@ -415,14 +400,12 @@ def fetch_goodzone(query, debug=None):
     try:
         url = f"https://goodzone.uz/search?q={quote_plus(query)}"
         r = requests.get(url, headers=HEADERS, timeout=7)
-        if debug is not None:
-            debug["Goodzone"] = {"status": r.status_code}
+        set_debug(debug, "Goodzone", "status", r.status_code)
         if r.status_code != 200:
             return None
         soup = BeautifulSoup(r.text, "html.parser")
         cards = soup.select(".product-card, .card")[:15]
-        if debug is not None:
-            debug["Goodzone"]["raw_count"] = len(cards)
+        set_debug(debug, "Goodzone", "raw_count", len(cards))
         best = None
         for card in cards:
             title_el = card.select_one("a[title], .title, h3, h4")
@@ -445,8 +428,7 @@ def fetch_goodzone(query, debug=None):
                 }
         return best
     except Exception as e:
-        if debug is not None:
-            debug["Goodzone"] = {"error": str(e)[:100]}
+        set_debug(debug, "Goodzone", "error", str(e)[:100])
         return None
 
 
@@ -455,14 +437,12 @@ def fetch_radius(query, debug=None):
     try:
         url = f"https://radius.uz/search?q={quote_plus(query)}"
         r = requests.get(url, headers=HEADERS, timeout=7)
-        if debug is not None:
-            debug["Radius"] = {"status": r.status_code}
+        set_debug(debug, "Radius", "status", r.status_code)
         if r.status_code != 200:
             return None
         soup = BeautifulSoup(r.text, "html.parser")
         cards = soup.select(".product-card, .product-item")[:15]
-        if debug is not None:
-            debug["Radius"]["raw_count"] = len(cards)
+        set_debug(debug, "Radius", "raw_count", len(cards))
         best = None
         for card in cards:
             title_el = card.select_one("a[title], .product-title, .title")
@@ -485,8 +465,7 @@ def fetch_radius(query, debug=None):
                 }
         return best
     except Exception as e:
-        if debug is not None:
-            debug["Radius"] = {"error": str(e)[:100]}
+        set_debug(debug, "Radius", "error", str(e)[:100])
         return None
 
 
@@ -495,14 +474,12 @@ def fetch_creditasia(query, debug=None):
     try:
         url = f"https://creditasia.uz/search/?q={quote_plus(query)}"
         r = requests.get(url, headers=HEADERS, timeout=7)
-        if debug is not None:
-            debug["CreditAsia"] = {"status": r.status_code}
+        set_debug(debug, "CreditAsia", "status", r.status_code)
         if r.status_code != 200:
             return None
         soup = BeautifulSoup(r.text, "html.parser")
         cards = soup.select(".product-card, .catalog-item, .item")[:15]
-        if debug is not None:
-            debug["CreditAsia"]["raw_count"] = len(cards)
+        set_debug(debug, "CreditAsia", "raw_count", len(cards))
         best = None
         for card in cards:
             title_el = card.select_one(".item-title, .product-title, a[title]")
@@ -527,8 +504,7 @@ def fetch_creditasia(query, debug=None):
                 }
         return best
     except Exception as e:
-        if debug is not None:
-            debug["CreditAsia"] = {"error": str(e)[:100]}
+        set_debug(debug, "CreditAsia", "error", str(e)[:100])
         return None
 
 
@@ -537,14 +513,12 @@ def fetch_ishonch(query, debug=None):
     try:
         url = f"https://ishonchsavdo.uz/search?q={quote_plus(query)}"
         r = requests.get(url, headers=HEADERS, timeout=7)
-        if debug is not None:
-            debug["Ishonch"] = {"status": r.status_code}
+        set_debug(debug, "Ishonch", "status", r.status_code)
         if r.status_code != 200:
             return None
         soup = BeautifulSoup(r.text, "html.parser")
         cards = soup.select(".product-card, .product-item")[:15]
-        if debug is not None:
-            debug["Ishonch"]["raw_count"] = len(cards)
+        set_debug(debug, "Ishonch", "raw_count", len(cards))
         best = None
         for card in cards:
             title_el = card.select_one(".product-title, .title, a[title]")
@@ -567,8 +541,7 @@ def fetch_ishonch(query, debug=None):
                 }
         return best
     except Exception as e:
-        if debug is not None:
-            debug["Ishonch"] = {"error": str(e)[:100]}
+        set_debug(debug, "Ishonch", "error", str(e)[:100])
         return None
 
 
@@ -596,11 +569,14 @@ def search_prices(query, bypass_cache=False, debug_info=None, on_best_price=None
     norm_q = normalize_query(query)
     key = norm_q.lower().strip()
     now = time.time()
-    if not bypass_cache and debug_info is None and key in CACHE and (now - CACHE[key]["time"] < CACHE_TTL):
-        return CACHE[key]["data"]
+    if not bypass_cache and debug_info is None:
+        with cache_lock:
+            cached = CACHE.get(key)
+            if cached and (now - cached["time"] < CACHE_TTL):
+                return cached["data"]
 
     results = []
-    with ThreadPoolExecutor(max_workers=len(ALL_FETCHERS)) as executor:
+    with ThreadPoolExecutor(max_workers=6) as executor:
         futures = [executor.submit(fn, norm_q, debug_info) for fn in ALL_FETCHERS]
         for f in futures:
             res = f.result()
@@ -618,8 +594,9 @@ def search_prices(query, bypass_cache=False, debug_info=None, on_best_price=None
     if results and debug_info is None:
         if on_best_price:
             on_best_price(query, results[0]["price"])
-        if len(CACHE) >= MAX_CACHE_ITEMS:
-            CACHE.clear()
-        CACHE[key] = {"time": now, "data": results}
+        with cache_lock:
+            if len(CACHE) >= MAX_CACHE_ITEMS:
+                CACHE.clear()
+            CACHE[key] = {"time": now, "data": results}
 
     return results
