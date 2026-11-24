@@ -13,7 +13,7 @@
     }
     * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
     body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background: var(--bg); color: var(--text); padding-bottom: 78px; overflow-x: hidden; font-size: 13.5px; -webkit-font-smoothing: antialiased; }
-    .header { background: linear-gradient(180deg, var(--navy) 0%, #0D2640 72%, var(--bg) 100%); padding: 12px 14px 14px; position: sticky; top: 0; z-index: 20; }
+    .header { background: linear-gradient(180deg, var(--navy) 0%, #0D2640 72%, var(--bg) 100%); padding: 12px 14px 14px; position: sticky; top: 0; z-index: 30; }
     .brand-row { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; }
     .brand { font-size: 18px; font-weight: 600; letter-spacing: -0.2px; color: #fff; cursor: pointer; }
     .brand span { color: var(--orange); }
@@ -26,6 +26,21 @@
     .search-input:focus { border-color: var(--orange); }
     .search-actions { position: absolute; right: 5px; display: flex; align-items: center; gap: 2px; }
     .icon-btn { width: 38px; height: 38px; border: none; background: transparent; color: var(--muted); display: flex; align-items: center; justify-content: center; cursor: pointer; }
+
+    /* AUTOCOMPLETE DROPDOWN */
+    .suggest-box {
+      position: absolute; top: 50px; left: 0; right: 0;
+      background: #1B222C; border: 1px solid var(--border); border-radius: 11px;
+      box-shadow: 0 12px 28px rgba(0,0,0,0.55); z-index: 60; overflow: hidden;
+    }
+    .suggest-item {
+      display: flex; align-items: center; gap: 10px; padding: 11px 14px;
+      border-bottom: 1px solid var(--border); cursor: pointer; font-size: 13.5px; color: var(--text);
+    }
+    .suggest-item:last-child { border-bottom: none; }
+    .suggest-item:active { background: var(--surface-2); }
+    .suggest-icon { color: var(--muted); font-size: 13px; flex-shrink: 0; }
+
     .page-top { padding: 16px 14px 6px; font-size: 19px; font-weight: 600; color: var(--text); }
     .ticker-bar { display: flex; gap: 7px; overflow-x: auto; padding: 2px 14px 12px; scrollbar-width: none; }
     .ticker-bar::-webkit-scrollbar { display: none; }
@@ -186,6 +201,7 @@
           </button>
         </div>
         <input id="cameraFileInput" type="file" accept="image/*" capture="environment" class="hidden" />
+        <div id="suggestBox" class="suggest-box hidden"></div>
       </form>
     </header>
     <div class="ticker-bar">
@@ -394,6 +410,17 @@
       }
     }
 
+    const LOCAL_MODELS = [
+      "iPhone 16 Pro", "iPhone 16 Pro Max", "iPhone 16", "iPhone 15 Pro", "iPhone 15", "iPhone 14", "iPhone 13",
+      "Samsung Galaxy S24 Ultra", "Samsung Galaxy S24", "Samsung Galaxy A55", "Samsung Galaxy A35", "Samsung Galaxy A15",
+      "Redmi Note 13", "Redmi Note 13 Pro", "Redmi Note 14", "Redmi 13C", "Redmi 14C", "Xiaomi 14", "Poco X6 Pro",
+      "Honor X9b", "Honor 200", "Infinix Note 40", "Tecno Camon 30",
+      "MacBook Air M2", "MacBook Air M3", "Asus VivoBook", "Lenovo IdeaPad", "HP Pavilion",
+      "AirPods Pro 2", "AirPods 4", "Apple Watch Series 9", "PlayStation 5", "PlayStation 5 Slim",
+      "Artel 43 televizor", "Samsung 55 televizor", "Artel konditsioner 12", "Gree konditsioner 12",
+      "LG kir yuvish mashinasi", "Artel muzlatgich", "Dyson changyutgich"
+    ];
+
     const I18N = {
       uz: {
         live: "Jonli narxlar", search_ph: "Mahsulot qidirish (iPhone, Redmi...)",
@@ -465,6 +492,7 @@
     let currentQuery = "";
     let currentResults = [];
     let toastTimer = null;
+    let suggestTimer = null;
 
     function escapeHtml(s) { return String(s || "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c])); }
     function formatPrice(n) { return Number(n || 0).toLocaleString("ru-RU") + " " + t("sum"); }
@@ -479,7 +507,45 @@
       toastTimer = setTimeout(() => el.classList.remove("show"), 2600);
     }
 
+    // AUTOCOMPLETE LOGIC
+    const searchInputEl = document.getElementById("searchInput");
+    const suggestBoxEl = document.getElementById("suggestBox");
+
+    function hideSuggestions() { suggestBoxEl.classList.add("hidden"); }
+    function renderSuggestions(list) {
+      if (!list.length) { hideSuggestions(); return; }
+      suggestBoxEl.innerHTML = list.slice(0, 7).map(s => `
+        <div class="suggest-item" data-action="search" data-query="${escapeHtml(s)}">
+          <span class="suggest-icon">🔍</span>
+          <span>${escapeHtml(s)}</span>
+        </div>
+      `).join("");
+      suggestBoxEl.classList.remove("hidden");
+    }
+
+    searchInputEl.addEventListener("input", () => {
+      const q = searchInputEl.value.trim();
+      if (q.length < 1) { hideSuggestions(); return; }
+      const low = q.toLowerCase();
+      const localHits = LOCAL_MODELS.filter(m => m.toLowerCase().includes(low));
+      if (localHits.length) renderSuggestions(localHits);
+
+      clearTimeout(suggestTimer);
+      if (q.length >= 2) {
+        suggestTimer = setTimeout(async () => {
+          try {
+            const res = await fetch(`/api/suggest?q=${encodeURIComponent(q)}`);
+            const d = await res.json();
+            if (searchInputEl.value.trim() === q && d.suggestions && d.suggestions.length) {
+              renderSuggestions(d.suggestions);
+            }
+          } catch {}
+        }, 220);
+      }
+    });
+
     document.addEventListener("click", (e) => {
+      if (!e.target.closest("#searchForm")) hideSuggestions();
       const el = e.target.closest("[data-action]");
       if (!el) return;
       const act = el.dataset.action;
@@ -498,7 +564,7 @@
       if (act === "back-home") { backToHome(); return; }
       if (act === "camera") { document.getElementById("cameraFileInput").click(); return; }
       if (act === "clear-history") { clearHistory(); return; }
-      if (act === "search") { closeDetail(); runSearch(el.dataset.query); return; }
+      if (act === "search") { hideSuggestions(); closeDetail(); runSearch(el.dataset.query); return; }
       if (act === "sort") { sortResults(el.dataset.dir); return; }
       if (act === "switch-tab") { switchTab(el.dataset.tab, true); return; }
       if (act === "open-url") { e.stopPropagation(); openExternal(el.dataset.url); return; }
@@ -532,9 +598,9 @@
       home: document.getElementById("tab-home"), products: document.getElementById("tab-products"),
       favs: document.getElementById("tab-favs"), alerts: document.getElementById("tab-alerts"), profile: document.getElementById("tab-profile"),
     };
-    function goHomeClean() { closeDetail(); closeAlertModal(); backToHome(); switchTab("home", false); }
+    function goHomeClean() { hideSuggestions(); closeDetail(); closeAlertModal(); backToHome(); switchTab("home", false); }
     function switchTab(name, resetHome = true) {
-      closeDetail(); closeAlertModal();
+      hideSuggestions(); closeDetail(); closeAlertModal();
       document.getElementById("homeTopArea").classList.toggle("hidden", name !== "home");
       tabs.forEach(t => t.classList.toggle("active", t.dataset.tab === name));
       Object.entries(sections).forEach(([k, el]) => el.classList.toggle("hidden", k !== name));
@@ -636,9 +702,11 @@
     async function runSearch(query) {
       query = (query || "").trim();
       if (query.length < 2) return;
+      hideSuggestions();
       switchTab("home", false);
       currentQuery = query;
-      document.getElementById("searchInput").value = query;
+      searchInputEl.value = query;
+      searchInputEl.blur();
       document.getElementById("homeDashboard").classList.add("hidden");
       document.getElementById("searchResultsWrap").classList.remove("hidden");
       document.getElementById("searchHeading").textContent = `«${query}»`;
@@ -889,7 +957,7 @@
       } catch {}
     }
 
-    document.getElementById("searchForm").addEventListener("submit", e => { e.preventDefault(); runSearch(document.getElementById("searchInput").value); });
+    document.getElementById("searchForm").addEventListener("submit", e => { e.preventDefault(); runSearch(searchInputEl.value); });
 
     applyLang();
     fetchRates();
@@ -898,4 +966,4 @@
     if (initialQ) runSearch(initialQ);
   </script>
 </body>
-  </html>
+</html>
