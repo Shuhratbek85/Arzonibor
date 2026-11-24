@@ -1,12 +1,15 @@
 import os
 import re
+import hmac
+import html
 import json
 import time
-import html
+import hashlib
 import sqlite3
 import threading
+from collections import defaultdict
 from concurrent.futures import ThreadPoolExecutor
-from urllib.parse import quote_plus, urlparse, parse_qs
+from urllib.parse import quote_plus, urlparse, parse_qs, parse_qsl
 from http.server import ThreadingHTTPServer, BaseHTTPRequestHandler
 import requests
 from bs4 import BeautifulSoup
@@ -24,6 +27,7 @@ bot = telebot.TeleBot(TOKEN, parse_mode="HTML")
 ADMIN_ID = 565834132
 ENV_SUPPORT_GROUP_ID = os.environ.get("SUPPORT_GROUP_ID")
 WEBAPP_URL = "https://arzonibor-ywla.onrender.com"
+MAX_POST_BYTES = 16384  # 16 KB
 CHANNELS = [
     {"username": "@mrtexnoai", "url": "https://t.me/mrtexnoai"},
     {"username": "@arzoniboragent", "url": "https://t.me/arzoniboragent"},
@@ -42,6 +46,47 @@ ACCESSORY_WORDS = (
     "держатель", "holder", "stiker", "стикер", "stativ", "штатив", "linza",
     "линза", "batareya", "батарея", "akkumulyator", "аккумулятор"
 )
+
+# --- RATE LIMITER (IP bo'yicha) ---
+rate_lock = threading.Lock()
+rate_buckets = defaultdict(list)
+
+def is_rate_limited(ip, limit=20, window=60):
+    now = time.time()
+    with rate_lock:
+        recent = [t for t in rate_buckets[ip] if now - t < window]
+        if len(recent) >= limit:
+            rate_buckets[ip] = recent
+            return True
+        recent.append(now)
+        rate_buckets[ip] = recent
+        return False
+
+# --- TELEGRAM MINI APP INITDATA TEKSHIRUVI (HMAC-SHA256) ---
+def verify_telegram_init_data(init_data):
+    if not init_data or len(init_data) > 4096:
+        return None
+    try:
+        parsed = dict(parse_qsl(init_data, strict_parsing=True))
+        received_hash = parsed.pop("hash", None)
+        if not received_hash:
+            return None
+        auth_date = int(parsed.get("auth_date", 0))
+        if abs(time.time() - auth_date) > 86400:
+            return None
+        data_check_string = "\n".join(f"{k}={v}" for k, v in sorted(parsed.items()))
+        secret_key = hmac.new(b"WebAppData", TOKEN.encode("utf-8"), hashlib.sha256).digest()
+        calc_hash = hmac.new(secret_key, data_check_string.encode("utf-8"), hashlib.sha256).hexdigest()
+        if not hmac.compare_digest(calc_hash, received_hash):
+            return None
+        user_json = parsed.get("user")
+        if not user_json:
+            return None
+        user_obj = json.loads(user_json)
+        uid = int(user_obj.get("id", 0))
+        return uid if uid > 0 else None
+    except Exception:
+        return None
 
 # --- MA'LUMOTLAR BAZASI ---
 db_lock = threading.Lock()
@@ -162,7 +207,6 @@ def clean_title(title):
     return t[:110] + ("..." if len(t) > 110 else "")
 
 def parse_monthly_price(raw_val, full_price):
-    # Matndan faqat birinchi oylik summani ajratib olish ("161 700 so'm / 24 oy" -> 161700)
     if isinstance(raw_val, (int, float)) and 1000 <= raw_val < full_price:
         return int(raw_val)
     text = str(raw_val or "").strip()
@@ -194,7 +238,7 @@ def is_relevant_product(query, title):
                 return False
     return True
 
-# --- MAJBURIY OBUNA (KANAL NOMISIZ) ---
+# --- MAJBURIY OBUNA ---
 def check_subscription(user_id):
     not_joined = []
     for ch in CHANNELS:
@@ -546,7 +590,6 @@ def search_prices(query, bypass_cache=False):
     results.sort(key=lambda x: x["price"])
     results = results[:8]
 
-    # Rasm topilmasa zaxira rasm qidiruvidan olish
     main_img = next((r["image"] for r in results if r.get("image")), "")
     if results and not main_img:
         main_img = fetch_fallback_image(query)
@@ -594,21 +637,39 @@ def price_alert_worker():
         except Exception as e:
             print(f"[ALERT WORKER] xato: {e}")
 
-# --- WEB SERVER (MINI APP + API) ---
+# --- WEB SERVER (MINI APP + XAVFSIZ API) ---
 class AppHandler(BaseHTTPRequestHandler):
+    def _client_ip(self):
+        fwd = self.headers.get("X-Forwarded-For", "")
+        if fwd:
+            return fwd.split(",")[0].strip()
+        return self.client_address[0]
+
     def _send_json(self, data, status=200):
         body = json.dumps(data, ensure_ascii=False).encode("utf-8")
         self.send_response(status)
         self.send_header("Content-Type", "application/json; charset=utf-8")
         self.send_header("Cache-Control", "no-store")
+        self.send_header("X-Content-Type-Options", "nosniff")
         self.end_headers()
         self.wfile.write(body)
+
+    def _auth_user_id(self):
+        init_data = self.headers.get("X-Telegram-Init-Data", "")
+        return verify_telegram_init_data(init_data)
 
     def do_GET(self):
         parsed = urlparse(self.path)
         path = parsed.path
 
+        if path == "/health":
+            self._send_json({"status": "ok"})
+            return
+
         if path == "/api/search":
+            if is_rate_limited(self._client_ip(), limit=20, window=60):
+                self._send_json({"error": "Juda ko'p so'rov. Biroz kuting.", "results": []}, 429)
+                return
             q = (parse_qs(parsed.query).get("q", [""])[0] or "").strip()[:80]
             if len(q) < 2:
                 self._send_json({"query": q, "results": []})
@@ -627,11 +688,10 @@ class AppHandler(BaseHTTPRequestHandler):
             return
 
         if path == "/api/alerts":
-            uid = parse_qs(parsed.query).get("user_id", ["0"])[0]
-            try:
-                uid = int(uid)
-            except ValueError:
-                uid = 0
+            uid = self._auth_user_id()
+            if not uid:
+                self._send_json({"error": "Telegram autentifikatsiyasi talab qilinadi", "alerts": []}, 401)
+                return
             with db_lock:
                 rows = conn.execute(
                     "SELECT id, query, target_price, current_price, image FROM price_alerts WHERE user_id = ? ORDER BY id DESC",
@@ -647,6 +707,7 @@ class AppHandler(BaseHTTPRequestHandler):
                     content = f.read().encode("utf-8")
                 self.send_response(200)
                 self.send_header("Content-Type", "text/html; charset=utf-8")
+                self.send_header("X-Content-Type-Options", "nosniff")
                 self.end_headers()
                 self.wfile.write(content)
             except FileNotFoundError:
@@ -661,29 +722,49 @@ class AppHandler(BaseHTTPRequestHandler):
 
     def do_POST(self):
         parsed = urlparse(self.path)
-        length = int(self.headers.get("Content-Length", 0))
-        raw = self.rfile.read(length).decode("utf-8") if length else "{}"
+        try:
+            length = int(self.headers.get("Content-Length", 0))
+        except ValueError:
+            self._send_json({"ok": False, "error": "Noto'g'ri so'rov"}, 400)
+            return
+        if length <= 0 or length > MAX_POST_BYTES:
+            self._send_json({"ok": False, "error": "So'rov hajmi ruxsat etilmagan"}, 413)
+            return
+
+        try:
+            raw = self.rfile.read(length).decode("utf-8")
+            data = json.loads(raw)
+            if not isinstance(data, dict):
+                raise ValueError("JSON object kutilgan")
+        except Exception:
+            self._send_json({"ok": False, "error": "Noto'g'ri JSON"}, 400)
+            return
+
+        uid = self._auth_user_id()
+        if not uid:
+            self._send_json({"ok": False, "error": "Telegram autentifikatsiyasi talab qilinadi"}, 401)
+            return
 
         if parsed.path == "/api/alert":
             try:
-                data = json.loads(raw)
-                user_id = int(data.get("user_id") or 0)
-                query = (data.get("query") or "").strip()[:80]
+                query = str(data.get("query") or "").strip()[:80]
                 target_price = int(data.get("target_price") or 0)
                 current_price = int(data.get("current_price") or 0)
-                image = (data.get("image") or "").strip()[:300]
-                if not user_id or not query or target_price <= 0:
-                    self._send_json({"ok": False, "error": "Ma'lumot to'liq emas"}, 400)
+                image = str(data.get("image") or "").strip()[:300]
+                if image and not image.startswith(("http://", "https://")):
+                    image = ""
+                if len(query) < 2 or not (1000 <= target_price <= 500000000):
+                    self._send_json({"ok": False, "error": "Narx yoki nom noto'g'ri"}, 400)
                     return
                 with db_lock:
                     conn.execute(
                         "INSERT OR REPLACE INTO price_alerts (user_id, query, target_price, current_price, image, created_at) VALUES (?, ?, ?, ?, ?, ?)",
-                        (user_id, query, target_price, current_price, image, int(time.time()))
+                        (uid, query, target_price, max(0, current_price), image, int(time.time()))
                     )
                     conn.commit()
                 try:
                     bot.send_message(
-                        user_id,
+                        uid,
                         f"🔔 <b>Narx kuzatish yoqildi!</b>\n\n"
                         f"📦 <b>{html.escape(query)}</b>\n"
                         f"🎯 Maqsad narx: <b>{format_price(target_price)}</b>\n\n"
@@ -692,21 +773,22 @@ class AppHandler(BaseHTTPRequestHandler):
                 except Exception:
                     pass
                 self._send_json({"ok": True})
-            except Exception as e:
-                self._send_json({"ok": False, "error": str(e)}, 500)
+            except Exception:
+                self._send_json({"ok": False, "error": "Server xatosi"}, 500)
             return
 
         if parsed.path == "/api/alert/delete":
             try:
-                data = json.loads(raw)
-                user_id = int(data.get("user_id") or 0)
                 alert_id = int(data.get("id") or 0)
+                if alert_id <= 0:
+                    self._send_json({"ok": False, "error": "ID noto'g'ri"}, 400)
+                    return
                 with db_lock:
-                    conn.execute("DELETE FROM price_alerts WHERE id = ? AND user_id = ?", (alert_id, user_id))
+                    conn.execute("DELETE FROM price_alerts WHERE id = ? AND user_id = ?", (alert_id, uid))
                     conn.commit()
                 self._send_json({"ok": True})
-            except Exception as e:
-                self._send_json({"ok": False, "error": str(e)}, 500)
+            except Exception:
+                self._send_json({"ok": False, "error": "Server xatosi"}, 500)
             return
 
         self.send_response(404)
