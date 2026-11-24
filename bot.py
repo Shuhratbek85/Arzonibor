@@ -47,6 +47,40 @@ ACCESSORY_WORDS = (
     "линза", "batareya", "батарея", "akkumulyator", "аккумулятор"
 )
 
+QUERY_SYNONYMS = {
+    "ayfon": "iphone", "айфон": "iphone", "ifone": "iphone",
+    "samsung": "samsung", "самсунг": "samsung",
+    "redmi": "redmi", "редми": "redmi", "xiaomi": "xiaomi", "сяоми": "xiaomi",
+    "televizor": "телевизор", "tevizor": "телевизор", "tv": "телевизор",
+    "noutbuk": "ноутбук", "laptop": "ноутбук", "makbuk": "macbook", "макбук": "macbook",
+    "konditsioner": "кондиционер", "kanditsioner": "кондиционер",
+    "muzlatgich": "холодильник", "xolodilnik": "холодильник",
+    "kir yuvish": "стиральная машина", "avtomat": "стиральная машина",
+    "changyutgich": "пылесос", "pilesos": "пылесос",
+    "quloqchin": "наушники", "naushnik": "наушники", "airpods": "airpods",
+    "soat": "смарт часы", "playstation": "playstation", "ps5": "playstation 5",
+}
+
+POPULAR_SUGGESTIONS = [
+    "iPhone 16 Pro", "iPhone 16 Pro Max", "iPhone 16", "iPhone 15 Pro", "iPhone 15", "iPhone 14", "iPhone 13",
+    "Samsung Galaxy S24 Ultra", "Samsung Galaxy S24", "Samsung Galaxy A55", "Samsung Galaxy A35", "Samsung Galaxy A15",
+    "Redmi Note 13", "Redmi Note 13 Pro", "Redmi Note 14", "Redmi 13C", "Redmi 14C", "Xiaomi 14", "Poco X6 Pro",
+    "Honor X9b", "Honor 200", "Infinix Note 40", "Tecno Camon 30",
+    "MacBook Air M2", "MacBook Air M3", "MacBook Pro M3", "Asus VivoBook", "Lenovo IdeaPad", "HP Pavilion", "Acer Aspire",
+    "AirPods Pro 2", "AirPods 4", "Apple Watch Series 9", "Apple Watch Ultra 2", "Samsung Galaxy Watch 6",
+    "PlayStation 5", "PlayStation 5 Slim", "Xbox Series S", "Nintendo Switch",
+    "Artel 43 televizor", "Samsung 55 televizor", "LG 50 televizor", "Xiaomi TV A Pro 43",
+    "Artel konditsioner 12", "Gree konditsioner 12", "Midea konditsioner 12",
+    "LG kir yuvish mashinasi", "Artel muzlatgich", "Samsung muzlatgich", "Dyson changyutgich"
+]
+
+def normalize_query(q):
+    low = re.sub(r"\s+", " ", (q or "").strip().lower())
+    for k, v in QUERY_SYNONYMS.items():
+        if k in low:
+            low = re.sub(rf"\b{re.escape(k)}\b", v, low)
+    return low.strip()
+
 # --- BOT TARJIMALARI (UZ / RU) ---
 BOT_TEXT = {
     "uz": {
@@ -124,7 +158,7 @@ def bt(lang, key, **kwargs):
 rate_lock = threading.Lock()
 rate_buckets = defaultdict(list)
 
-def is_rate_limited(ip, limit=20, window=60):
+def is_rate_limited(ip, limit=30, window=60):
     now = time.time()
     with rate_lock:
         recent = [t for t in rate_buckets[ip] if now - t < window]
@@ -260,13 +294,6 @@ MAX_CACHE_ITEMS = 300
 RATES_CACHE = {"time": 0, "data": {}}
 RATES_TTL = 300
 
-STORES = {
-    "Uzum Market": {"domain": "uzum.uz", "search_url": "https://uzum.uz/uz/search?query={q}"},
-    "Olcha": {"domain": "olcha.uz", "search_url": "https://olcha.uz/uz/search?q={q}"},
-    "Texnomart": {"domain": "texnomart.uz", "search_url": "https://texnomart.uz/uz/search/?q={q}"},
-    "Asaxiy": {"domain": "asaxiy.uz", "search_url": "https://asaxiy.uz/product?key={q}"},
-}
-
 def format_price(price, lang="uz"):
     return f"{int(price):,}".replace(",", " ") + " " + bt(lang, "sum")
 
@@ -286,7 +313,7 @@ def parse_monthly_price(raw_val, full_price):
     return round(full_price / 12)
 
 def is_relevant_product(query, title):
-    q_low = (query or "").lower().strip()
+    q_low = normalize_query(query)
     t_low = (title or "").lower().strip()
     if not t_low:
         return False
@@ -296,15 +323,16 @@ def is_relevant_product(query, title):
     q_tokens = [w for w in re.findall(r"[a-zA-Zа-яА-Я0-9]+", q_low) if len(w) > 1 or w.isdigit()]
     if not q_tokens:
         return True
-    t_tokens = set(re.findall(r"[a-zA-Zа-яА-Я0-9]+", t_low))
+    matched = 0
     for tok in q_tokens:
         if tok.isdigit():
             if not re.search(rf"(?<![0-9.,]){re.escape(tok)}(?![0-9.,])", t_low):
                 return False
+            matched += 1
         else:
-            if tok not in t_tokens and tok not in t_low:
-                return False
-    return True
+            if tok in t_low or (len(tok) >= 4 and tok[:4] in t_low):
+                matched += 1
+    return matched >= max(1, len(q_tokens) - (1 if len(q_tokens) >= 3 else 0))
 
 # --- MAJBURIY OBUNA ---
 def check_subscription(user_id):
@@ -384,14 +412,18 @@ def get_rates_text(lang="uz"):
     markup.add(types.InlineKeyboardButton(bt(lang, "bank_btn"), url="https://bank.uz/uz/currency"))
     return "\n".join(lines), markup
 
-# --- FAQAT REAL DO'KONLARDAN QIDIRISH ---
-def fetch_olcha(query):
+# --- 7 TA REAL DO'KONDAN QIDIRISH ---
+def fetch_olcha(query, debug=None):
     try:
         url = f"https://api.olcha.uz/api/v2/products?search={quote_plus(query)}&per_page=15"
-        r = requests.get(url, headers={**HEADERS, "Accept": "application/json"}, timeout=7)
+        r = requests.get(url, headers={**HEADERS, "Accept": "application/json", "Origin": "https://olcha.uz", "Referer": "https://olcha.uz/"}, timeout=7)
+        if debug is not None:
+            debug["Olcha"] = {"status": r.status_code}
         if r.status_code != 200:
             return None
         products = r.json().get("data", {}).get("products", [])
+        if debug is not None:
+            debug["Olcha"]["raw_count"] = len(products)
         best = None
         for p in products:
             if p.get("out_of_stock") is True or p.get("in_stock") is False:
@@ -408,19 +440,25 @@ def fetch_olcha(query):
                 best = {
                     "store": "Olcha", "price": price, "monthly": monthly,
                     "delivery": "O'zbekiston bo'ylab yetkazish", "image": img, "title": clean_title(title),
-                    "url": f"https://olcha.uz/uz/product/view/{alias}" if alias else STORES["Olcha"]["search_url"].format(q=quote_plus(query))
+                    "url": f"https://olcha.uz/uz/product/view/{alias}" if alias else f"https://olcha.uz/uz/search?q={quote_plus(query)}"
                 }
         return best
-    except Exception:
+    except Exception as e:
+        if debug is not None:
+            debug["Olcha"] = {"error": str(e)[:120]}
         return None
 
-def fetch_texnomart(query):
+def fetch_texnomart(query, debug=None):
     try:
         url = f"https://gw.texnomart.uz/api/common/v1/search/result?q={quote_plus(query)}"
         r = requests.get(url, headers={**HEADERS, "Accept": "application/json"}, timeout=7)
+        if debug is not None:
+            debug["Texnomart"] = {"status": r.status_code}
         if r.status_code != 200:
             return None
         products = r.json().get("data", {}).get("products", [])
+        if debug is not None:
+            debug["Texnomart"]["raw_count"] = len(products)
         best = None
         for p in products:
             if str(p.get("availability", "")).lower() in ("outofstock", "none", "0"):
@@ -437,21 +475,28 @@ def fetch_texnomart(query):
                 best = {
                     "store": "Texnomart", "price": price, "monthly": monthly,
                     "delivery": "Kuryer / Do'kondan olib ketish", "image": img, "title": clean_title(title),
-                    "url": f"https://texnomart.uz/uz/product/detail/{pid}" if pid else STORES["Texnomart"]["search_url"].format(q=quote_plus(query))
+                    "url": f"https://texnomart.uz/uz/product/detail/{pid}" if pid else f"https://texnomart.uz/uz/search/?q={quote_plus(query)}"
                 }
         return best
-    except Exception:
+    except Exception as e:
+        if debug is not None:
+            debug["Texnomart"] = {"error": str(e)[:120]}
         return None
 
-def fetch_asaxiy(query):
+def fetch_asaxiy(query, debug=None):
     try:
         url = f"https://asaxiy.uz/product?key={quote_plus(query)}"
         r = requests.get(url, headers=HEADERS, timeout=8)
+        if debug is not None:
+            debug["Asaxiy"] = {"status": r.status_code}
         if r.status_code != 200:
             return None
         soup = BeautifulSoup(r.text, "html.parser")
+        cards = soup.select(".product__item")[:15]
+        if debug is not None:
+            debug["Asaxiy"]["raw_count"] = len(cards)
         best = None
-        for card in soup.select(".product__item")[:15]:
+        for card in cards:
             title_el = card.select_one(".product__item__info-title")
             price_el = card.select_one(".product__item-price")
             link_el = card.select_one("a[href*='/product/']")
@@ -477,54 +522,152 @@ def fetch_asaxiy(query):
                     "delivery": "O'zbekiston bo'ylab yetkazish", "image": img, "title": clean_title(title), "url": full_url
                 }
         return best
-    except Exception:
+    except Exception as e:
+        if debug is not None:
+            debug["Asaxiy"] = {"error": str(e)[:120]}
         return None
 
-def fetch_uzum(query):
+def fetch_uzum(query, debug=None):
     gql_url = "https://graphql.uzum.uz/"
     headers = {
         **HEADERS, "Content-Type": "application/json", "Origin": "https://uzum.uz", "Referer": "https://uzum.uz/",
         "apollographql-client-name": "web-customers", "apollographql-client-version": "1.0.0",
     }
-    queries = [
-        "query getMakeSearch($queryInput: MakeSearchQueryInput!) { makeSearch(query: $queryInput) { items { catalogCard { productId title minSellPrice photos { key } } } } }",
-        "query getMakeSearch($queryInput: MakeSearchQueryInput!) { makeSearch(query: $queryInput) { items { catalogCard { productId title minSellPrice } } } }"
-    ]
-    for gql in queries:
-        try:
-            payload = {
-                "operationName": "getMakeSearch",
-                "variables": {"queryInput": {"text": query, "showAdultContent": "NONE", "filters": [], "sort": "BY_RELEVANCE_DESC", "pagination": {"offset": 0, "limit": 15}}},
-                "query": gql
-            }
-            r = requests.post(gql_url, json=payload, headers=headers, timeout=7)
-            if r.status_code != 200:
+    gql = "query getMakeSearch($queryInput: MakeSearchQueryInput!) { makeSearch(query: $queryInput) { items { catalogCard { productId title minSellPrice photos { key } } } } }"
+    try:
+        payload = {
+            "operationName": "getMakeSearch",
+            "variables": {"queryInput": {"text": query, "showAdultContent": "NONE", "filters": [], "sort": "BY_RELEVANCE_DESC", "pagination": {"offset": 0, "limit": 15}}},
+            "query": gql
+        }
+        r = requests.post(gql_url, json=payload, headers=headers, timeout=7)
+        if debug is not None:
+            debug["Uzum"] = {"status": r.status_code}
+        if r.status_code != 200:
+            return None
+        items = r.json().get("data", {}).get("makeSearch", {}).get("items", [])
+        if debug is not None:
+            debug["Uzum"]["raw_count"] = len(items)
+        best = None
+        for item in items:
+            card = item.get("catalogCard") or {}
+            title = card.get("title", "")
+            price = card.get("minSellPrice") or 0
+            pid = card.get("productId", "")
+            if not price or not is_relevant_product(query, title):
                 continue
-            items = r.json().get("data", {}).get("makeSearch", {}).get("items", [])
-            if not items:
+            price = int(price)
+            photos = card.get("photos") or []
+            img = f"https://images.uzum.uz/{photos[0]['key']}/t_product_540_high.jpg" if photos and photos[0].get("key") else ""
+            if best is None or price < best["price"]:
+                best = {
+                    "store": "Uzum Market", "price": price, "monthly": round(price / 12),
+                    "delivery": "1 kunda bepul (punktga)", "image": img, "title": clean_title(title),
+                    "url": f"https://uzum.uz/uz/product/{pid}" if pid else f"https://uzum.uz/uz/search?query={quote_plus(query)}"
+                }
+        return best
+    except Exception as e:
+        if debug is not None:
+            debug["Uzum"] = {"error": str(e)[:120]}
+        return None
+
+def fetch_mediapark(query, debug=None):
+    try:
+        url = f"https://api.client.mediapark.uz/v1/products/search?search={quote_plus(query)}&per_page=15"
+        r = requests.get(url, headers={**HEADERS, "Accept": "application/json", "Origin": "https://mediapark.uz", "Referer": "https://mediapark.uz/"}, timeout=7)
+        if debug is not None:
+            debug["Mediapark"] = {"status": r.status_code}
+        if r.status_code != 200:
+            return None
+        data = r.json()
+        products = data.get("data", []) if isinstance(data.get("data"), list) else data.get("data", {}).get("products", [])
+        if debug is not None:
+            debug["Mediapark"]["raw_count"] = len(products)
+        best = None
+        for p in products:
+            title = p.get("name") or p.get("title") or ""
+            price = p.get("price") or p.get("actual_price") or 0
+            if not price or not is_relevant_product(query, title):
                 continue
-            best = None
-            for item in items:
-                card = item.get("catalogCard") or {}
-                title = card.get("title", "")
-                price = card.get("minSellPrice") or 0
-                pid = card.get("productId", "")
-                if not price or not is_relevant_product(query, title):
-                    continue
-                price = int(price)
-                photos = card.get("photos") or []
-                img = f"https://images.uzum.uz/{photos[0]['key']}/t_product_540_high.jpg" if photos and photos[0].get("key") else ""
-                if best is None or price < best["price"]:
-                    best = {
-                        "store": "Uzum Market", "price": price, "monthly": round(price / 12),
-                        "delivery": "1 kunda bepul (punktga)", "image": img, "title": clean_title(title),
-                        "url": f"https://uzum.uz/uz/product/{pid}" if pid else STORES["Uzum Market"]["search_url"].format(q=quote_plus(query))
-                    }
-            if best:
-                return best
-        except Exception:
-            continue
-    return None
+            price = int(price)
+            slug = p.get("slug") or p.get("id") or ""
+            img = p.get("image") or p.get("main_image") or ""
+            if best is None or price < best["price"]:
+                best = {
+                    "store": "Mediapark", "price": price, "monthly": round(price / 12),
+                    "delivery": "Kuryer / Do'kondan olib ketish", "image": img, "title": clean_title(title),
+                    "url": f"https://mediapark.uz/products/view/{slug}" if slug else f"https://mediapark.uz/search?search={quote_plus(query)}"
+                }
+        return best
+    except Exception as e:
+        if debug is not None:
+            debug["Mediapark"] = {"error": str(e)[:120]}
+        return None
+
+def fetch_idea(query, debug=None):
+    try:
+        url = f"https://api.idea.uz/api/v2/products?q={quote_plus(query)}&per_page=15"
+        r = requests.get(url, headers={**HEADERS, "Accept": "application/json", "Origin": "https://idea.uz", "Referer": "https://idea.uz/"}, timeout=7)
+        if debug is not None:
+            debug["Idea"] = {"status": r.status_code}
+        if r.status_code != 200:
+            return None
+        products = r.json().get("data", [])
+        if debug is not None:
+            debug["Idea"]["raw_count"] = len(products)
+        best = None
+        for p in products:
+            title = p.get("title_name") or p.get("name") or ""
+            price = p.get("current_price") or p.get("price") or 0
+            if not price or not is_relevant_product(query, title):
+                continue
+            price = int(price)
+            slug = p.get("slug") or p.get("id") or ""
+            img = p.get("img") or p.get("image") or ""
+            if best is None or price < best["price"]:
+                best = {
+                    "store": "Idea.uz", "price": price, "monthly": round(price / 12),
+                    "delivery": "Kuryer / Do'kondan olib ketish", "image": img, "title": clean_title(title),
+                    "url": f"https://idea.uz/product/{slug}" if slug else f"https://idea.uz/search?q={quote_plus(query)}"
+                }
+        return best
+    except Exception as e:
+        if debug is not None:
+            debug["Idea"] = {"error": str(e)[:120]}
+        return None
+
+def fetch_alifshop(query, debug=None):
+    try:
+        url = f"https://gw.alifshop.uz/web/client/search/full-text?query={quote_plus(query)}&page=1&per_page=15"
+        r = requests.get(url, headers={**HEADERS, "Accept": "application/json", "Origin": "https://alifshop.uz", "Referer": "https://alifshop.uz/"}, timeout=7)
+        if debug is not None:
+            debug["AlifShop"] = {"status": r.status_code}
+        if r.status_code != 200:
+            return None
+        data = r.json()
+        products = data.get("offers") or data.get("data") or []
+        if debug is not None:
+            debug["AlifShop"]["raw_count"] = len(products)
+        best = None
+        for p in products:
+            title = p.get("name") or p.get("title") or ""
+            raw_price = p.get("price") or 0
+            price = int(raw_price / 100) if raw_price > 1000000000 else int(raw_price)
+            if not price or not is_relevant_product(query, title):
+                continue
+            slug = p.get("slug") or ""
+            img = p.get("image_url") or p.get("image") or ""
+            if best is None or price < best["price"]:
+                best = {
+                    "store": "AlifShop", "price": price, "monthly": round(price / 12),
+                    "delivery": "O'zbekiston bo'ylab yetkazish", "image": img, "title": clean_title(title),
+                    "url": f"https://alifshop.uz/uz/moderated-offer/{slug}" if slug else f"https://alifshop.uz/uz/search?query={quote_plus(query)}"
+                }
+        return best
+    except Exception as e:
+        if debug is not None:
+            debug["AlifShop"] = {"error": str(e)[:120]}
+        return None
 
 def fetch_fallback_image(query):
     try:
@@ -538,16 +681,18 @@ def fetch_fallback_image(query):
         pass
     return ""
 
-def search_prices(query, bypass_cache=False):
-    key = query.lower().strip()
+def search_prices(query, bypass_cache=False, debug_info=None):
+    norm_q = normalize_query(query)
+    key = norm_q.lower().strip()
     now = time.time()
-    if not bypass_cache and key in CACHE and (now - CACHE[key]["time"] < CACHE_TTL):
+    if not bypass_cache and debug_info is None and key in CACHE and (now - CACHE[key]["time"] < CACHE_TTL):
         return CACHE[key]["data"]
 
-    fetchers = [fetch_olcha, fetch_texnomart, fetch_asaxiy, fetch_uzum]
+    fetchers = [fetch_olcha, fetch_texnomart, fetch_asaxiy, fetch_uzum, fetch_mediapark, fetch_idea, fetch_alifshop]
     results = []
-    with ThreadPoolExecutor(max_workers=4) as executor:
-        for f in [executor.submit(fn, query) for fn in fetchers]:
+    with ThreadPoolExecutor(max_workers=7) as executor:
+        futures = [executor.submit(fn, norm_q, debug_info) for fn in fetchers]
+        for f in futures:
             res = f.result()
             if res:
                 results.append(res)
@@ -555,17 +700,39 @@ def search_prices(query, bypass_cache=False):
     results.sort(key=lambda x: x["price"])
     main_img = next((r["image"] for r in results if r.get("image")), "")
     if results and not main_img:
-        main_img = fetch_fallback_image(query)
+        main_img = fetch_fallback_image(norm_q)
     for r in results:
         if not r.get("image"):
             r["image"] = main_img
 
-    if results:
+    if results and debug_info is None:
         save_price_history(query, results[0]["price"])
         if len(CACHE) >= MAX_CACHE_ITEMS:
             CACHE.clear()
         CACHE[key] = {"time": now, "data": results}
     return results
+
+def get_suggestions(q):
+    q_low = (q or "").strip().lower()
+    if not q_low:
+        return []
+    norm = normalize_query(q_low)
+    matches = []
+    for item in POPULAR_SUGGESTIONS:
+        il = item.lower()
+        if q_low in il or norm in il:
+            matches.append(item)
+    if len(matches) < 6:
+        try:
+            r = requests.get(f"https://gw.texnomart.uz/api/common/v1/search/result?q={quote_plus(norm)}", headers=HEADERS, timeout=2.5)
+            if r.status_code == 200:
+                for p in r.json().get("data", {}).get("products", [])[:6]:
+                    name = clean_title(p.get("name", ""))
+                    if name and name not in matches:
+                        matches.append(name)
+        except Exception:
+            pass
+    return matches[:8]
 
 # --- NARX KUZATISH (ORQA FONDA) ---
 def price_alert_worker():
@@ -621,8 +788,20 @@ class AppHandler(BaseHTTPRequestHandler):
             self._send_json({"status": "ok"})
             return
 
+        if path == "/api/debug":
+            q = (parse_qs(parsed.query).get("q", ["iphone 16"])[0] or "iphone 16").strip()[:60]
+            dbg = {}
+            res = search_prices(q, bypass_cache=True, debug_info=dbg)
+            self._send_json({"query": q, "normalized": normalize_query(q), "found_stores": [r["store"] for r in res], "debug": dbg})
+            return
+
+        if path == "/api/suggest":
+            q = (parse_qs(parsed.query).get("q", [""])[0] or "").strip()[:60]
+            self._send_json({"suggestions": get_suggestions(q)})
+            return
+
         if path == "/api/search":
-            if is_rate_limited(self._client_ip(), limit=20, window=60):
+            if is_rate_limited(self._client_ip(), limit=30, window=60):
                 self._send_json({"error": "Too many requests", "results": []}, 429)
                 return
             q = (parse_qs(parsed.query).get("q", [""])[0] or "").strip()[:80]
