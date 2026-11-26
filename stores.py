@@ -57,7 +57,7 @@ def to_int_price(val):
 
 def is_relevant_product(query, title):
     q_low = normalize_query(query)
-    t_low = (title or "").lower().strip()
+    t_low = normalize_query(title).lower().strip()
     if not t_low:
         return False
     if not any(w in q_low for w in ACCESSORY_WORDS):
