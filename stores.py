@@ -1,12 +1,15 @@
 import re
 import time
 import threading
+import logging
 from concurrent.futures import ThreadPoolExecutor
 from urllib.parse import quote_plus
 import requests
 from bs4 import BeautifulSoup
 from ddgs import DDGS
 from suggest import HEADERS, normalize_query, clean_title
+
+logger = logging.getLogger(__name__)
 
 ACCESSORY_WORDS = (
     "chexol", "чехол", "case", "g'ilof", "gilof", "oyna", "стекло", "glass",
@@ -577,9 +580,13 @@ def search_prices(query, bypass_cache=False, debug_info=None, on_best_price=None
 
     results = []
     with ThreadPoolExecutor(max_workers=6) as executor:
-        futures = [executor.submit(fn, norm_q, debug_info) for fn in ALL_FETCHERS]
-        for f in futures:
-            res = f.result()
+        futures = {executor.submit(fn, norm_q, debug_info): fn for fn in ALL_FETCHERS}
+        for future, fetcher in futures.items():
+            try:
+                res = future.result()
+            except Exception:
+                logger.exception("Store fetcher %s failed for query %r", fetcher.__name__, norm_q)
+                continue
             if res:
                 results.append(res)
 
