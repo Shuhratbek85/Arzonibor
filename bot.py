@@ -1,4 +1,5 @@
 import os
+import re
 import hmac
 import html
 import json
@@ -282,6 +283,39 @@ def get_rates_text(lang="uz"):
     markup.add(types.InlineKeyboardButton(bt(lang, "bank_btn"), url="https://bank.uz/uz/currency"))
     return "\n".join(lines), markup
 
+BANK_RATES_CACHE = {"time": 0, "data": {}}
+def fetch_bank_rates():
+    now = time.time()
+    if BANK_RATES_CACHE["data"] and (now - BANK_RATES_CACHE["time"] < 900):
+        return BANK_RATES_CACHE["data"]
+    data = {c: {"buy": [], "sell": []} for c in ("usd", "eur", "rub")}
+    try:
+        r = requests.get("https://bank.uz/uz/currency", headers=HEADERS, timeout=10)
+        if r.status_code == 200:
+            page = r.text
+            for ccy in ("USD", "EUR", "RUB"):
+                m_block = re.search(rf'id=["\']best_course_{ccy}["\'](.*?)(?:id=["\']best_course_|</section>)', page, re.S | re.I)
+                chunk = m_block.group(1) if m_block else ""
+                if not chunk:
+                    continue
+                parts = re.split(r'Sotish|Продажа', chunk, maxsplit=1, flags=re.I)
+                buy_html = parts[0]
+                sell_html = parts[1] if len(parts) > 1 else ""
+                pair_re = re.compile(r'class=["\'][^"\']*medium-text[^"\']*["\'][^>]*>\s*([^<]+?)\s*</[^>]+>.*?(\d[\d\s]{2,10})\s*so', re.S | re.I)
+                for bank_name, price_str in pair_re.findall(buy_html):
+                    p = int(re.sub(r"\D", "", price_str))
+                    if p > 0:
+                        data[ccy.lower()]["buy"].append({"bank": html.unescape(bank_name.strip()), "rate": p})
+                for bank_name, price_str in pair_re.findall(sell_html):
+                    p = int(re.sub(r"\D", "", price_str))
+                    if p > 0:
+                        data[ccy.lower()]["sell"].append({"bank": html.unescape(bank_name.strip()), "rate": p})
+            if any(data[c]["buy"] or data[c]["sell"] for c in data):
+                BANK_RATES_CACHE["time"], BANK_RATES_CACHE["data"] = now, data
+    except Exception:
+        pass
+    return data
+
 # --- NARX KUZATISH WORKER ---
 def price_alert_worker():
     while True:
@@ -357,6 +391,8 @@ class AppHandler(BaseHTTPRequestHandler):
             return self._send_json({"query": q, "results": search_prices(q, on_best_price=save_price_history)})
         if path == "/api/rates":
             return self._send_json(fetch_all_rates())
+        if path == "/api/bank-rates":
+            return self._send_json(fetch_bank_rates())
         if path == "/api/history":
             q = (parse_qs(parsed.query).get("q", [""])[0] or "").strip()[:80]
             return self._send_json({"query": q, "history": get_price_history(q)})
