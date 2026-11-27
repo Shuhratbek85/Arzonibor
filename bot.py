@@ -284,6 +284,23 @@ def get_rates_text(lang="uz"):
     return "\n".join(lines), markup
 
 BANK_RATES_CACHE = {"time": 0, "data": {}}
+def _extract_bank_pairs(section_html):
+    patterns = [
+        re.compile(r'<a[^>]*href=["\'][^"\']*bank[^"\']*["\'][^>]*>\s*([^<]{2,50}?)\s*</a>.*?(\d[\d\s]{2,10})\s*so', re.S | re.I),
+        re.compile(r'class=["\'][^"\']*medium-text[^"\']*["\'][^>]*>\s*([^<]{2,50}?)\s*</[^>]+>.*?(\d[\d\s]{2,10})\s*so', re.S | re.I),
+    ]
+    out, seen = [], set()
+    for pat in patterns:
+        for bank_name, price_str in pat.findall(section_html):
+            name = html.unescape(re.sub(r"<[^>]+>", "", bank_name)).strip()
+            p = int(re.sub(r"\D", "", price_str))
+            if name and p > 0 and name.lower() not in seen:
+                seen.add(name.lower())
+                out.append({"bank": name, "rate": p})
+        if out:
+            break
+    return out
+
 def fetch_bank_rates():
     now = time.time()
     if BANK_RATES_CACHE["data"] and (now - BANK_RATES_CACHE["time"] < 900):
@@ -294,26 +311,23 @@ def fetch_bank_rates():
         if r.status_code == 200:
             page = r.text
             for ccy in ("USD", "EUR", "RUB"):
-                m_block = re.search(rf'id=["\']best_course_{ccy}["\'](.*?)(?:id=["\']best_course_|</section>)', page, re.S | re.I)
+                m_block = re.search(rf'id=["\']best_course_{ccy}["\'](.*?)(?:id=["\']best_course_|</section>|$)', page, re.S | re.I)
                 chunk = m_block.group(1) if m_block else ""
                 if not chunk:
                     continue
                 parts = re.split(r'Sotish|Продажа', chunk, maxsplit=1, flags=re.I)
                 buy_html = parts[0]
                 sell_html = parts[1] if len(parts) > 1 else ""
-                pair_re = re.compile(r'class=["\'][^"\']*medium-text[^"\']*["\'][^>]*>\s*([^<]+?)\s*</[^>]+>.*?(\d[\d\s]{2,10})\s*so', re.S | re.I)
-                for bank_name, price_str in pair_re.findall(buy_html):
-                    p = int(re.sub(r"\D", "", price_str))
-                    if p > 0:
-                        data[ccy.lower()]["buy"].append({"bank": html.unescape(bank_name.strip()), "rate": p})
-                for bank_name, price_str in pair_re.findall(sell_html):
-                    p = int(re.sub(r"\D", "", price_str))
-                    if p > 0:
-                        data[ccy.lower()]["sell"].append({"bank": html.unescape(bank_name.strip()), "rate": p})
+                data[ccy.lower()]["buy"] = _extract_bank_pairs(buy_html)
+                data[ccy.lower()]["sell"] = _extract_bank_pairs(sell_html)
             if any(data[c]["buy"] or data[c]["sell"] for c in data):
                 BANK_RATES_CACHE["time"], BANK_RATES_CACHE["data"] = now, data
-    except Exception:
-        pass
+            else:
+                print(f"[BANK RATES] HTML mos kelmadi, uzunligi: {len(page)}")
+        else:
+            print(f"[BANK RATES] HTTP status: {r.status_code}")
+    except Exception as e:
+        print(f"[BANK RATES] xato: {e}")
     return data
 
 # --- NARX KUZATISH WORKER ---
