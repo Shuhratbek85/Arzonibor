@@ -284,52 +284,68 @@ def get_rates_text(lang="uz"):
     return "\n".join(lines), markup
 
 BANK_RATES_CACHE = {"time": 0, "data": {}}
-def _extract_bank_pairs(section_html):
-    patterns = [
-        re.compile(r'<a[^>]*href=["\'][^"\']*bank[^"\']*["\'][^>]*>\s*([^<]{2,50}?)\s*</a>.*?(\d[\d\s]{2,10})\s*so', re.S | re.I),
-        re.compile(r'class=["\'][^"\']*medium-text[^"\']*["\'][^>]*>\s*([^<]{2,50}?)\s*</[^>]+>.*?(\d[\d\s]{2,10})\s*so', re.S | re.I),
-    ]
-    out, seen = [], set()
-    for pat in patterns:
-        for bank_name, price_str in pat.findall(section_html):
-            name = html.unescape(re.sub(r"<[^>]+>", "", bank_name)).strip()
-            p = int(re.sub(r"\D", "", price_str))
-            if name and p > 0 and name.lower() not in seen:
-                seen.add(name.lower())
-                out.append({"bank": name, "rate": p})
-        if out:
-            break
-    return out
-
 def fetch_bank_rates():
     now = time.time()
     if BANK_RATES_CACHE["data"] and (now - BANK_RATES_CACHE["time"] < 900):
         return BANK_RATES_CACHE["data"]
     data = {c: {"buy": [], "sell": []} for c in ("usd", "eur", "rub")}
+    cbu = fetch_all_rates()
+    cbu_map = {c: cbu[c]["rate"] for c in ("usd", "eur", "rub") if c in cbu}
+    if not cbu_map:
+        cbu_map = {"usd": 12000.0, "eur": 13100.0, "rub": 145.0}
+
     try:
         r = requests.get("https://bank.uz/uz/currency", headers=HEADERS, timeout=10)
         if r.status_code == 200:
-            page = r.text
-            for ccy in ("USD", "EUR", "RUB"):
-                m_block = re.search(rf'id=["\']best_course_{ccy}["\'](.*?)(?:id=["\']best_course_|</section>|$)', page, re.S | re.I)
-                chunk = m_block.group(1) if m_block else ""
-                if not chunk:
+            cleaned = re.sub(r"<(script|style)[^>]*>.*?</\1>", " ", r.text, flags=re.S | re.I)
+            cleaned = re.sub(r"<[^>]+>", "\n", cleaned)
+            cleaned = html.unescape(cleaned)
+            lines = [re.sub(r"\s+", " ", ln).strip() for ln in cleaned.splitlines()]
+            lines = [ln for ln in lines if ln]
+
+            mode = None
+            seen = {c: {"buy": set(), "sell": set()} for c in ("usd", "eur", "rub")}
+            price_re = re.compile(r"^(\d[\d\s]{1,9})\s*so['’`]?m$", re.I)
+
+            for i, ln in enumerate(lines):
+                low = ln.lower()
+                if low in ("sotib olish", "покупка"):
+                    mode = "buy"
                     continue
-                parts = re.split(r'Sotish|Продажа', chunk, maxsplit=1, flags=re.I)
-                buy_html = parts[0]
-                sell_html = parts[1] if len(parts) > 1 else ""
-                data[ccy.lower()]["buy"] = _extract_bank_pairs(buy_html)
-                data[ccy.lower()]["sell"] = _extract_bank_pairs(sell_html)
+                if low in ("sotish", "продажа"):
+                    mode = "sell"
+                    continue
+                if not mode:
+                    continue
+
+                m = price_re.match(ln)
+                if m and i > 0:
+                    bank = lines[i - 1]
+                    if len(bank) < 2 or len(bank) > 50 or price_re.match(bank) or bank.lower() in ("sotib olish", "sotish", "kreditlar", "omonatlar"):
+                        continue
+                    rate = int(re.sub(r"\D", "", m.group(1)))
+                    # Qaysi valyutaga tegishliligini MB kursiga qarab aniqlaymiz
+                    best_ccy, best_diff = None, 999.0
+                    for ccy, ref in cbu_map.items():
+                        rel = abs(rate - ref) / ref
+                        limit = 0.35 if ccy == "rub" else 0.12
+                        if rel < limit and rel < best_diff:
+                            best_ccy, best_diff = ccy, rel
+                    if best_ccy and bank.lower() not in seen[best_ccy][mode]:
+                        seen[best_ccy][mode].add(bank.lower())
+                        data[best_ccy][mode].append({"bank": bank, "rate": rate})
+
+            for ccy in ("usd", "eur", "rub"):
+                data[ccy]["sell"].sort(key=lambda x: x["rate"])
+                data[ccy]["buy"].sort(key=lambda x: x["rate"], reverse=True)
+
             if any(data[c]["buy"] or data[c]["sell"] for c in data):
                 BANK_RATES_CACHE["time"], BANK_RATES_CACHE["data"] = now, data
             else:
-                print(f"[BANK RATES] HTML mos kelmadi, uzunligi: {len(page)}")
-        else:
-            print(f"[BANK RATES] HTTP status: {r.status_code}")
+                print(f"[BANK RATES] Matndan topilmadi, qatorlar: {len(lines)}")
     except Exception as e:
         print(f"[BANK RATES] xato: {e}")
     return data
-
 # --- NARX KUZATISH WORKER ---
 def price_alert_worker():
     while True:
