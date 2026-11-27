@@ -27,7 +27,6 @@
     .search-actions { position: absolute; right: 5px; display: flex; align-items: center; gap: 2px; }
     .icon-btn { width: 38px; height: 38px; border: none; background: transparent; color: var(--muted); display: flex; align-items: center; justify-content: center; cursor: pointer; }
 
-    /* AUTOCOMPLETE DROPDOWN */
     .suggest-box {
       position: absolute; top: 50px; left: 0; right: 0;
       background: #1B222C; border: 1px solid var(--border); border-radius: 11px;
@@ -44,9 +43,15 @@
     .page-top { padding: 16px 14px 6px; font-size: 19px; font-weight: 600; color: var(--text); }
     .ticker-bar { display: flex; gap: 7px; overflow-x: auto; padding: 2px 14px 12px; scrollbar-width: none; }
     .ticker-bar::-webkit-scrollbar { display: none; }
-    .ticker-pill { white-space: nowrap; background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 6px 10px; font-size: 12px; color: var(--muted); display: flex; align-items: center; gap: 5px; }
+    .ticker-pill { white-space: nowrap; background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 6px 10px; font-size: 12px; color: var(--muted); display: flex; align-items: center; gap: 5px; cursor: pointer; transition: border-color 0.15s; }
+    .ticker-pill:active { border-color: var(--blue); background: var(--surface-2); }
     .ticker-pill b { color: var(--text); font-weight: 500; }
+    .ticker-pill.btc { cursor: default; }
     .ticker-pill.btc b { color: var(--orange); }
+    .t-diff { font-size: 10px; font-weight: 600; }
+    .t-diff.up { color: var(--green); }
+    .t-diff.down { color: var(--red); }
+
     .stories { display: flex; gap: 13px; overflow-x: auto; padding: 4px 14px 14px; scrollbar-width: none; }
     .stories::-webkit-scrollbar { display: none; }
     .story { display: flex; flex-direction: column; align-items: center; gap: 6px; width: 78px; flex-shrink: 0; cursor: pointer; }
@@ -80,8 +85,15 @@
     .result-card { display: flex; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; margin-bottom: 10px; cursor: pointer; }
     .res-img-col { width: 112px; flex-shrink: 0; background: #fff; display: flex; align-items: center; justify-content: center; padding: 8px; position: relative; }
     .res-img-col img { max-width: 100%; max-height: 104px; object-fit: contain; }
-    .res-heart { position: absolute; bottom: 6px; right: 6px; width: 30px; height: 30px; border-radius: 50%; background: rgba(18,22,26,0.85); border: none; color: #fff; display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 14px; }
-    .res-heart.saved { color: var(--orange); }
+    .res-heart {
+      position: absolute; top: 6px; right: 6px; width: 28px; height: 28px; border-radius: 50%;
+      background: rgba(255, 255, 255, 0.92); border: 1px solid rgba(15, 23, 42, 0.08);
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.12); color: #64748B;
+      display: flex; align-items: center; justify-content: center; cursor: pointer;
+    }
+    .res-heart svg { width: 15px; height: 15px; stroke: currentColor; fill: none; stroke-width: 2.1; }
+    .res-heart.saved { color: var(--orange); background: #FFF7ED; border-color: rgba(255, 102, 0, 0.25); }
+    .res-heart.saved svg { fill: var(--orange); stroke: var(--orange); }
     .res-info { flex: 1; padding: 10px 11px; display: flex; flex-direction: column; justify-content: space-between; min-width: 0; }
     .res-title { font-size: 13px; font-weight: 500; color: var(--text); line-height: 1.32; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; margin-bottom: 5px; }
     .res-meta { font-size: 11.5px; color: var(--green); margin-bottom: 3px; }
@@ -101,6 +113,25 @@
     .lang-switch { display: flex; gap: 6px; }
     .lang-btn { background: var(--surface-2); border: 1px solid var(--border); color: var(--muted); padding: 5px 10px; border-radius: 8px; font-size: 12px; cursor: pointer; }
     .lang-btn.active { background: var(--blue); color: #0B1220; border-color: var(--blue); font-weight: 600; }
+
+    /* BANK RATES BOTTOM SHEET */
+    .sheet-backdrop { position: fixed; inset: 0; background: rgba(0,0,0,0.6); z-index: 65; display: flex; align-items: flex-end; justify-content: center; }
+    .sheet-box { width: 100%; max-width: 520px; max-height: 82vh; background: var(--surface); border-top-left-radius: 18px; border-top-right-radius: 18px; border-top: 1px solid var(--border); display: flex; flex-direction: column; overflow: hidden; }
+    .sheet-head { display: flex; align-items: center; justify-content: space-between; padding: 14px 16px 10px; border-bottom: 1px solid var(--border); }
+    .sheet-title { font-size: 15.5px; font-weight: 600; color: var(--text); }
+    .sheet-tabs { display: flex; gap: 6px; padding: 10px 16px 6px; }
+    .sheet-ccy { flex: 1; background: var(--surface-2); border: 1px solid var(--border); color: var(--muted); padding: 7px; border-radius: 9px; font-size: 12.5px; font-weight: 600; cursor: pointer; }
+    .sheet-ccy.active { background: var(--blue); color: #0B1220; border-color: var(--blue); }
+    .sheet-mode-row { display: flex; gap: 8px; padding: 4px 16px 10px; border-bottom: 1px solid var(--border); }
+    .sheet-mode { flex: 1; background: transparent; border: 1px solid var(--border); color: var(--muted); padding: 7px; border-radius: 9px; font-size: 12.5px; cursor: pointer; }
+    .sheet-mode.active { border-color: var(--orange); color: var(--orange); background: rgba(255,102,0,0.1); font-weight: 500; }
+    .sheet-list { overflow-y: auto; padding: 6px 16px 12px; flex: 1; }
+    .bank-row { display: flex; align-items: center; justify-content: space-between; padding: 11px 0; border-bottom: 1px solid var(--border); font-size: 13.5px; }
+    .bank-row:last-child { border-bottom: none; }
+    .bank-name { color: var(--text); display: flex; align-items: center; gap: 6px; }
+    .bank-rate { color: var(--green); font-weight: 600; white-space: nowrap; }
+    .sheet-foot { padding: 10px 16px 14px; border-top: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; font-size: 12px; color: var(--muted); background: #161B22; }
+
     .overlay { position: fixed; inset: 0; background: var(--bg); z-index: 40; overflow-y: auto; padding-bottom: 86px; }
     .detail-hero { position: relative; display: flex; align-items: flex-start; justify-content: center; padding: 14px 56px 10px; }
     .hero-close { position: absolute; left: 12px; top: 14px; width: 36px; height: 36px; border-radius: 50%; background: var(--surface); border: 1px solid var(--border); color: var(--text); display: flex; align-items: center; justify-content: center; cursor: pointer; z-index: 5; }
@@ -205,9 +236,9 @@
       </form>
     </header>
     <div class="ticker-bar">
-      <div class="ticker-pill">USD <b id="t-usd">...</b></div>
-      <div class="ticker-pill">EUR <b id="t-eur">...</b></div>
-      <div class="ticker-pill">RUB <b id="t-rub">...</b></div>
+      <div class="ticker-pill" data-action="open-bank-rates" data-ccy="usd">USD <b id="t-usd">...</b><span id="d-usd" class="t-diff"></span></div>
+      <div class="ticker-pill" data-action="open-bank-rates" data-ccy="eur">EUR <b id="t-eur">...</b><span id="d-eur" class="t-diff"></span></div>
+      <div class="ticker-pill" data-action="open-bank-rates" data-ccy="rub">RUB <b id="t-rub">...</b><span id="d-rub" class="t-diff"></span></div>
       <div class="ticker-pill btc">BTC <b id="t-btc">...</b></div>
     </div>
   </div>
@@ -266,6 +297,7 @@
       </div>
       <div class="sec-head"><span class="sec-title" data-i18n="full_cat">To'liq katalog</span></div>
       <div class="cat-list">
+        <div class="cat-row" data-action="open-bank-rates" data-ccy="usd"><div class="cat-row-left"><span>💵</span><span data-i18n="c_rates">Valyuta kurslari (Banklar)</span></div><span style="color:var(--green);font-size:12px;">Live ›</span></div>
         <div class="cat-row" data-action="search" data-query="Samsung A55"><div class="cat-row-left"><span>📱</span><span data-i18n="c_1">Smartfonlar va gadjetlar</span></div></div>
         <div class="cat-row" data-action="search" data-query="MacBook Air M2"><div class="cat-row-left"><span>💻</span><span data-i18n="c_2">Noutbuk va kompyuterlar</span></div></div>
         <div class="cat-row" data-action="search" data-query="Artel 43"><div class="cat-row-left"><span>📺</span><span data-i18n="c_3">Televizorlar</span></div></div>
@@ -308,6 +340,30 @@
       </div>
     </div>
   </section>
+
+  <!-- BANK RATES BOTTOM SHEET -->
+  <div id="bankRatesModal" class="sheet-backdrop hidden" data-action="close-bank-rates-bg">
+    <div class="sheet-box" onclick="event.stopPropagation()">
+      <div class="sheet-head">
+        <span class="sheet-title" data-i18n="bank_rates_title">💵 Banklar kursi</span>
+        <button class="ov-btn" style="width:30px;height:30px;font-size:13px;" data-action="close-bank-rates">✕</button>
+      </div>
+      <div class="sheet-tabs">
+        <button class="sheet-ccy active" data-action="bank-ccy" data-ccy="usd">USD</button>
+        <button class="sheet-ccy" data-action="bank-ccy" data-ccy="eur">EUR</button>
+        <button class="sheet-ccy" data-action="bank-ccy" data-ccy="rub">RUB</button>
+      </div>
+      <div class="sheet-mode-row">
+        <button class="sheet-mode active" id="modeSell" data-action="bank-mode" data-mode="sell" data-i18n="bank_sell">Sotish (olish)</button>
+        <button class="sheet-mode" id="modeBuy" data-action="bank-mode" data-mode="buy" data-i18n="bank_buy">Sotib olish (topshirish)</button>
+      </div>
+      <div id="bankRatesList" class="sheet-list"></div>
+      <div class="sheet-foot">
+        <span id="cbuFootText">MB: ...</span>
+        <button class="sec-link" data-action="open-url" data-url="https://bank.uz/uz/currency">Bank.uz ↗</button>
+      </div>
+    </div>
+  </div>
 
   <!-- PRODUCT DETAIL OVERLAY -->
   <div id="detailOverlay" class="overlay hidden">
@@ -430,7 +486,9 @@
         back: "Orqaga", sort_asc: "Arzonidan", sort_desc: "Qimmatidan",
         tab_home: "Asosiy", tab_cat: "Katalog", tab_favs: "Sevimli", tab_alerts: "Kuzatuv", tab_profile: "Profil",
         top_cats: "Top bo'limlar", full_cat: "To'liq katalog",
+        c_rates: "Valyuta kurslari (Banklar)",
         c_1: "Smartfonlar va gadjetlar", c_2: "Noutbuk va kompyuterlar", c_3: "Televizorlar", c_4: "Maishiy texnika", c_5: "Quloqchin va aksessuarlar", c_6: "O'yin pristavkalari",
+        bank_rates_title: "💵 Banklar kursi", bank_sell: "Sotish (olish)", bank_buy: "Sotib olish (topshirish)", bank_empty: "Bank kurslari vaqtincha yuklanmadi. Pastdagi Bank.uz orqali ko'ring.",
         tab_favs_title: "Sevimlilar", tab_alerts_title: "Narx kuzatuvlari", my_profile: "Mening profilim", tg_user: "Telegram foydalanuvchisi", lang_label: "Til / Язык",
         compare_prices: "Narxlarni solishtirish", from_word: "dan",
         st_offers: "Takliflar", st_history: "Narx tarixi", st_specs: "Xususiyatlar", st_pros: "Afzallik", st_reviews: "Sharhlar", st_expert: "Ekspert", st_faq: "Savollar", st_compare: "Taqqoslash",
@@ -455,7 +513,9 @@
         back: "Назад", sort_asc: "Сначала дешевле", sort_desc: "Сначала дороже",
         tab_home: "Главная", tab_cat: "Каталог", tab_favs: "Избранное", tab_alerts: "Отслежив.", tab_profile: "Профиль",
         top_cats: "Топ категории", full_cat: "Весь каталог",
+        c_rates: "Курсы валют (Банки)",
         c_1: "Смартфоны и гаджеты", c_2: "Ноутбуки и компьютеры", c_3: "Телевизоры", c_4: "Бытовая техника", c_5: "Наушники и аксессуары", c_6: "Игровые приставки",
+        bank_rates_title: "💵 Курсы банков", bank_sell: "Продажа (купить)", bank_buy: "Покупка (сдать)", bank_empty: "Курсы банков временно недоступны. Посмотрите на Bank.uz.",
         tab_favs_title: "Избранное", tab_alerts_title: "Отслеживание цен", my_profile: "Мой профиль", tg_user: "Пользователь Telegram", lang_label: "Язык / Til",
         compare_prices: "Сравнение цен", from_word: "от",
         st_offers: "Предложения", st_history: "История цен", st_specs: "Характер.", st_pros: "Плюсы", st_reviews: "Отзывы", st_expert: "Эксперт", st_faq: "Вопросы", st_compare: "Сравнить",
@@ -491,6 +551,10 @@
     const FALLBACK_IMG = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120' viewBox='0 0 24 24' fill='none' stroke='%2394A3B8' stroke-width='1.5'%3E%3Crect x='3' y='3' width='18' height='18' rx='2'/%3E%3Ccircle cx='8.5' cy='8.5' r='1.5'/%3E%3Cpath d='M21 15l-5-5L5 21'/%3E%3C/svg%3E";
     let currentQuery = "";
     let currentResults = [];
+    let cbuRates = {};
+    let bankRatesData = null;
+    let activeBankCcy = "usd";
+    let activeBankMode = "sell";
     let toastTimer = null;
     let suggestTimer = null;
 
@@ -507,7 +571,6 @@
       toastTimer = setTimeout(() => el.classList.remove("show"), 2600);
     }
 
-    // AUTOCOMPLETE LOGIC
     const searchInputEl = document.getElementById("searchInput");
     const suggestBoxEl = document.getElementById("suggestBox");
 
@@ -544,11 +607,56 @@
       }
     });
 
+    async function openBankRates(ccy = "usd") {
+      activeBankCcy = ccy;
+      document.getElementById("bankRatesModal").classList.remove("hidden");
+      updateBankModalUI();
+      if (!bankRatesData) {
+        document.getElementById("bankRatesList").innerHTML = `<div class="skeleton" style="height:44px;"></div><div class="skeleton" style="height:44px;"></div>`;
+        try {
+          const res = await fetch("/api/bank-rates");
+          bankRatesData = await res.json();
+        } catch {
+          bankRatesData = {};
+        }
+      }
+      renderBankRatesList();
+    }
+    function closeBankRates() { document.getElementById("bankRatesModal").classList.add("hidden"); }
+    function updateBankModalUI() {
+      document.querySelectorAll(".sheet-ccy").forEach(b => b.classList.toggle("active", b.dataset.ccy === activeBankCcy));
+      document.getElementById("modeSell").classList.toggle("active", activeBankMode === "sell");
+      document.getElementById("modeBuy").classList.toggle("active", activeBankMode === "buy");
+      const cbu = cbuRates[activeBankCcy];
+      document.getElementById("cbuFootText").textContent = cbu
+        ? `MB (${activeBankCcy.toUpperCase()}): ${Number(cbu.rate).toLocaleString("ru-RU")} ${t("sum")}`
+        : `MB (${activeBankCcy.toUpperCase()})`;
+    }
+    function renderBankRatesList() {
+      const box = document.getElementById("bankRatesList");
+      const list = (bankRatesData && bankRatesData[activeBankCcy] && bankRatesData[activeBankCcy][activeBankMode]) || [];
+      if (!list.length) {
+        box.innerHTML = `<div class="empty-box" style="padding:20px 6px;">${t("bank_empty")}</div>`;
+        return;
+      }
+      box.innerHTML = list.slice(0, 15).map((item, idx) => `
+        <div class="bank-row">
+          <span class="bank-name">${idx === 0 ? '🏆 ' : ''}${escapeHtml(item.bank)}</span>
+          <span class="bank-rate">${formatPrice(item.rate)}</span>
+        </div>
+      `).join("");
+    }
+
     document.addEventListener("click", (e) => {
       if (!e.target.closest("#searchForm")) hideSuggestions();
       const el = e.target.closest("[data-action]");
       if (!el) return;
       const act = el.dataset.action;
+
+      if (act === "open-bank-rates") { openBankRates(el.dataset.ccy || "usd"); return; }
+      if (act === "close-bank-rates" || act === "close-bank-rates-bg") { closeBankRates(); return; }
+      if (act === "bank-ccy") { activeBankCcy = el.dataset.ccy; updateBankModalUI(); renderBankRatesList(); return; }
+      if (act === "bank-mode") { activeBankMode = el.dataset.mode; updateBankModalUI(); renderBankRatesList(); return; }
 
       if (act === "set-lang") {
         lang = el.dataset.lang;
@@ -598,9 +706,9 @@
       home: document.getElementById("tab-home"), products: document.getElementById("tab-products"),
       favs: document.getElementById("tab-favs"), alerts: document.getElementById("tab-alerts"), profile: document.getElementById("tab-profile"),
     };
-    function goHomeClean() { hideSuggestions(); closeDetail(); closeAlertModal(); backToHome(); switchTab("home", false); }
+    function goHomeClean() { hideSuggestions(); closeDetail(); closeAlertModal(); closeBankRates(); backToHome(); switchTab("home", false); }
     function switchTab(name, resetHome = true) {
-      hideSuggestions(); closeDetail(); closeAlertModal();
+      hideSuggestions(); closeDetail(); closeAlertModal(); closeBankRates();
       document.getElementById("homeTopArea").classList.toggle("hidden", name !== "home");
       tabs.forEach(t => t.classList.toggle("active", t.dataset.tab === name));
       Object.entries(sections).forEach(([k, el]) => el.classList.toggle("hidden", k !== name));
@@ -740,11 +848,12 @@
       const box = document.getElementById("resultsArea");
       if (!currentResults.length) { box.innerHTML = `<div class="empty-box">${t("no_results")}</div>`; return; }
       const saved = isFav(currentQuery);
+      const heartSvg = `<svg viewBox="0 0 24 24"><path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.7l-1-1.1a5.5 5.5 0 0 0-7.8 7.8l1 1.1L12 21l7.8-7.5 1-1.1a5.5 5.5 0 0 0 0-7.8z"/></svg>`;
       box.innerHTML = currentResults.map((item) => `
         <div class="result-card" data-action="open-detail">
           <div class="res-img-col">
             <img src="${escapeHtml(item.image || FALLBACK_IMG)}" onerror="this.src='${FALLBACK_IMG}'" />
-            <button class="res-heart ${saved ? 'saved' : ''}" data-action="toggle-fav" data-query="${escapeHtml(currentQuery)}" data-title="${escapeHtml(item.title)}" data-price="${item.price}" data-image="${escapeHtml(item.image || '')}">${saved ? '♥' : '♡'}</button>
+            <button class="res-heart ${saved ? 'saved' : ''}" data-action="toggle-fav" data-query="${escapeHtml(currentQuery)}" data-title="${escapeHtml(item.title)}" data-price="${item.price}" data-image="${escapeHtml(item.image || '')}" aria-label="Sevimli">${heartSvg}</button>
           </div>
           <div class="res-info">
             <div>
@@ -946,13 +1055,22 @@
       } catch { showToast("Xato"); }
     }
 
+    function setDiffBadge(id, diffStr) {
+      const el = document.getElementById(id);
+      if (!el || !diffStr) return;
+      const val = parseFloat(diffStr);
+      if (val > 0) { el.textContent = "▲"; el.className = "t-diff up"; }
+      else if (val < 0) { el.textContent = "▼"; el.className = "t-diff down"; }
+    }
+
     async function fetchRates() {
       try {
         const res = await fetch("/api/rates");
         const r = await res.json();
-        if (r.usd) document.getElementById("t-usd").textContent = Math.round(r.usd.rate).toLocaleString("ru-RU");
-        if (r.eur) document.getElementById("t-eur").textContent = Math.round(r.eur.rate).toLocaleString("ru-RU");
-        if (r.rub) document.getElementById("t-rub").textContent = Number(r.rub.rate).toFixed(1);
+        cbuRates = r || {};
+        if (r.usd) { document.getElementById("t-usd").textContent = Math.round(r.usd.rate).toLocaleString("ru-RU"); setDiffBadge("d-usd", r.usd.diff); }
+        if (r.eur) { document.getElementById("t-eur").textContent = Math.round(r.eur.rate).toLocaleString("ru-RU"); setDiffBadge("d-eur", r.eur.diff); }
+        if (r.rub) { document.getElementById("t-rub").textContent = Number(r.rub.rate).toFixed(1); setDiffBadge("d-rub", r.rub.diff); }
         if (r.btc) document.getElementById("t-btc").textContent = "$" + Math.round(r.btc.usd).toLocaleString("ru-RU");
       } catch {}
     }
@@ -966,4 +1084,4 @@
     if (initialQ) runSearch(initialQ);
   </script>
 </body>
-</html>
+                                                                      </html>
