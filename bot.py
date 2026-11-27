@@ -629,5 +629,4 @@ if __name__ == "__main__":
     threading.Thread(target=run_web_server, daemon=True).start()
     threading.Thread(target=price_alert_worker, daemon=True).start()
     print("Arzoni Bor ishga tushdi!")
-    bot.infinity_polling(skip_pending=True)import os
-bot.infinity_polling(skip_pending=True)
+    bot.infinity_polling(skip_pending=True)
