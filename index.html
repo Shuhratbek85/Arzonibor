@@ -8,7 +8,7 @@
   <style>
     :root {
       --navy: #0A3761; --bg: #12161A; --surface: #1B2027; --surface-2: #222831;
-      --orange: #FF6600; --blue: #60A5FA; --green: #22C55E; --red: #F87171;
+      --orange: #FF6600; --blue: #60A5FA; --green: #10B981; --red: #F87171;
       --text: #EEF2F6; --muted: #94A3B8; --border: #2A313C; --radius: 12px;
     }
     * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
@@ -137,6 +137,41 @@
     .res-price-row { display: flex; align-items: baseline; justify-content: space-between; gap: 6px; }
     .res-price { font-size: 15px; font-weight: 600; color: var(--orange); }
     .res-store { font-size: 11px; color: var(--muted); }
+    .add-cart-btn {
+      margin-top: 8px; width: 100%; background: rgba(16, 185, 129, 0.14);
+      border: 1px solid var(--green); color: var(--green); border-radius: 8px;
+      padding: 6px 10px; font-size: 12px; font-weight: 600; cursor: pointer;
+    }
+    .add-cart-btn:active { background: var(--green); color: #062016; }
+
+    /* CART STYLES */
+    .cart-best-banner {
+      background: rgba(16, 185, 129, 0.14); border: 1px solid var(--green);
+      color: var(--green); border-radius: var(--radius); padding: 11px 13px;
+      font-size: 13px; font-weight: 600; margin-bottom: 10px; line-height: 1.4;
+    }
+    .cart-summary-box {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: var(--radius); padding: 12px 14px; margin-bottom: 12px;
+    }
+    .cart-item-card {
+      display: flex; align-items: center; gap: 10px;
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: var(--radius); padding: 10px; margin-bottom: 10px;
+    }
+    .cart-item-img {
+      width: 64px; height: 64px; background: #fff; border-radius: 8px;
+      display: flex; align-items: center; justify-content: center; padding: 4px; flex-shrink: 0;
+    }
+    .cart-item-img img { max-width: 100%; max-height: 100%; object-fit: contain; }
+    .qty-box { display: flex; align-items: center; gap: 7px; }
+    .qty-btn {
+      width: 28px; height: 28px; border-radius: 8px;
+      border: 1px solid var(--border); background: var(--surface-2);
+      color: var(--text); font-size: 15px; font-weight: 600; cursor: pointer;
+    }
+    .qty-num { min-width: 20px; text-align: center; font-weight: 600; font-size: 13px; }
+
     .top-cats { display: flex; gap: 14px; overflow-x: auto; padding-bottom: 8px; scrollbar-width: none; }
     .top-cats::-webkit-scrollbar { display: none; }
     .top-cat { display: flex; flex-direction: column; align-items: center; gap: 6px; width: 76px; flex-shrink: 0; cursor: pointer; }
@@ -159,8 +194,8 @@
     .sheet-ccy { flex: 1; background: var(--surface-2); border: 1px solid var(--border); color: var(--muted); padding: 7px; border-radius: 9px; font-size: 12.5px; font-weight: 600; cursor: pointer; }
     .sheet-ccy.active { background: var(--blue); color: #0B1220; border-color: var(--blue); }
     .sheet-mode-row { display: flex; gap: 8px; padding: 4px 16px 10px; border-bottom: 1px solid var(--border); }
-    .sheet-mode { flex: 1; background: transparent; border: 1px solid var(--border); color: var(--muted); padding: 7px; border-radius: 9px; font-size: 12.5px; cursor: pointer; }
-    .sheet-mode.active { border-color: var(--orange); color: var(--orange); background: rgba(255,102,0,0.1); font-weight: 500; }
+    .sheet-mode { flex: 1; background: var(--surface-2); border: 1px solid var(--border); color: #CBD5E1; padding: 8px 10px; border-radius: 9px; font-size: 12.5px; font-weight: 500; cursor: pointer; transition: all 0.2s ease; }
+    .sheet-mode.active { border-color: var(--green); color: var(--green); background: rgba(16, 185, 129, 0.14); font-weight: 600; }
     .sheet-list { overflow-y: auto; padding: 6px 16px 12px; flex: 1; }
     .bank-row { display: flex; align-items: center; justify-content: space-between; padding: 11px 0; border-bottom: 1px solid var(--border); font-size: 13.5px; }
     .bank-row:last-child { border-bottom: none; }
@@ -243,9 +278,16 @@
     .toast { position: fixed; bottom: 80px; left: 50%; transform: translateX(-50%); background: #1F2937; color: #fff; border: 1px solid var(--border); padding: 9px 16px; border-radius: 20px; font-size: 12.5px; z-index: 80; box-shadow: 0 6px 20px rgba(0,0,0,0.4); opacity: 0; pointer-events: none; transition: opacity 0.2s; max-width: 90%; text-align: center; }
     .toast.show { opacity: 1; }
     .tabbar { position: fixed; bottom: 0; left: 0; right: 0; height: 66px; background: #161B22; border-top: 1px solid var(--border); display: grid; grid-template-columns: repeat(5, 1fr); z-index: 45; padding-bottom: 4px; }
-    .tab { background: none; border: none; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; font-size: 11px; color: var(--muted); cursor: pointer; }
+    .tab { position: relative; background: none; border: none; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; font-size: 11px; color: var(--muted); cursor: pointer; }
     .tab svg { width: 22px; height: 22px; stroke: currentColor; fill: none; stroke-width: 1.85; }
     .tab.active { color: var(--orange); font-weight: 500; }
+    .nav-badge {
+      position: absolute; top: 4px; right: 20%;
+      min-width: 17px; height: 17px; padding: 0 4px;
+      border-radius: 999px; background: var(--green); color: #fff;
+      font-size: 10.5px; font-weight: 700; display: none;
+      align-items: center; justify-content: center;
+    }
     .hidden { display: none !important; }
   </style>
 </head>
@@ -366,16 +408,19 @@
     </div>
   </section>
 
-  <!-- TAB 3: FAVOURITES -->
+  <!-- TAB 3: CART -->
+  <section id="tab-cart" class="hidden">
+    <div class="page-top" data-i18n="tab_cart_title">Savat</div>
+    <div class="container">
+      <div id="cartComparison"></div>
+      <div id="cartItemsList"></div>
+    </div>
+  </section>
+
+  <!-- TAB 4: FAVOURITES -->
   <section id="tab-favs" class="hidden">
     <div class="page-top" data-i18n="tab_favs_title">Sevimlilar</div>
     <div class="container"><div id="favsList"></div></div>
-  </section>
-
-  <!-- TAB 4: PRICE ALERTS -->
-  <section id="tab-alerts" class="hidden">
-    <div class="page-top" data-i18n="tab_alerts_title">Narx kuzatuvlari</div>
-    <div class="container"><div id="alertsList"></div></div>
   </section>
 
   <!-- TAB 5: PROFILE -->
@@ -391,13 +436,23 @@
             <button class="lang-btn" id="langRu" data-action="set-lang" data-lang="ru">RU</button>
           </div>
         </div>
-        <div class="cat-row" data-action="switch-tab" data-tab="alerts"><div class="cat-row-left"><span>🔔</span><span data-i18n="tab_alerts_title">Narx kuzatuvlari</span></div></div>
-        <div class="cat-row" data-action="switch-tab" data-tab="favs"><div class="cat-row-left"><span>❤️</span><span data-i18n="tab_favs_title">Sevimlilar</span></div></div>
+        <div class="cat-row" data-action="open-alerts-view"><div class="cat-row-left"><span>🔔</span><span data-i18n="tab_alerts_title">Narx kuzatuvlari</span></div><span style="color:var(--muted);">›</span></div>
+        <div class="cat-row" data-action="switch-tab" data-tab="favs"><div class="cat-row-left"><span>❤️</span><span data-i18n="tab_favs_title">Sevimlilar</span></div><span style="color:var(--muted);">›</span></div>
         <div class="cat-row" data-action="open-url" data-url="https://t.me/arzoniboragent"><div class="cat-row-left"><span>📢</span><span>Arzoni Bor</span></div></div>
         <div class="cat-row" data-action="open-url" data-url="https://t.me/mrtexnoai"><div class="cat-row-left"><span>🤖</span><span>Mr Texno AI</span></div></div>
       </div>
     </div>
   </section>
+
+  <!-- PRICE ALERTS OVERLAY (OPENED FROM PROFILE) -->
+  <div id="alertsOverlay" class="overlay hidden" style="z-index:48;">
+    <div class="ov-top">
+      <button class="ov-btn" data-action="close-alerts-view" aria-label="Orqaga">←</button>
+      <span style="font-size:15px;font-weight:600;" data-i18n="tab_alerts_title">Narx kuzatuvlari</span>
+      <span style="width:36px;"></span>
+    </div>
+    <div class="container"><div id="alertsList"></div></div>
+  </div>
 
   <!-- BANK RATES BOTTOM SHEET -->
   <div id="bankRatesModal" class="sheet-backdrop hidden">
@@ -412,8 +467,8 @@
         <button class="sheet-ccy" type="button" data-action="bank-ccy" data-ccy="rub">RUB</button>
       </div>
       <div class="sheet-mode-row">
-        <button class="sheet-mode active" type="button" id="modeSell" data-action="bank-mode" data-mode="sell" data-i18n="bank_sell">Sotish (olish)</button>
-        <button class="sheet-mode" type="button" id="modeBuy" data-action="bank-mode" data-mode="buy" data-i18n="bank_buy">Sotib olish (topshirish)</button>
+        <button class="sheet-mode active" type="button" id="modeSell" data-action="bank-mode" data-mode="sell" data-i18n="bank_sell">Sotish</button>
+        <button class="sheet-mode" type="button" id="modeBuy" data-action="bank-mode" data-mode="buy" data-i18n="bank_buy">Sotib olish</button>
       </div>
       <div id="bankRatesList" class="sheet-list"></div>
       <div class="sheet-foot">
@@ -504,11 +559,16 @@
 
   <div id="toast" class="toast"></div>
 
+  <!-- BOTTOM NAV: Asosiy, Katalog, Savat, Sevimli, Profil -->
   <nav class="tabbar">
     <button class="tab active" data-tab="home"><svg viewBox="0 0 24 24"><path d="M3 10l9-7 9 7v11a1 1 0 0 1-1 1h-5v-7H9v7H4a1 1 0 0 1-1-1z"/></svg><span data-i18n="tab_home">Asosiy</span></button>
     <button class="tab" data-tab="products"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><line x1="20" y1="20" x2="16.65" y2="16.65"/></svg><span data-i18n="tab_cat">Katalog</span></button>
+    <button class="tab" data-tab="cart">
+      <span class="nav-badge" id="cartBadge">0</span>
+      <svg viewBox="0 0 24 24"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg>
+      <span data-i18n="tab_cart">Savat</span>
+    </button>
     <button class="tab" data-tab="favs"><svg viewBox="0 0 24 24"><path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.7l-1-1.1a5.5 5.5 0 0 0-7.8 7.8l1 1.1L12 21l7.8-7.5 1-1.1a5.5 5.5 0 0 0 0-7.8z"/></svg><span data-i18n="tab_favs">Sevimli</span></button>
-    <button class="tab" data-tab="alerts"><svg viewBox="0 0 24 24"><circle cx="12" cy="13" r="8"/><polyline points="12 9 12 13 14.5 14.5"/><path d="M5 3L2 6M22 6l-3-3"/></svg><span data-i18n="tab_alerts">Kuzatuv</span></button>
     <button class="tab" data-tab="profile"><svg viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg><span data-i18n="tab_profile">Profil</span></button>
   </nav>
 
@@ -542,11 +602,14 @@
         last_viewed: "Oxirgi ko'rilganlar", clear: "Tozalash", popular: "Eng ko'p qidirilganlar",
         cat_phones: "Smartfonlar", cat_acc: "Aksessuarlar", cat_laptops: "Noutbuklar", cat_consoles: "Konsollar", cat_watches: "Soatlar",
         back: "Orqaga", sort_asc: "Arzonidan", sort_desc: "Qimmatidan",
-        tab_home: "Asosiy", tab_cat: "Katalog", tab_favs: "Sevimli", tab_alerts: "Kuzatuv", tab_profile: "Profil",
+        tab_home: "Asosiy", tab_cat: "Katalog", tab_cart: "Savat", tab_favs: "Sevimli", tab_profile: "Profil",
+        tab_cart_title: "Savat", add_to_cart: "+ Savatga", added_to_cart: "Savatga qo'shildi",
+        empty_cart: "Savat hozircha bo'sh. Mahsulot yonidagi «+ Savatga» tugmasini bosing.",
+        cart_total: "Jami savat:", cheapest_store: "Eng arzon do'kon",
         top_cats: "Top bo'limlar", full_cat: "To'liq katalog",
         c_rates: "Valyuta kurslari (Banklar)",
         c_1: "Smartfonlar va gadjetlar", c_2: "Noutbuk va kompyuterlar", c_3: "Televizorlar", c_4: "Maishiy texnika", c_5: "Quloqchin va aksessuarlar", c_6: "O'yin pristavkalari",
-        bank_rates_title: "💵 Banklar kursi", bank_sell: "Sotish (olish)", bank_buy: "Sotib olish (topshirish)", bank_empty: "Bank kurslari vaqtincha yuklanmadi. Pastdagi Bank.uz orqali ko'ring.",
+        bank_rates_title: "💵 Banklar kursi", bank_sell: "Sotish", bank_buy: "Sotib olish", bank_empty: "Bank kurslari vaqtincha yuklanmadi. Pastdagi Bank.uz orqali ko'ring.",
         tab_favs_title: "Sevimlilar", tab_alerts_title: "Narx kuzatuvlari", my_profile: "Mening profilim", tg_user: "Telegram foydalanuvchisi", lang_label: "Til / Язык",
         compare_prices: "Narxlarni solishtirish", from_word: "dan",
         st_offers: "Takliflar", st_history: "Narx tarixi", st_specs: "Xususiyatlar", st_pros: "Afzallik", st_reviews: "Sharhlar", st_expert: "Ekspert", st_faq: "Savollar", st_compare: "Taqqoslash",
@@ -569,11 +632,14 @@
         last_viewed: "Недавно просмотренные", clear: "Очистить", popular: "Популярные запросы",
         cat_phones: "Смартфоны", cat_acc: "Аксессуары", cat_laptops: "Ноутбуки", cat_consoles: "Консоли", cat_watches: "Часы",
         back: "Назад", sort_asc: "Сначала дешевле", sort_desc: "Сначала дороже",
-        tab_home: "Главная", tab_cat: "Каталог", tab_favs: "Избранное", tab_alerts: "Отслежив.", tab_profile: "Профиль",
+        tab_home: "Главная", tab_cat: "Каталог", tab_cart: "Корзина", tab_favs: "Избранное", tab_profile: "Профиль",
+        tab_cart_title: "Корзина", add_to_cart: "+ В корзину", added_to_cart: "Добавлено в корзину",
+        empty_cart: "Корзина пока пуста. Нажмите «+ В корзину» у нужного товара.",
+        cart_total: "Итого в корзине:", cheapest_store: "Самый выгодный магазин",
         top_cats: "Топ категории", full_cat: "Весь каталог",
         c_rates: "Курсы валют (Банки)",
         c_1: "Смартфоны и гаджеты", c_2: "Ноутбуки и компьютеры", c_3: "Телевизоры", c_4: "Бытовая техника", c_5: "Наушники и аксессуары", c_6: "Игровые приставки",
-        bank_rates_title: "💵 Курсы банков", bank_sell: "Продажа (купить)", bank_buy: "Покупка (сдать)", bank_empty: "Курсы банков временно недоступны. Посмотрите на Bank.uz.",
+        bank_rates_title: "💵 Курсы банков", bank_sell: "Продажа", bank_buy: "Покупка", bank_empty: "Курсы банков временно недоступны. Посмотрите на Bank.uz.",
         tab_favs_title: "Избранное", tab_alerts_title: "Отслеживание цен", my_profile: "Мой профиль", tg_user: "Пользователь Telegram", lang_label: "Язык / Til",
         compare_prices: "Сравнение цен", from_word: "от",
         st_offers: "Предложения", st_history: "История цен", st_specs: "Характер.", st_pros: "Плюсы", st_reviews: "Отзывы", st_expert: "Эксперт", st_faq: "Вопросы", st_compare: "Сравнить",
@@ -603,6 +669,7 @@
       document.getElementById("langUz").classList.toggle("active", lang === "uz");
       document.getElementById("langRu").classList.toggle("active", lang === "ru");
       renderHistory();
+      renderCart();
       if (currentResults.length) renderResults();
     }
 
@@ -627,6 +694,107 @@
       el.textContent = msg; el.classList.add("show");
       clearTimeout(toastTimer);
       toastTimer = setTimeout(() => el.classList.remove("show"), 2600);
+    }
+
+    /* --- CART (localStorage) --- */
+    const CART_STORAGE_KEY = "ab_cart_v1";
+    function getCart() {
+      try { return JSON.parse(localStorage.getItem(CART_STORAGE_KEY) || "[]"); }
+      catch { return []; }
+    }
+    function saveCart(items) {
+      localStorage.setItem(CART_STORAGE_KEY, JSON.stringify(items));
+      updateCartBadge();
+      renderCart();
+    }
+    function updateCartBadge() {
+      const badge = document.getElementById("cartBadge");
+      if (!badge) return;
+      const totalQty = getCart().reduce((sum, item) => sum + (Number(item.qty) || 1), 0);
+      badge.textContent = totalQty;
+      badge.style.display = totalQty > 0 ? "flex" : "none";
+    }
+    function addToCartItem(item) {
+      const idKey = `${item.title || item.query}__${item.store || ""}`.toLowerCase();
+      const cart = getCart();
+      const found = cart.find(x => x.id === idKey);
+      if (found) {
+        found.qty += 1;
+      } else {
+        cart.push({
+          id: idKey,
+          query: item.query || item.title || "",
+          title: item.title || item.query || "",
+          price: Number(item.price) || 0,
+          store: item.store || "Do'kon",
+          url: item.url || "",
+          image: item.image || "",
+          qty: 1
+        });
+      }
+      saveCart(cart);
+      showToast(t("added_to_cart"));
+    }
+    function changeCartQty(id, delta) {
+      let cart = getCart();
+      const item = cart.find(x => x.id === id);
+      if (!item) return;
+      item.qty += delta;
+      if (item.qty <= 0) {
+        cart = cart.filter(x => x.id !== id);
+      }
+      saveCart(cart);
+    }
+    function renderCart() {
+      const listEl = document.getElementById("cartItemsList");
+      const compEl = document.getElementById("cartComparison");
+      if (!listEl || !compEl) return;
+
+      const cart = getCart();
+      if (!cart.length) {
+        compEl.innerHTML = "";
+        listEl.innerHTML = `<div class="empty-box">${t("empty_cart")}</div>`;
+        return;
+      }
+
+      let grandTotal = 0;
+      const storeTotals = {};
+      cart.forEach(item => {
+        const sub = (Number(item.price) || 0) * (Number(item.qty) || 1);
+        grandTotal += sub;
+        const storeName = item.store || "Do'kon";
+        storeTotals[storeName] = (storeTotals[storeName] || 0) + sub;
+      });
+
+      const cheapest = Object.entries(storeTotals).sort((a, b) => a[1] - b[1])[0];
+
+      compEl.innerHTML = `
+        ${cheapest ? `<div class="cart-best-banner">🏆 ${t("cheapest_store")}: <b>${escapeHtml(cheapest[0])}</b> — ${formatPrice(cheapest[1])}</div>` : ""}
+        <div class="cart-summary-box">
+          <div style="display:flex;justify-content:space-between;align-items:center;font-size:15px;font-weight:600;">
+            <span>${t("cart_total")}</span>
+            <span style="color:var(--green);">${formatPrice(grandTotal)}</span>
+          </div>
+        </div>
+      `;
+
+      listEl.innerHTML = cart.map(item => `
+        <div class="cart-item-card">
+          <div class="cart-item-img">
+            <img src="${escapeHtml(item.image || FALLBACK_IMG)}" onerror="this.src='${FALLBACK_IMG}'" />
+          </div>
+          <div style="flex:1;min-width:0;">
+            <div style="font-size:13px;font-weight:500;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${escapeHtml(item.title)}</div>
+            <div style="font-size:11.5px;color:var(--muted);margin-top:2px;">${escapeHtml(item.store)}</div>
+            <div style="font-size:13.5px;font-weight:600;color:var(--orange);margin-top:4px;">${formatPrice((Number(item.price) || 0) * (Number(item.qty) || 1))}</div>
+          </div>
+          <div class="qty-box">
+            <button class="qty-btn" type="button" data-action="cart-qty" data-id="${escapeHtml(item.id)}" data-delta="-1">−</button>
+            <span class="qty-num">${item.qty}</span>
+            <button class="qty-btn" type="button" data-action="cart-qty" data-id="${escapeHtml(item.id)}" data-delta="1">+</button>
+          </div>
+        </div>
+      `).join("");
     }
 
     const searchInputEl = document.getElementById("searchInput");
@@ -705,6 +873,14 @@
       `).join("");
     }
 
+    function openAlertsOverlay() {
+      document.getElementById("alertsOverlay").classList.remove("hidden");
+      loadAlerts();
+    }
+    function closeAlertsOverlay() {
+      document.getElementById("alertsOverlay").classList.add("hidden");
+    }
+
     document.addEventListener("click", (e) => {
       if (e.target.id === "bankRatesModal") { closeBankRates(); return; }
       if (!e.target.closest("#searchForm")) hideSuggestions();
@@ -716,6 +892,31 @@
       if (act === "close-bank-rates") { closeBankRates(); return; }
       if (act === "bank-ccy") { activeBankCcy = el.dataset.ccy; updateBankModalUI(); renderBankRatesList(); return; }
       if (act === "bank-mode") { activeBankMode = el.dataset.mode; updateBankModalUI(); renderBankRatesList(); return; }
+
+      if (act === "open-alerts-view") { openAlertsOverlay(); return; }
+      if (act === "close-alerts-view") { closeAlertsOverlay(); return; }
+
+      if (act === "add-to-cart") {
+        e.stopPropagation();
+        const idx = Number(el.dataset.index);
+        const item = currentResults[idx];
+        if (item) {
+          addToCartItem({
+            query: currentQuery,
+            title: item.title || currentQuery,
+            price: item.price,
+            store: item.store,
+            url: item.url,
+            image: item.image
+          });
+        }
+        return;
+      }
+      if (act === "cart-qty") {
+        e.stopPropagation();
+        changeCartQty(el.dataset.id, Number(el.dataset.delta || 0));
+        return;
+      }
 
       if (act === "set-lang") {
         lang = el.dataset.lang;
@@ -762,18 +963,21 @@
 
     const tabs = document.querySelectorAll(".tab");
     const sections = {
-      home: document.getElementById("tab-home"), products: document.getElementById("tab-products"),
-      favs: document.getElementById("tab-favs"), alerts: document.getElementById("tab-alerts"), profile: document.getElementById("tab-profile"),
+      home: document.getElementById("tab-home"),
+      products: document.getElementById("tab-products"),
+      cart: document.getElementById("tab-cart"),
+      favs: document.getElementById("tab-favs"),
+      profile: document.getElementById("tab-profile"),
     };
-    function goHomeClean() { hideSuggestions(); closeDetail(); closeAlertModal(); closeBankRates(); backToHome(); switchTab("home", false); }
+    function goHomeClean() { hideSuggestions(); closeDetail(); closeAlertModal(); closeBankRates(); closeAlertsOverlay(); backToHome(); switchTab("home", false); }
     function switchTab(name, resetHome = true) {
-      hideSuggestions(); closeDetail(); closeAlertModal(); closeBankRates();
+      hideSuggestions(); closeDetail(); closeAlertModal(); closeBankRates(); closeAlertsOverlay();
       document.getElementById("homeTopArea").classList.toggle("hidden", name !== "home");
       tabs.forEach(t => t.classList.toggle("active", t.dataset.tab === name));
       Object.entries(sections).forEach(([k, el]) => el.classList.toggle("hidden", k !== name));
       if (name === "home" && resetHome) backToHome();
+      if (name === "cart") renderCart();
       if (name === "favs") renderFavs();
-      if (name === "alerts") loadAlerts();
     }
     tabs.forEach(t => t.addEventListener("click", () => switchTab(t.dataset.tab, true)));
 
@@ -908,7 +1112,7 @@
       if (!currentResults.length) { box.innerHTML = `<div class="empty-box">${t("no_results")}</div>`; return; }
       const saved = isFav(currentQuery);
       const heartSvg = `<svg viewBox="0 0 24 24"><path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.7l-1-1.1a5.5 5.5 0 0 0-7.8 7.8l1 1.1L12 21l7.8-7.5 1-1.1a5.5 5.5 0 0 0 0-7.8z"/></svg>`;
-      box.innerHTML = currentResults.map((item) => `
+      box.innerHTML = currentResults.map((item, idx) => `
         <div class="result-card" data-action="open-detail">
           <div class="res-img-col">
             <img src="${escapeHtml(item.image || FALLBACK_IMG)}" onerror="this.src='${FALLBACK_IMG}'" />
@@ -920,9 +1124,12 @@
               <div class="res-meta">🚚 ${escapeHtml(item.delivery || "")}</div>
               <div class="res-monthly">💳 ${t("monthly_prefix")}${formatPrice(item.monthly || Math.round(item.price / 12))}</div>
             </div>
-            <div class="res-price-row">
-              <div class="res-price">${formatPrice(item.price)}</div>
-              <div class="res-store">${escapeHtml(item.store)}</div>
+            <div>
+              <div class="res-price-row">
+                <div class="res-price">${formatPrice(item.price)}</div>
+                <div class="res-store">${escapeHtml(item.store)}</div>
+              </div>
+              <button class="add-cart-btn" type="button" data-action="add-to-cart" data-index="${idx}">${t("add_to_cart")}</button>
             </div>
           </div>
         </div>
@@ -1145,10 +1352,11 @@
     document.getElementById("searchForm").addEventListener("submit", e => { e.preventDefault(); runSearch(searchInputEl.value); });
 
     applyLang();
+    updateCartBadge();
     fetchRates();
     const urlParams = new URLSearchParams(window.location.search);
     const initialQ = urlParams.get("q") || (tg && tg.initDataUnsafe && tg.initDataUnsafe.start_param ? tg.initDataUnsafe.start_param : "");
     if (initialQ) runSearch(initialQ);
   </script>
 </body>
-                                                                                                                                                                                                                           </html>
+        </html>
