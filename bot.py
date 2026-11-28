@@ -695,4 +695,10 @@ if __name__ == "__main__":
     threading.Thread(target=run_web_server, daemon=True).start()
     threading.Thread(target=price_alert_worker, daemon=True).start()
     print("Arzoni Bor ishga tushdi!")
-    bot.infinity_polling(skip_pending=True)
+    while True:
+        try:
+            bot.remove_webhook()
+            bot.infinity_polling(skip_pending=True, timeout=20, long_polling_timeout=20)
+        except Exception as e:
+            print(f"[POLLING] qayta ulanmoqda: {e}")
+            time.sleep(5)
