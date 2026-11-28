@@ -143,6 +143,7 @@
       padding: 6px 10px; font-size: 12px; font-weight: 600; cursor: pointer;
     }
     .add-cart-btn:active { background: var(--green); color: #062016; }
+    .add-cart-btn.in-cart { background: var(--green); color: #062016; border-color: var(--green); }
 
     /* CART STYLES */
     .cart-best-banner {
@@ -603,7 +604,7 @@
         cat_phones: "Smartfonlar", cat_acc: "Aksessuarlar", cat_laptops: "Noutbuklar", cat_consoles: "Konsollar", cat_watches: "Soatlar",
         back: "Orqaga", sort_asc: "Arzonidan", sort_desc: "Qimmatidan",
         tab_home: "Asosiy", tab_cat: "Katalog", tab_cart: "Savat", tab_favs: "Sevimli", tab_profile: "Profil",
-        tab_cart_title: "Savat", add_to_cart: "+ Savatga", added_to_cart: "Savatga qo'shildi",
+        tab_cart_title: "Savat", add_to_cart: "+ Savatga", added_to_cart: "Savatga qo'shildi", in_cart: "✓ Savatda",
         empty_cart: "Savat hozircha bo'sh. Mahsulot yonidagi «+ Savatga» tugmasini bosing.",
         cart_total: "Jami savat:", cheapest_store: "Eng arzon do'kon",
         top_cats: "Top bo'limlar", full_cat: "To'liq katalog",
@@ -633,7 +634,7 @@
         cat_phones: "Смартфоны", cat_acc: "Аксессуары", cat_laptops: "Ноутбуки", cat_consoles: "Консоли", cat_watches: "Часы",
         back: "Назад", sort_asc: "Сначала дешевле", sort_desc: "Сначала дороже",
         tab_home: "Главная", tab_cat: "Каталог", tab_cart: "Корзина", tab_favs: "Избранное", tab_profile: "Профиль",
-        tab_cart_title: "Корзина", add_to_cart: "+ В корзину", added_to_cart: "Добавлено в корзину",
+        tab_cart_title: "Корзина", add_to_cart: "+ В корзину", added_to_cart: "Добавлено в корзину", in_cart: "✓ В корзине",
         empty_cart: "Корзина пока пуста. Нажмите «+ В корзину» у нужного товара.",
         cart_total: "Итого в корзине:", cheapest_store: "Самый выгодный магазин",
         top_cats: "Топ категории", full_cat: "Весь каталог",
@@ -706,6 +707,7 @@
       localStorage.setItem(CART_STORAGE_KEY, JSON.stringify(items));
       updateCartBadge();
       renderCart();
+      if (currentResults.length) renderResults();
     }
     function updateCartBadge() {
       const badge = document.getElementById("cartBadge");
@@ -713,6 +715,10 @@
       const totalQty = getCart().reduce((sum, item) => sum + (Number(item.qty) || 1), 0);
       badge.textContent = totalQty;
       badge.style.display = totalQty > 0 ? "flex" : "none";
+    }
+    function isInCart(item) {
+      const idKey = `${item.title || item.query}__${item.store || ""}`.toLowerCase();
+      return getCart().some(x => x.id === idKey);
     }
     function addToCartItem(item) {
       const idKey = `${item.title || item.query}__${item.store || ""}`.toLowerCase();
@@ -1112,7 +1118,9 @@
       if (!currentResults.length) { box.innerHTML = `<div class="empty-box">${t("no_results")}</div>`; return; }
       const saved = isFav(currentQuery);
       const heartSvg = `<svg viewBox="0 0 24 24"><path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.7l-1-1.1a5.5 5.5 0 0 0-7.8 7.8l1 1.1L12 21l7.8-7.5 1-1.1a5.5 5.5 0 0 0 0-7.8z"/></svg>`;
-      box.innerHTML = currentResults.map((item, idx) => `
+      box.innerHTML = currentResults.map((item, idx) => {
+        const inCart = isInCart({ query: currentQuery, title: item.title, store: item.store });
+        return `
         <div class="result-card" data-action="open-detail">
           <div class="res-img-col">
             <img src="${escapeHtml(item.image || FALLBACK_IMG)}" onerror="this.src='${FALLBACK_IMG}'" />
@@ -1129,7 +1137,7 @@
                 <div class="res-price">${formatPrice(item.price)}</div>
                 <div class="res-store">${escapeHtml(item.store)}</div>
               </div>
-              <button class="add-cart-btn" type="button" data-action="add-to-cart" data-index="${idx}">${t("add_to_cart")}</button>
+              <button class="add-cart-btn ${inCart ? 'in-cart' : ''}" type="button" data-action="add-to-cart" data-index="${idx}">${inCart ? t("in_cart") : t("add_to_cart")}</button>
             </div>
           </div>
         </div>
